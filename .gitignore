@@ -1,0 +1,14 @@
+NiuTrans.Tensor.vcxproj
+NiuTrans.Tensor.vcxproj.filters
+x64/
+vc140.pdb
+NiuTrans.Tensor.vcxproj.user
+NiuTrans.Tensor.aps
+build/
+xxx/
+bin/
+.vs/
+data/config.fp16
+data/config.fp32
+data/model.fp32
+data/model.fp16
