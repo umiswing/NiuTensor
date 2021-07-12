@@ -114,9 +114,14 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
     Sample* longestsample = (Sample*)(buf->Get(bufIdx));
     int maxLen = int(longestsample->srcSeq->Size());
 
-    while (realBatchSize * maxLen < config->common.wBatchSize) {
+    /* todo: test with different settings */
+    const int REQUIRE_MULTIPLE = 8;
+    const int MAX_BATCH_SIZE = 1024;
+    while (realBatchSize * maxLen < config->common.wBatchSize
+           && realBatchSize < 1024) {
         realBatchSize++;
     }
+    realBatchSize %= REQUIRE_MULTIPLE;
 
     /* make sure the batch size is valid */
     realBatchSize = MIN(int(buf->Size()) - bufIdx, realBatchSize);
