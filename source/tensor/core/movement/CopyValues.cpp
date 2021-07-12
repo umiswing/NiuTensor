@@ -53,9 +53,7 @@ void _CopyValues(const XTensor * s, XTensor * t)
 
     if ((s->dataType == X_FLOAT16 && t->dataType == X_FLOAT) ||
         (s->dataType == X_FLOAT && t->dataType == X_FLOAT16)) {
-        CheckNTErrors((s->devID < 0 && t->devID < 0) || s->devID == t->devID,
-                       "The code must be run on the same device!");
-        CheckNTErrors(s->isSparse || t->isSparse, "TODO!");
+        ShowNTErrors("To do");
         ConvertDataType(s->devID, s->data, s->dataType, t->data, t->dataType, s->unitNum);
     }
 

@@ -427,9 +427,9 @@ void _CudaSpreadForGather(XTensor * source, XTensor * collection, XTensor * srcI
     else if (source->dataType == X_FLOAT16 && collection->dataType == X_FLOAT16)
     {
 #ifdef HALF_PRECISION
-        __half2 * sData = (__half2*)source->data;
-        __half2 * cData = (__half2*)collection->data;
-        KernelSpreadForGather<__half2> << <blocks, threads >> >(sData, cData, sIndex, indexSize, stride);
+        __half * sData = (__half*)source->data;
+        __half* cData = (__half*)collection->data;
+        KernelSpreadForGather<__half> << <blocks, threads >> >(sData, cData, sIndex, indexSize, stride);
 #else
         ShowNTErrors("Recompile the code with HALF_PRECISION!");
 #endif
