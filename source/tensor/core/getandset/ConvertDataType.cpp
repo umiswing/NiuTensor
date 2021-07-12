@@ -48,7 +48,6 @@ void ConvertDataType(int devID,
                      void * t, TENSOR_DATA_TYPE typeT, 
                      int size)
 {
-    ShowNTErrors("To Do");
     CheckNTErrors((devID < 0), "This code must be run on CPUs!");
 
     if(typeS == typeT)

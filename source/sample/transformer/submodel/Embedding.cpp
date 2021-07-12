@@ -122,9 +122,6 @@ void Embedder::MakePosEmbedding(int length)
 
     posEmbeddingBase.SetData(data, posEmbeddingBase.unitNum);
 
-    /*if (fp16)
-        posEmbeddingBase = ConvertDataType(posEmbeddingBase, X_FLOAT16);*/
-
     delete[] data;
 }
 

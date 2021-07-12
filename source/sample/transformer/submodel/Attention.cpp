@@ -208,10 +208,10 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* ma
 
     /* Some operations may cause numerical overflow under FP16 including
        BMMul, Mask, Div and Softmax. So we need to cast the input to FP32 */
-
     if (qheads.dataType == X_FLOAT16) {
         qheads = ConvertDataType(qheads, X_FLOAT);
         kheads = ConvertDataType(kheads, X_FLOAT);
+        vheads = ConvertDataType(vheads, X_FLOAT);
     }
 
     /* scalar = softmax(Q * K^T / sqrt(dk)) * V */
@@ -226,9 +226,6 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* ma
 
     if (isTraining && dropoutP > 0)
         scalar = Dropout(scalar, dropoutP);
-
-    if (vheads.dataType != scalar.dataType)
-        vheads = ConvertDataType(vheads, scalar.dataType);
 
     att = BMMul(scalar, vheads);
 
