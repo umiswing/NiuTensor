@@ -121,7 +121,7 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
            && realBatchSize < 1024) {
         realBatchSize++;
     }
-    realBatchSize %= REQUIRE_MULTIPLE;
+    realBatchSize -= realBatchSize % REQUIRE_MULTIPLE;
 
     /* make sure the batch size is valid */
     realBatchSize = MIN(int(buf->Size()) - bufIdx, realBatchSize);
