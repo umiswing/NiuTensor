@@ -190,9 +190,9 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadInt("dev", &devID, -1);
     LoadInt("seed", &seed, 1);
     LoadInt("loginterval", &logInterval, 100);
-    LoadInt("wbatch", &wBatchSize, 4096);
+    LoadInt("wbatch", &wBatchSize, 51200);
     LoadInt("sbatch", &sBatchSize, 128);
-    LoadInt("bufsize", &bufSize, 50000);
+    LoadInt("bufsize", &bufSize, 1000000);
     LoadInt("bucketsize", &bucketSize, -1);
     LoadBool("fp16", &useFP16, false);
 }

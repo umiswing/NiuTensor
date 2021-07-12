@@ -108,11 +108,15 @@ load a batch of sequences from the buffer to the host for translating
 */
 bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 {
-    int realBatchSize = config->common.sBatchSize;
+    int realBatchSize = 1;
 
     /* get the maximum sequence length in a mini-batch */
     Sample* longestsample = (Sample*)(buf->Get(bufIdx));
     int maxLen = int(longestsample->srcSeq->Size());
+
+    while (realBatchSize * maxLen < config->common.wBatchSize) {
+        realBatchSize++;
+    }
 
     /* make sure the batch size is valid */
     realBatchSize = MIN(int(buf->Size()) - bufIdx, realBatchSize);

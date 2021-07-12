@@ -12,3 +12,4 @@ data/config.fp16
 data/config.fp32
 data/model.fp32
 data/model.fp16
+data/res.txt
