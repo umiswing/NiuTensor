@@ -117,8 +117,8 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
     /* todo: test with different settings */
     const int REQUIRE_MULTIPLE = 8;
     const int MAX_BATCH_SIZE = 1024;
-    while (realBatchSize * maxLen < config->common.wBatchSize
-           && realBatchSize < 1024) {
+    while (realBatchSize * maxLen * config->translation.beamSize < config->common.wBatchSize
+           && realBatchSize < MAX_BATCH_SIZE) {
         realBatchSize++;
     }
     realBatchSize = MAX(8 * (realBatchSize / 8), realBatchSize % 8);
