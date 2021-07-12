@@ -420,8 +420,6 @@ void NMTModel::GetParams(TensorList& list)
             }
         }
         for (int i = 0; i < encoder->nlayer; i++) {
-            if (encoder->selfAtts[i].useRPR)
-                list.Add(&encoder->selfAtts[i].RPEmbK);
             if (config->model.useBigAtt) {
                 list.Add(&encoder->selfAtts[i].weightQ);
                 list.Add(&encoder->selfAtts[i].weightK);
@@ -438,6 +436,8 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&encoder->selfAtts[i].weightQ);
                 list.Add(&encoder->selfAtts[i].biasQ);
             }
+            if (encoder->selfAtts[i].useRPR)
+                list.Add(&encoder->selfAtts[i].RPEmbK);
             list.Add(&encoder->selfAtts[i].weightO);
             list.Add(&encoder->selfAtts[i].biasO);
             list.Add(&encoder->ffns[i].w1);
@@ -466,8 +466,6 @@ void NMTModel::GetParams(TensorList& list)
     }
 
     for (int i = 0; i < decoder->nlayer; i++) {
-        if (decoder->selfAtts[i].useRPR)
-            list.Add(&decoder->selfAtts[i].RPEmbK);
         if (config->model.useBigAtt) {
             list.Add(&decoder->selfAtts[i].weightQ);
             list.Add(&decoder->selfAtts[i].weightK);
@@ -484,6 +482,8 @@ void NMTModel::GetParams(TensorList& list)
             list.Add(&decoder->selfAtts[i].weightQ);
             list.Add(&decoder->selfAtts[i].biasQ);
         }
+        if (decoder->selfAtts[i].useRPR)
+            list.Add(&decoder->selfAtts[i].RPEmbK);
         list.Add(&decoder->selfAtts[i].weightO);
         list.Add(&decoder->selfAtts[i].biasO);
         list.Add(&decoder->selfAttLayerNorms[i].weight);
