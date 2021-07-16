@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -41,7 +34,7 @@ bool TestReduceMax1()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -51,7 +44,7 @@ bool TestReduceMax1()
 
     /* a output tensor of size (4) */
     int tOrder1 = 1;
-    int * tDimSize1 = DBG_NEW int[tOrder1];
+    int * tDimSize1 = new int[tOrder1];
     tDimSize1[0] = 4;
 
     int tUnitNum1 = 1;
@@ -60,7 +53,7 @@ bool TestReduceMax1()
 
     /* a output tensor of size (2) */
     int tOrder2 = 1;
-    int * tDimSize2 = DBG_NEW int[tOrder2];
+    int * tDimSize2 = new int[tOrder2];
     tDimSize2[0] = 2;
 
     int tUnitNum2 = 1;
@@ -161,7 +154,7 @@ bool TestReduceMax2()
 {
     /* a input tensor of size (4) */
     int sOrder = 1;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 4;
 
     int sUnitNum = 1;
@@ -170,7 +163,7 @@ bool TestReduceMax2()
 
     /* a output scalar tensor */
     int tOrder = 0;
-    int * tDimSize = DBG_NEW int[MAX_TENSOR_DIM_NUM];
+    int * tDimSize = new int[MAX_TENSOR_DIM_NUM];
     int tUnitNum = 1;
 
     DTYPE sData[4] = {0.0F, 5.0F, 2.0F, 3.0F};

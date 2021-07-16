@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -49,7 +42,7 @@ job item used in queues
 JobQueueNode::JobQueueNode()
 {
     job  = NULL;
-    args = DBG_NEW XList(1);
+    args = new XList(1);
 }
 
 /* de-constructor */
@@ -65,7 +58,7 @@ This class provides standard utilities of Queue.
 /* constuctor */
 XQueue::XQueue(int mySize)
 {
-    queue = DBG_NEW void*[mySize];
+    queue = new void*[mySize];
 
     memset(queue, 0, sizeof(void*) * mySize);
 
@@ -74,7 +67,7 @@ XQueue::XQueue(int mySize)
     head = 0;
     tail = 0;
     isJobQueue = false;
-    jobDequeuerArgs = DBG_NEW XList(1);
+    jobDequeuerArgs = new XList(1);
     jobDequeuerBreak = false;
     runningJobCount = 0;
     
@@ -207,7 +200,7 @@ void XQueue::EnqueueJob(void * job, XList * jobArgs)
     runningJobCount++;
     MUTEX_UNLOCK(jobQueueMutex);
 
-    JobQueueNode * node = DBG_NEW JobQueueNode();
+    JobQueueNode * node = new JobQueueNode();
     node->job = job;
     if(jobArgs != NULL)
         node->args->AddList(jobArgs);

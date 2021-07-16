@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -76,7 +69,7 @@ void XOptimizer::Reset()
 /* clone the optimizer (with the data in it) */
 XOptimizer * XOptimizer::Clone(int devID)
 {
-    XOptimizer * opt = DBG_NEW XOptimizer();
+    XOptimizer * opt = new XOptimizer();
     
     Copy(this, opt, devID);
     
@@ -87,7 +80,7 @@ XOptimizer * XOptimizer::Clone(int devID)
 copy data
 >> source - where we copy the data from
 >> target - where we copy the data to
->> devID - the device where place the DBG_NEW data
+>> devID - the device where place the new data
 */
 void XOptimizer::Copy(XOptimizer * source, XOptimizer * target, int devID)
 {
@@ -124,7 +117,7 @@ update a parameter matrix
 void XOptimizer::UpdateParam(XTensor * param, XTensor * grad)
 {
     /* the delta rule
-       \theta_DBG_NEW = \theta_old - \grad * \lrate */
+       \theta_new = \theta_old - \grad * \lrate */
     _Sum(param, grad, param, -lrate);
 }
 

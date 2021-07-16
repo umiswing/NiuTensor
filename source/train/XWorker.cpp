@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -97,7 +90,7 @@ void XWorker::SetInstantRun(bool flag)
 }
 
 /* 
-enqueue a DBG_NEW job 
+enqueue a new job 
 >> job - the job function
 >> jobArgs - the arguments of the function
 */

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -40,9 +33,9 @@ NMTModel::NMTModel()
 {
     devID = -1;
     config = NULL;
-    encoder = DBG_NEW AttEncoder();
-    decoder = DBG_NEW AttDecoder();
-    outputLayer = DBG_NEW Output();
+    encoder = new AttEncoder();
+    decoder = new AttDecoder();
+    outputLayer = new Output();
 }
 
 /* de-constructor */
@@ -112,7 +105,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
             fread(c, sizeof(int), 1, modelFile);
         }
         /* note that the maximum source length is reset to 150 */
-        config->model.maxSrcLen = MIN(150, config->model.maxSrcLen);
+        //config->model.maxSrcLen = MIN(150, config->model.maxSrcLen);
     }
     else {
         /* read the source and target vocab size */
@@ -214,7 +207,7 @@ make the network for language modeling (with the output softmax layer)
 void NMTModel::MakeLM(XTensor& input, XTensor& output, XTensor& padding)
 {
     int len = padding.GetDim(padding.order - 1);
-    int* dims = DBG_NEW int[padding.order + 2];
+    int* dims = new int[padding.order + 2];
     for (int i = 0; i < padding.order; i++)
         dims[i + 1] = padding.GetDim(i);
     dims[0] = config->model.encSelfAttHeadNum;
@@ -283,7 +276,7 @@ void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
                        XTensor& maskEnc, XTensor& maskDec, XTensor& maskEncDec)
 {
     int len = inputDec.GetDim(inputDec.order - 1);
-    int* dims = DBG_NEW int[inputDec.order + 2];
+    int* dims = new int[inputDec.order + 2];
     for (int i = 0; i < inputDec.order; i++)
         dims[i + 1] = inputDec.GetDim(i);
     dims[0] = config->model.decSelfAttHeadNum;
@@ -314,7 +307,7 @@ void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
     GMems.GetMem(paddingEnc.devID)->UnlockBuf();
 
     /* padding on the source side */
-    int* dimsPadding = DBG_NEW int[paddingEnc.order + 2];
+    int* dimsPadding = new int[paddingEnc.order + 2];
     for (int i = 0; i < paddingEnc.order - 1; i++)
         dimsPadding[i] = paddingEnc.GetDim(i);
     dimsPadding[paddingEnc.order - 1] = paddingEnc.GetDim(-1);
@@ -377,7 +370,7 @@ void NMTModel::MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
 {
     if (config->training.isTraining) {
         int len = paddingDec.GetDim(paddingDec.order - 1);
-        int* dims = DBG_NEW int[paddingDec.order + 2];
+        int* dims = new int[paddingDec.order + 2];
         for (int i = 0; i < paddingDec.order; i++)
             dims[i + 1] = paddingDec.GetDim(i);
         dims[0] = config->model.decSelfAttHeadNum;
@@ -693,9 +686,9 @@ uint64_t NMTModel::GetParamNum()
 
 XModel* NMTModel::Clone(int devID)
 {
-    NMTModel* DBG_NEWModel = DBG_NEW NMTModel();
-    DBG_NEWModel->InitModel(*config);
-    return DBG_NEWModel;
+    NMTModel* newModel = new NMTModel();
+    newModel->InitModel(*config);
+    return newModel;
 }
 
 bool NMTModel::RunSimple(XList* inputs, XList* outputs, XList* golds, XList* losses)

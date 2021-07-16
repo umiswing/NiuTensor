@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -113,18 +106,18 @@ void XModel::AddParam(XTensor* param)
 {
     param->SetVarFlag();
 
-    XTensorKeeper * DBG_NEWParams = DBG_NEW XTensorKeeper[paramNum + 1];
+    XTensorKeeper * newParams = new XTensorKeeper[paramNum + 1];
 
     for (int i = 0; i < paramNum; i++) {
-        DBG_NEWParams[i].tensor = params[i].tensor;
-        DBG_NEWParams[i].flag = params[i].flag;
+        newParams[i].tensor = params[i].tensor;
+        newParams[i].flag = params[i].flag;
     }
 
-    DBG_NEWParams[paramNum].tensor = param;
-    DBG_NEWParams[paramNum].flag = PARAM_STATE_NOT_READY;
+    newParams[paramNum].tensor = param;
+    newParams[paramNum].flag = PARAM_STATE_NOT_READY;
 
     delete[] params;
-    params = DBG_NEWParams;
+    params = newParams;
     paramNum++;
 }
 
@@ -199,14 +192,14 @@ bool XModel::Run(XList * args)
 {
     CheckNTErrors(args != NULL || args->count == 0, "no arguments for XModel::Refresh");
     XModel * model = (XModel*)args->GetItem(0);
-    XList DBG_NEWArgs;
+    XList newArgs;
     
     for (int i = 1; i < args->count; i++) {
         void * arg = args->GetItem(i);
-        DBG_NEWArgs.Add(arg);
+        newArgs.Add(arg);
     }
 
-    return model->RunMe(&DBG_NEWArgs);
+    return model->RunMe(&newArgs);
 }
 
 } /* end of the nts (NiuTrans.Tensor) namespace */

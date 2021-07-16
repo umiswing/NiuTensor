@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -190,7 +183,7 @@ bool CheckMergeSize(const XTensor * s, const XTensor * t, int whereToMerge, int 
     if (leadingDim < 0)
         leadingDim = 0;
     int order = s->order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < s->order; i++) {
         if (i < leadingDim)
@@ -214,7 +207,7 @@ bool CheckMergeSize(const XTensor * s, const XTensor * t, int whereToMerge, int 
 
 /*
 transform a tensor by merging it along with a dimension (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and  return it
+make a new tensor to keep the result and  return it
 
 e.g., (3, M, N/3) -> (M, N)
 
@@ -232,7 +225,7 @@ XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim)
     if (leadingDim < 0)
         leadingDim = 0;
     int order = s.order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < s.order; i++) {
         if (i < leadingDim) 
@@ -271,7 +264,7 @@ void Merge(const XTensor &s, XTensor &t, int whereToMerge, int leadingDim)
         if (leadingDim < 0)
             leadingDim = 0;
         int order = s.order - 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
 
         for (int i = 0; i < s.order; i++) {
             if (i < leadingDim)
@@ -375,13 +368,13 @@ void _Merge(const TensorList * smalls, XTensor * t, int whereToMerge)
     }
     /* merging with fewer kernel/api calls??? (i'm not sure about it!! may remove this later) */
     else {
-        int* dimSizeTMP = DBG_NEW int[smallsItem0->order + 1];
+        int* dimSizeTMP = new int[smallsItem0->order + 1];
         for (int i = 0; i < smallsItem0->order; i++)
             dimSizeTMP[i + 1] = -smallsItem0->dimSize[i];
         dimSizeTMP[0] = -mergeNum;
 
         XMem * mem = smallsItem0->mem;
-        XTensor * tensorTMP = DBG_NEW XTensor(smallsItem0->order + 1, dimSizeTMP,
+        XTensor * tensorTMP = new XTensor(smallsItem0->order + 1, dimSizeTMP,
                                           smallsItem0->dataType, smallsItem0->denseRatio,
                                           smallsItem0->devID, mem);
         int size = mergeNum * itemSize;
@@ -428,7 +421,7 @@ void _Merge(const TensorList * smalls, XTensor * t, int whereToMerge)
 
 /*
 merge small tensors into a big tensor (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> smalls - the list of the small tensors
 >> whereToMerge - the merging operation is along with which dimension
@@ -438,7 +431,7 @@ XTensor Merge(const TensorList &smalls, int whereToMerge)
 {
     XTensor * tensor = smalls.GetItem(0);
     int order = tensor->order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < tensor->order; i++) {
         if (i != whereToMerge)
             dimSize[i] = tensor->dimSize[i];
@@ -477,7 +470,7 @@ XTensor Merge(const XTensor &smallA, const XTensor &smallB, int whereToMerge)
                  "The two tensors must be of the same size!");
 
     int order = smallA.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < smallA.order; i++) {
         if (i != whereToMerge)
             dimSize[i] = smallA.dimSize[i];

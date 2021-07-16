@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -116,7 +109,7 @@ void XWorkerBroadcast::BroadcastP2P(XTensor * source, XTensor * target)
 }
 
 /* 
-add a DBG_NEW job of broadcasting data (for a parameter)
+add a new job of broadcasting data (for a parameter)
 >> jobQueue - the queue where we push jobs
 >> source - the data that we want to broadcast
 >> targetList - the target places where we recieve the data

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -64,7 +57,7 @@ bool _CheckData(const XTensor * tensor, const void * d, int num, int beg)
     }
 #ifdef USE_CUDA
     else {
-        char * copy = DBG_NEW char[num * tensor->unitSize];
+        char * copy = new char[num * tensor->unitSize];
         XMemCopy(copy, -1, tensor->data, tensor->devID, num * tensor->unitSize);
         int cmpResult = memcmp(copy, d, num * tensor->unitSize);
         bool result = (cmpResult == 0) ? true : false;

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -62,7 +55,7 @@ void StateBundle::MakeStates(int num)
     if (states != NULL)
         delete[] states;
 
-    states = DBG_NEW State[num];
+    states = new State[num];
 
     for (int i = 0; i < num; i++) {
         states[i].prediction = -1;
@@ -150,7 +143,7 @@ predict the next state
 >> paddingEnc - padding of the encoder, (B, L)
 >> rawBatchSize - the raw batch size (in case of some states are pruned)
 >> isStart - whether it is the start state or not
->> reorderState - the DBG_NEW order of states
+>> reorderState - the new order of states
 >> needReorder - whether we need reordering the states
 >> nstep - current time step of the target sequence
 */
@@ -169,7 +162,7 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     InitTensor2D(&first, batchSize, 1, X_INT, inputEnc.devID);
     first.SetDataFixed(startSymbol);
 
-    /* add a DBG_NEW word into the input sequence of the decoder side */
+    /* add a new word into the input sequence of the decoder side */
     if (isStart) {
         inputDec = Identity(first);
     }

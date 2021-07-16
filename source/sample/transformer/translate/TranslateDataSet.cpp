@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -44,8 +37,8 @@ Sample* TranslateDataset::LoadSample(string line)
     vector<string> srcTokens = SplitString(line, delimiter,
                                            config->model.maxSrcLen - 1);
 
-    IntList* srcSeq = DBG_NEW IntList(int(srcTokens.size()));
-    Sample* sample = DBG_NEW Sample(srcSeq);
+    IntList* srcSeq = new IntList(int(srcTokens.size()));
+    Sample* sample = new Sample(srcSeq);
 
     for (const string& token : srcTokens) {
         if (srcVocab.token2id.find(token) == srcVocab.token2id.end())
@@ -128,8 +121,8 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     CheckNTErrors(maxLen != 0, "Invalid length");
 
-    int* batchValues = DBG_NEW int[realBatchSize * maxLen];
-    float* paddingValues = DBG_NEW float[realBatchSize * maxLen];
+    int* batchValues = new int[realBatchSize * maxLen];
+    float* paddingValues = new float[realBatchSize * maxLen];
 
     for (int i = 0; i < realBatchSize * maxLen; i++) {
         batchValues[i] = srcVocab.padID;
@@ -196,7 +189,7 @@ void TranslateDataset::Init(NMTConfig& myConfig)
 
     /* translate the content in a file */
     if (strcmp(config->translation.inputFN, "") != 0) {
-        ifp = DBG_NEW ifstream(config->translation.inputFN);
+        ifp = new ifstream(config->translation.inputFN);
         CheckNTErrors(ifp, "Failed to open the input file");
     }
     /* translate the content in stdin */

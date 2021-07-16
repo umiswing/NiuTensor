@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -36,7 +29,7 @@ namespace nts{ // namespace nts(NiuTrans.Tensor)
 int * getDimSize(const XTensor * tensor, int n)
 {
     int order = tensor->order;
-    int * dimSize = DBG_NEW int[order - 1];
+    int * dimSize = new int[order - 1];
 
     for (int i = 0; i < order; i++) {
         if(i < n)
@@ -78,7 +71,7 @@ sum all the items of the tensor (It should be optimized!)
 */
 void _ReduceSumAll(const XTensor * source, DTYPE * value)
 {
-    int * dimSize = DBG_NEW int[MAX_TENSOR_DIM_NUM];
+    int * dimSize = new int[MAX_TENSOR_DIM_NUM];
 
     XTensor * target = NewTensorV2(0, dimSize, source->dataType, source->denseRatio, source->devID, source->mem);
     target->SetTMPFlag();
@@ -98,7 +91,7 @@ sum all the items of the tensor
 */
 XTensor ReduceSumAll(const XTensor & source)
 {
-    int * dimSize = DBG_NEW int[MAX_TENSOR_DIM_NUM];
+    int * dimSize = new int[MAX_TENSOR_DIM_NUM];
     float dr = (!source.isSparse) ? 1.0F : source.denseRatio;
     XTensor target(0, dimSize, source.dataType, dr, source.devID, source.mem);
     target.SetTMPFlag();

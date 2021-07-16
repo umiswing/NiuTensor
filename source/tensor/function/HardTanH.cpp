@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -69,7 +62,7 @@ void _HardTanH(const XTensor * x, XTensor * y)
 
 /* 
 hard tanh function (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 y =  1    if x > 1
      x    if -1 <= x <= 1

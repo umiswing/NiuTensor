@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -49,7 +42,7 @@ void _Softmax(const XTensor * x, XTensor * y, int leadDim)
         leadDim = x->order - 1;
 
     if(!x->isSparse && !y->isSparse && x->dataType == y->dataType){
-        int * dimSize = DBG_NEW int[x->order - 1];
+        int * dimSize = new int[x->order - 1];
         for(int i = 0; i < x->order; i++){
             if(i < leadDim)
                 dimSize[i] = x->dimSize[i];
@@ -134,7 +127,7 @@ void _Softmax(const XTensor * x, XTensor * y, int leadDim)
 
 /*
 softmax y = e^x / \sum_{i} e^{x_i} (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> x - input vector
 >> leadDim - leading dimension (along which we perform reduction)

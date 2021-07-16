@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -91,8 +84,8 @@ void _ConcatenateSolely(const TensorList * smalls, XTensor * big, int dim)
         }
     }
     else {
-        StrList* sourceArrays = DBG_NEW StrList(smalls->count);
-        int * blockSizes = DBG_NEW int[smalls->count];
+        StrList* sourceArrays = new StrList(smalls->count);
+        int * blockSizes = new int[smalls->count];
         for (int i = 0; i < smalls->count; i++) {
             XTensor * tensor = (XTensor*)smalls->GetItem(i);
             blockSizes[i] = stride * tensor->dimSize[dim] * tensor->unitSize;

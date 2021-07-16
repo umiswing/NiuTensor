@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -106,7 +99,7 @@ clone the optimizer (with the data in it)
 */
 XOptimizer * Adam::Clone(int devID)
 {
-    Adam * opt = DBG_NEW Adam();
+    Adam * opt = new Adam();
     
     Copy(this, opt, devID);
     
@@ -130,7 +123,7 @@ void Adam::Copy(XOptimizer * source, XOptimizer * target, int devID)
     t->moments.Clear();
     for(int i = 0; i < s->moments.count; i++){
         XTensor * st = s->moments[i];
-        XTensor * stNew = DBG_NEW XTensor();
+        XTensor * stNew = new XTensor();
         InitTensorV2(stNew, st->order, st->dimSize, st->dataType, st->denseRatio, devID);
         _CopyValues(st, stNew);
         t->moments.Add(stNew);
@@ -139,7 +132,7 @@ void Adam::Copy(XOptimizer * source, XOptimizer * target, int devID)
     t->moments2nd.Clear();
     for(int i = 0; i < s->moments2nd.count; i++){
         XTensor * st = s->moments2nd[i];
-        XTensor * stNew = DBG_NEW XTensor();
+        XTensor * stNew = new XTensor();
         InitTensorV2(stNew, st->order, st->dimSize, st->dataType, st->denseRatio, devID);
         _CopyValues(st, stNew);
         t->moments2nd.Add(stNew);

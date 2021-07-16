@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -79,11 +72,11 @@ void LayerHistory::InitModel(NMTConfig& config)
         layer 0: [1, 0, ..., 0]               
         layer 1: [0.5, 0.5, ..., 0]           
         layer 2: [0.33, 0.33, 0.33, ..., 0]   */
-    weights = DBG_NEW XTensor[nlayer + 1];
+    weights = new XTensor[nlayer + 1];
     for (int i = 0; i < nlayer + 1; i++) {
         InitTensor1D(&(weights[i]), i + 1, X_FLOAT, devID);
         if (isTraining) {
-            float* data = DBG_NEW float[i + 1];
+            float* data = new float[i + 1];
             for (int j = 0; j < i + 1; j++) {
                 data[j] = 1.0F / float(i + 1);
             }
@@ -92,7 +85,7 @@ void LayerHistory::InitModel(NMTConfig& config)
         }
     }
 
-    layerNorms = DBG_NEW LayerNorm[nlayer];
+    layerNorms = new LayerNorm[nlayer];
 
     /* initialize the layer normalization of each layer */
     for (int i = 0; i < nlayer; i++) {
@@ -156,7 +149,7 @@ void LayerHistory::ClearHistory(bool reset)
     if(history != NULL)
         delete history;
     if(reset)
-        history = DBG_NEW History;
+        history = new History;
     else
         history = NULL;
     count = 0;

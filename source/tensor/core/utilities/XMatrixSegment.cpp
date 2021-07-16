@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -58,7 +51,7 @@ void RunParallel2D(XPRunner * parallelRunner, void * job,
     CheckNTErrors(jobNum != 0, "TODO!");
 
     /* argument list of the jobs */
-    XList * jobArgList = DBG_NEW XList(argNum);
+    XList * jobArgList = new XList(argNum);
 
     va_list ap;
     va_start(ap, argNum);
@@ -69,10 +62,10 @@ void RunParallel2D(XPRunner * parallelRunner, void * job,
     va_end(ap);
 
     /* prepare the neccesary argument list for parallel processing */
-    XList * jobs = DBG_NEW XList(jobNum);
-    XList * args = DBG_NEW XList(jobNum);
+    XList * jobs = new XList(jobNum);
+    XList * args = new XList(jobNum);
 
-    int * indexList = DBG_NEW int[jobNum * 4 * 4];
+    int * indexList = new int[jobNum * 4 * 4];
 
     /* segment the matrix into blocks */
     int nblock = SegmentTensor2D(rowNum, colNum, jobNum, indexList);
@@ -84,8 +77,8 @@ void RunParallel2D(XPRunner * parallelRunner, void * job,
     2. other arguments
     */
     for (int i = 0; i < jobNum; i++) {
-        IntList* indexArgs = DBG_NEW IntList(4);
-        XList * blockArgs = DBG_NEW XList(argNum);
+        IntList* indexArgs = new IntList(4);
+        XList * blockArgs = new XList(argNum);
         int * blockIndex = indexList + i * 4;
 
         indexArgs->Add(blockIndex[0]);

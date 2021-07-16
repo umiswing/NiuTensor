@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -102,7 +95,7 @@ void XWorkerUpdate::Update(XList * args)
 }
 
 /* 
-add a DBG_NEW job of model update (for a parameter) 
+add a new job of model update (for a parameter) 
 >> jobQueue - the queue for sub-jobs executed in the job
 >> paramKeeper -  the parameter keeper
 >> optimizer - the optimizer
@@ -177,7 +170,7 @@ void XWorkerUpdate::UpdateBatch(XList * args)
 }
 
 /* 
-add a DBG_NEW job of parameter update (for a batch)
+add a new job of parameter update (for a batch)
 >> jobQueue - the queue for running the primitive job
 >> updaters - a batch of updaters
 >> paramKeepers - a batch of parameter keepers

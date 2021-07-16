@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -148,7 +141,7 @@ int FNNLMMain(int argc, const char ** argv)
     if(strcmp(modelFN, ""))
         Read(modelFN, model);
 
-    /* test the model on the DBG_NEW data */
+    /* test the model on the new data */
     if(strcmp(testFN, "") && strcmp(outputFN, ""))
         Test(testFN, outputFN, model);
 
@@ -374,7 +367,7 @@ void Init(FNNModel &model)
  */
 void Shuffle(const char * srcFile, const char * tgtFile)
 {
-    char * line = DBG_NEW char[MAX_LINE_LENGTH_HERE];
+    char * line = new char[MAX_LINE_LENGTH_HERE];
 #ifndef WIN32
     sprintf(line, "shuf %s > %s", srcFile, tgtFile);
     system(line);
@@ -414,7 +407,7 @@ void Train(const char * train, bool isShuffled, FNNModel &model)
     float loss = 0;
     bool isEnd = false;
     
-    NGram * ngrams = DBG_NEW NGram[MAX_LINE_LENGTH_HERE];
+    NGram * ngrams = new NGram[MAX_LINE_LENGTH_HERE];
 
     /* make a model to keep gradients */
     FNNModel grad;
@@ -746,8 +739,8 @@ make a tensor that encodes a batch of words
 */
 void MakeWordBatch(XTensor &batch, NGram * ngrams, int ngramNum, int n, int vSize, int devID)
 {
-    int * rows = DBG_NEW int[ngramNum];
-    int * cols = DBG_NEW int[ngramNum];
+    int * rows = new int[ngramNum];
+    int * cols = new int[ngramNum];
 
     for(int i = 0; i < ngramNum; i++){
         rows[i] = i;
@@ -997,7 +990,7 @@ void ForwardAutoDiff(NGram * ngrams, int batch, XTensor &output, FNNModel &model
     XTensor b;
 
     int size = batch * (n-1);
-    int * index = DBG_NEW int[size];
+    int * index = new int[size];
 
     for(int i = 0; i < batch; i++){
         for (int j = 0; j < n-1; j++){
@@ -1133,7 +1126,7 @@ void Test(const char * test, const char * result, FNNModel &model)
     int sentCount = 0;
     float loss = 0;
 
-    NGram * ngrams = DBG_NEW NGram[MAX_LINE_LENGTH_HERE];
+    NGram * ngrams = new NGram[MAX_LINE_LENGTH_HERE];
 
     double startT = GetClockSec();
 

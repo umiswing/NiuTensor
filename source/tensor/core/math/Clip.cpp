@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -107,7 +100,7 @@ void ClipMe(XTensor& a, DTYPE lower, DTYPE upper)
 
 /*
 set every entry to its clip value (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 >> a - input tensor we are processing
 >> lower - the lower border
 >> upper - the upper border

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -278,7 +271,7 @@ void _ReduceSum(const XTensor * input, XTensor * output, int dim, const XTensor 
 
 /* 
 sum the items along a dimension of the tensor (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 For a 1-dimensional data array a,
 sum = \sum_i (a_i - shift)^power if isExp == false
@@ -296,7 +289,7 @@ XTensor ReduceSum(const XTensor &input, int dim, const XTensor &shift, DTYPE pow
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
     
     int order = input.order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for(int i = 0; i < order; i++){
         if(i < dim)
             dimSize[i] = input.dimSize[i];
@@ -331,7 +324,7 @@ void ReduceSum(const XTensor &input, XTensor &output, int dim, const XTensor &sh
 
     if (!output.isInit || !XTensor::IsReduceShaped(&input, &output, dim)) {
         int order = input.order - 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
         for (int i = 0; i < order; i++) {
             if (i < dim)
                 dimSize[i] = input.dimSize[i];
@@ -360,7 +353,7 @@ void ReduceSum(const XTensor &input, XTensor &output, int dim, const XTensor &sh
 
 /* 
 sum the items along a dimension of the tensor (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 For a 1-dimensional data array a,
 sum = \sum_i (a_i)^power if isExp == false
@@ -377,7 +370,7 @@ XTensor ReduceSum(const XTensor &input, int dim, DTYPE power, bool isExp)
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
     
     int order = input.order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for(int i = 0; i < order; i++){
         if(i < dim)
             dimSize[i] = input.dimSize[i];
@@ -426,7 +419,7 @@ void ReduceSum(const XTensor &input, XTensor &output, int dim, DTYPE power, bool
 
     if (!output.isInit || !XTensor::IsReduceShaped(&input, &output, dim)) {
         int order = input.order - 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
         for (int i = 0; i < order; i++) {
             if (i < dim)
                 dimSize[i] = input.dimSize[i];

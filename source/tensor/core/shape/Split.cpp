@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -181,7 +174,7 @@ bool CheckSplitSize(const XTensor * s, const XTensor * t, int whereToSplit, int 
         return false;
 
     int order = s->order + 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     dimSize[0] = splitNum;
     for (int i = 0; i < s->order; i++) {
@@ -201,7 +194,7 @@ bool CheckSplitSize(const XTensor * s, const XTensor * t, int whereToSplit, int 
 
 /*
 transform a tensor by splitting it, e.g., (N, M) -> (N/3, M, 3) (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> s - the source tensor
 >> whereToSplit - which dimension of the tensor is to split
@@ -215,7 +208,7 @@ XTensor Split(const XTensor &s, int whereToSplit, int splitNum)
                   "The dimension cannot be splitted due to the inproper split number");
 
     int order = s.order + 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     dimSize[0] = splitNum;
     for (int i = 0; i < s.order; i++) {
@@ -249,7 +242,7 @@ void Split(const XTensor &s, XTensor &t, int whereToSplit, int splitNum)
 {
     if (!t.isInit || !CheckSplitSize(&s, &t, whereToSplit, splitNum)) {
         int order = s.order + 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
 
         dimSize[0] = splitNum;
         for (int i = 0; i < s.order; i++) {
@@ -348,14 +341,14 @@ void _Split(const XTensor * big, TensorList * smalls, int whereToSplit, int spli
     }
     /* splitting with fewer kernel/api calls??? (i'm not sure about it!! may remove this later) */
     else {
-        int* dimSizeTMP = DBG_NEW int[big->order + 1];
+        int* dimSizeTMP = new int[big->order + 1];
         for (int i = 0; i < big->order; i++)
             dimSizeTMP[i + 1] = -big->dimSize[i];
         dimSizeTMP[whereToSplit + 1] /= splitNum;
         dimSizeTMP[0] = -splitNum;
 
         XMem * mem = big->mem;
-        XTensor* tensorTMP = DBG_NEW XTensor(big->order + 1, dimSizeTMP, big->dataType, big->denseRatio, big->devID, mem);
+        XTensor* tensorTMP = new XTensor(big->order + 1, dimSizeTMP, big->dataType, big->denseRatio, big->devID, mem);
         int size = big->unitNum * big->unitSize;
         void * dataTMP = NULL;
 

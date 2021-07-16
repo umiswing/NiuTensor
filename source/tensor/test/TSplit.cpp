@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -39,7 +32,7 @@ bool TestSplit1()
 {
     /* a source tensor of size (4, 3) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 4;
     sDimSize[1] = 3;
 
@@ -49,7 +42,7 @@ bool TestSplit1()
 
     /* a target tensor of size (2, 2, 3) */
     int tOrder = 3;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
     tDimSize[2] = 3;
@@ -136,7 +129,7 @@ bool TestSplit2()
 {
     /* a source tensor of size (3, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 3;
     sDimSize[1] = 4;
 
@@ -146,7 +139,7 @@ bool TestSplit2()
 
     /* a target tensor of size (2, 3, 2) */
     int tOrder = 3;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 3;
     tDimSize[2] = 2;
@@ -234,12 +227,12 @@ In this case, (3, 4) -> 2 * (3, 2) , whereToSplit=1, splitNum=2.
 bool TestSplit3()
 {
     /* create list */
-    TensorList * tList = DBG_NEW TensorList();
+    TensorList * tList = new TensorList();
     TensorList tUserList;
 
     /* a source tensor of size (3, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 3;
     sDimSize[1] = 4;
 
@@ -249,7 +242,7 @@ bool TestSplit3()
 
     /* a target tensor of size (3, 2) */
     int tOrder1 = 2;
-    int * tDimSize1 = DBG_NEW int[tOrder1];
+    int * tDimSize1 = new int[tOrder1];
     tDimSize1[0] = 3;
     tDimSize1[1] = 2;
 
@@ -259,7 +252,7 @@ bool TestSplit3()
 
     /* a target tensor of size (3 * 2) */
     int tOrder2 = 2;
-    int * tDimSize2 = DBG_NEW int[tOrder2];
+    int * tDimSize2 = new int[tOrder2];
     tDimSize2[0] = 3;
     tDimSize2[1] = 2;
 

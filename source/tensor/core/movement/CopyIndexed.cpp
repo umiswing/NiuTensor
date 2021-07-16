@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -84,8 +77,8 @@ void _CopyIndexed(const XTensor * s, XTensor * t, int dim,
     indexOffsetNum = blockNumSrc / s->dimSize[dim];
 
     int realIndexSize = indexOffsetNum * indexSize * copyNum;
-    int * realSrcIndex = DBG_NEW int[realIndexSize];
-    int * realTgtIndex = DBG_NEW int[realIndexSize];
+    int * realSrcIndex = new int[realIndexSize];
+    int * realTgtIndex = new int[realIndexSize];
     for (int i = 0; i < indexOffsetNum; i++) {
         int base = i * indexSize * copyNum;
         int baseSrc = i * leadDimSizeSrc;
@@ -224,7 +217,7 @@ void _CopyIndexed(const XTensor * s, XTensor * t, int dim,
 
 /*
 copy selected sub-tensors where indeces are kept in tensors (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> s - the source tensor
 >> dim - the leading dimension to define "sub-tensors"
@@ -245,7 +238,7 @@ XTensor CopyIndexed(const XTensor & s, int dim,
     CheckNTErrors(dim >= 0 && dim < s.order, "A too larget dimension specified!");
 
     int order = s.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     int indexSize = srcIndex.unitNum;
 
     for (int i = 0; i < s.order; i++) {
@@ -282,7 +275,7 @@ XTensor CopyIndexed(const XTensor & s, int dim,
 
 /*
 copy indexed sub-tensors (return a XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> s - the source tensor
 >> dim - the leading dimension to define "sub-tensors"
@@ -301,7 +294,7 @@ XTensor CopyIndexed(const XTensor &s, int dim, int * srcIndex, int indexSize, in
     CheckNTErrors(dim >= 0 && dim < s.order, "A too larget dimension specified!");
 
     int order = s.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < s.order; i++) {
         if (i == dim)
@@ -317,12 +310,12 @@ XTensor CopyIndexed(const XTensor &s, int dim, int * srcIndex, int indexSize, in
     /* call _CopyIndexed function */
     _CopyIndexed(&s, &t, dim, srcIndex, indexSize, tgtIndex, copyNum);
 
-    /* NOTE: we must allocate a DBG_NEW array to save index,
+    /* NOTE: we must allocate a new array to save index,
              because the source index may be released. */
-    int * saveSrcIndex = DBG_NEW int[indexSize];
+    int * saveSrcIndex = new int[indexSize];
     memcpy(saveSrcIndex, srcIndex, indexSize * sizeof(int));
 
-    int * saveTgtIndex = DBG_NEW int[indexSize];
+    int * saveTgtIndex = new int[indexSize];
     memcpy(saveTgtIndex, tgtIndex, indexSize * sizeof(int));
 
     /* tensor connection */

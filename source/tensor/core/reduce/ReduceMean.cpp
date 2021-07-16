@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -54,7 +47,7 @@ void _ReduceMean(const XTensor * input, XTensor * output, int dim)
 
 /* 
 get the mean value along a dimension of the tensor (return an XTensor structure)
-make a DBG_NEW tenosr to keep the result and return it
+make a new tenosr to keep the result and return it
 
 For a 1-dimensional data array a, mean = (1/n) * sum_i input_i
 
@@ -67,7 +60,7 @@ XTensor ReduceMean(const XTensor &input, int dim)
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
     
     int order = input.order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for(int i = 0; i < order; i++){
         if(i < dim)
             dimSize[i] = input.dimSize[i];
@@ -109,7 +102,7 @@ void ReduceMean(const XTensor &input, XTensor &output, int dim)
 
     if (!output.isInit || !XTensor::IsReduceShaped(&input, &output, dim)) {
         int order = input.order - 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
         for (int i = 0; i < order; i++) {
             if (i < dim)
                 dimSize[i] = input.dimSize[i];

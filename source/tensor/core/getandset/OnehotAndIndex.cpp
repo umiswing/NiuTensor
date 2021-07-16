@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -80,7 +73,7 @@ void _OnehotToIndex(const XTensor * onehot, XTensor * index, int size)
 
 /* 
 convert onehot tensor to index tensor (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it 
+make a new tensor to keep the result and return it 
 
 >> onehot - onehot tensor, which value is 0 or 1
 >> size - the last dimension size of the onehot tensor
@@ -192,7 +185,7 @@ void _IndexToOnehot(int * index, int n, XTensor * onehot, int size, float labelS
 
 /* 
 convert onehot tensor to index tensor (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it 
+make a new tensor to keep the result and return it 
 
 >> index - index tensor, which value is an integer num
 >> size - the last dimension size of the onehot tensor
@@ -207,7 +200,7 @@ XTensor IndexToOnehot(const XTensor & index, int size, float labelSmoothingP)
     onehot.SetTMPFlag();
     
     int order = index.order;
-    int * dim = DBG_NEW int[order + 1];
+    int * dim = new int[order + 1];
     memcpy(dim, index.dimSize, order * sizeof(int));
     dim[order] = size;
     InitTensorV2(&onehot, index.order + 1, dim, X_FLOAT, 1.0F, index.devID, index.mem);

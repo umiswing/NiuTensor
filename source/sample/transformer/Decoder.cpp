@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -100,21 +93,21 @@ void AttDecoder::InitModel(NMTConfig& config)
     CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
     CheckNTErrors(vSize > 1, "set vocabulary size by \"-vsizetgt\"");
 
-    selfAtts = DBG_NEW Attention[nlayer];
-    ffns = DBG_NEW FFN[nlayer];
-    selfAttLayerNorms = DBG_NEW LayerNorm[nlayer];
-    enDeAtts = DBG_NEW Attention[nlayer];
-    enDeAttLayerNorms = DBG_NEW LayerNorm[nlayer];
-    ffnLayerNorms = DBG_NEW LayerNorm[nlayer];
+    selfAtts = new Attention[nlayer];
+    ffns = new FFN[nlayer];
+    selfAttLayerNorms = new LayerNorm[nlayer];
+    enDeAtts = new Attention[nlayer];
+    enDeAttLayerNorms = new LayerNorm[nlayer];
+    ffnLayerNorms = new LayerNorm[nlayer];
 
-    selfAttCache = DBG_NEW Cache[nlayer];
-    enDeAttCache = DBG_NEW Cache[nlayer];
+    selfAttCache = new Cache[nlayer];
+    enDeAttCache = new Cache[nlayer];
 
     if (finalNorm)
-        decoderLayerNorm = DBG_NEW LayerNorm;
+        decoderLayerNorm = new LayerNorm;
 
     if (useHistory)
-        history = DBG_NEW LayerHistory;
+        history = new LayerHistory;
 
     /* initialize the stacked layers */
     embedder.InitModel(config, false);

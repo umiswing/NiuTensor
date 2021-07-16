@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -56,7 +49,7 @@ XMem::XMem()
     mode = UNI_FREE;
     curBlockPin = -1;
     indexOffset = -1;
-    name = DBG_NEW char[64];
+    name = new char[64];
     strcpy(name, "xmem");
     signature = 0;
     mergeFreeOTF = true;
@@ -82,7 +75,7 @@ XMem::XMem(int myDevID, MEMPOOL_MODE myMode, MTYPE myBlockSize, int myBlockNum, 
     memset(this, 0, sizeof(XMem));
     curBlockPin = -1;
     indexOffset = -1;
-    name = DBG_NEW char[64];
+    name = new char[64];
     strcpy(name, "xmem");
     signature = 0;
     mergeFreeOTF = true;
@@ -137,7 +130,7 @@ void XMem::Initialize(int myDevID, MEMPOOL_MODE myMode, MTYPE myBlockSize, int m
     maxBlockSize = myBlockSize;
     blockNum = myBlockNum;
 
-    blocks = DBG_NEW XMemBlock[blockNum];
+    blocks = new XMemBlock[blockNum];
     for(int i = 0; i < blockNum; i++){
         blocks[i].mem = NULL;
         blocks[i].size = maxBlockSize;
@@ -150,7 +143,7 @@ void XMem::Initialize(int myDevID, MEMPOOL_MODE myMode, MTYPE myBlockSize, int m
     finalBlockID = 0;
 
     if(myDevID < 0){
-        buf = DBG_NEW char[(unsigned int)myBufSize];
+        buf = new char[(unsigned int)myBufSize];
     }
     else{
 #ifdef USE_CUDA
@@ -253,7 +246,7 @@ set the name of the memory pool
 void XMem::SetName(const char * myName)
 {
     delete[] name;
-    name = DBG_NEW char[(int)strlen(myName) + 1];
+    name = new char[(int)strlen(myName) + 1];
     strcpy(name, myName);
 }
 
@@ -343,13 +336,13 @@ void XMem::SetIndex(INT_64 indexSize, MTYPE minSizeFirst, int minSizeNum)
     nodeNumUsed = minSizeNum * 2;
     indexEntryNum = minSizeNum;
     
-    memIndex = DBG_NEW MPieceNode[nodeNum];
+    memIndex = new MPieceNode[nodeNum];
     memset(memIndex, 0, sizeof(MPieceNode) * nodeNum);
     
-    memIndex2 = DBG_NEW MPieceNode[nodeNum];
+    memIndex2 = new MPieceNode[nodeNum];
     memset(memIndex2, 0, sizeof(MPieceNode) * nodeNum);
 
-    minSizeIndex = DBG_NEW MTYPE[indexEntryNum];
+    minSizeIndex = new MTYPE[indexEntryNum];
     memset(minSizeIndex, 0, sizeof(MTYPE) * indexEntryNum);
 
     minSizeIndex[0] = minSizeFirst;
@@ -443,7 +436,7 @@ void * XMem::AllocDynamic(int myDevID, MTYPE mySize)
     if (b->mem == NULL && b->used == 0) {
         /* on CPUs */
         if (myDevID < 0) {
-            mem = DBG_NEW char[(unsigned int)b->size + 2 * CUDA_PITCH];
+            mem = new char[(unsigned int)b->size + 2 * CUDA_PITCH];
             memset(mem, 0, (unsigned int)b->size + 2 * CUDA_PITCH);
         }
         /* on GPUs */
@@ -680,19 +673,19 @@ void * XMem::AllocStandard(int myDevID, MTYPE mySize, bool myIsRebuiltIndex)
         
         if(remaining >= minSizeIndex[0]){
 
-            /* make a DBG_NEW index node */
-            MPieceNode * DBG_NEWNode = memIndex + nodeNumUsed++;
-            DBG_NEWNode->head.indexNode = DBG_NEWNode;
-            DBG_NEWNode->p = end;
-            DBG_NEWNode->pReal = NULL;
-            DBG_NEWNode->size = (char*)end + remaining -
+            /* make a new index node */
+            MPieceNode * newNode = memIndex + nodeNumUsed++;
+            newNode->head.indexNode = newNode;
+            newNode->p = end;
+            newNode->pReal = NULL;
+            newNode->size = (char*)end + remaining -
                             (char*)GetPitchedAddress((char*)end, MY_PITCH);
             
-            AddFreeIndexNode(DBG_NEWNode);
+            AddFreeIndexNode(newNode);
             
             /* connections for headers */
             MHeader &cur = hit->head;
-            MHeader &next = DBG_NEWNode->head;
+            MHeader &next = newNode->head;
             next.pre = &cur;
             next.next = cur.next;
             cur.next = &next;
@@ -723,7 +716,7 @@ void * XMem::AllocStandard(int myDevID, MTYPE mySize, bool myIsRebuiltIndex)
             RebuildIndex();
             result = AllocStandard(myDevID, mySize, true);
         }
-        /* if there is still no available memory piece, we have to obtain a DBG_NEW block of memory. */
+        /* if there is still no available memory piece, we have to obtain a new block of memory. */
         else{
             int bi;
             for(bi = 0; bi < blockNum; bi++){
@@ -734,7 +727,7 @@ void * XMem::AllocStandard(int myDevID, MTYPE mySize, bool myIsRebuiltIndex)
                 if (block->mem == NULL) {
                     block->size = MAX(block->sizeDesired, mySize + 2 * MY_PITCH);
                     if (myDevID < 0) {
-                        block->mem = DBG_NEW char[block->size];
+                        block->mem = new char[block->size];
                         memset(block->mem, 0, block->size);
                     }
                     else {
@@ -756,18 +749,18 @@ void * XMem::AllocStandard(int myDevID, MTYPE mySize, bool myIsRebuiltIndex)
 
                 curBlockID = MAX(curBlockID, bi);
                     
-                /* make a DBG_NEW index node */
-                MPieceNode * DBG_NEWNode = memIndex + nodeNumUsed++;
-                DBG_NEWNode->head.indexNode = DBG_NEWNode;
-                DBG_NEWNode->p = block->mem;
-                DBG_NEWNode->pReal = NULL;
-                //DBG_NEWNode->size = (char*)block->mem + block->size -
+                /* make a new index node */
+                MPieceNode * newNode = memIndex + nodeNumUsed++;
+                newNode->head.indexNode = newNode;
+                newNode->p = block->mem;
+                newNode->pReal = NULL;
+                //newNode->size = (char*)block->mem + block->size -
                 //                (char*)GetPitchedAddress(block->mem, MY_PITCH);
-                DBG_NEWNode->size = mySize;
+                newNode->size = mySize;
                     
-                AddFreeIndexNode(DBG_NEWNode);
+                AddFreeIndexNode(newNode);
                     
-                MHeader &header = DBG_NEWNode->head;
+                MHeader &header = newNode->head;
                 header.state = 1;
                 header.size = block->size;
                 header.pre = NULL;
@@ -1136,7 +1129,7 @@ void XMem::RebuildIndex()
             /* if the block is in use, we build the index */
             int pieceCount = 0;
             MTYPE size = 0;
-            MHeader * DBG_NEWLast = NULL;
+            MHeader * newLast = NULL;
             while(head != NULL){
                 MHeader * next = head->next;
                 if(head->state == 1){
@@ -1150,54 +1143,54 @@ void XMem::RebuildIndex()
                 MPieceNode * node = head->indexNode;
                 void * p = node->p;
                 
-                /* make a DBG_NEW index node */
-                MPieceNode * DBG_NEWNode = memIndex2 + nodeNumUsed2++;
-                DBG_NEWNode->p = p;
+                /* make a new index node */
+                MPieceNode * newNode = memIndex2 + nodeNumUsed2++;
+                newNode->p = p;
                 
                 if(head->state == 1){
-                    DBG_NEWNode->size = (char*)p + head->size -
+                    newNode->size = (char*)p + head->size -
                                     (head->state == 1 ? (char*)GetPitchedAddress((char*)p, MY_PITCH) : (char*)head->indexNode->pReal);
                 }
                 else
-                    DBG_NEWNode->size = node->size;
+                    newNode->size = node->size;
                 
-                DBG_NEWNode->pre = NULL;
-                DBG_NEWNode->next = NULL;
+                newNode->pre = NULL;
+                newNode->next = NULL;
                 
-                CheckNTErrors(DBG_NEWNode->size > 0, "Illegal index node!");
+                CheckNTErrors(newNode->size > 0, "Illegal index node!");
                 
-                MHeader * DBG_NEWHeader = &DBG_NEWNode->head;
+                MHeader * newHeader = &newNode->head;
                 
-                DBG_NEWHeader->indexNode = DBG_NEWNode;
-                DBG_NEWHeader->pre = DBG_NEWLast;
-                DBG_NEWHeader->next = NULL;
-                DBG_NEWHeader->blockID = bi;
-                DBG_NEWHeader->size = head->size;
-                DBG_NEWHeader->state = head->state;
+                newHeader->indexNode = newNode;
+                newHeader->pre = newLast;
+                newHeader->next = NULL;
+                newHeader->blockID = bi;
+                newHeader->size = head->size;
+                newHeader->state = head->state;
                 
-                if(DBG_NEWLast != NULL)
-                    DBG_NEWLast->next = DBG_NEWHeader;
+                if(newLast != NULL)
+                    newLast->next = newHeader;
                 
                 if(head->state == 1){
-                    DBG_NEWNode->pReal = NULL;
-                    MPieceNode * entry = memIndex2 + FindIndexEntry(DBG_NEWNode->size);
-                    AddFreeIndexNode(DBG_NEWNode, entry);
+                    newNode->pReal = NULL;
+                    MPieceNode * entry = memIndex2 + FindIndexEntry(newNode->size);
+                    AddFreeIndexNode(newNode, entry);
                 }
                 else{
-                    DBG_NEWNode->pReal = head->indexNode->pReal;
-                    MPieceNode * entry = memIndex2 + indexEntryNum + FindIndexEntry(DBG_NEWNode->size);
-                    AddAllocIndexNode(DBG_NEWNode, entry);
+                    newNode->pReal = head->indexNode->pReal;
+                    MPieceNode * entry = memIndex2 + indexEntryNum + FindIndexEntry(newNode->size);
+                    AddAllocIndexNode(newNode, entry);
                     block->used += head->size;
                 }
                 
-                if(DBG_NEWLast == NULL)
-                    block->head = DBG_NEWHeader;
+                if(newLast == NULL)
+                    block->head = newHeader;
                 
                 pieceCount++;
                 size += head->size;
                 CheckNTErrors(size <= block->size, "Illegal block size!");
                 
-                DBG_NEWLast = DBG_NEWHeader;
+                newLast = newHeader;
                 head = next;
             }
         }
@@ -1429,7 +1422,7 @@ void XMem::BackToPinBuf()
 /* transform a size into a number (in million) */
 MTYPE XMem::GetMemSize(const char * size)
 {
-    char * s = DBG_NEW char[strlen(size) + 1];
+    char * s = new char[strlen(size) + 1];
     strcpy(s, size);
 
     ToLowercase(s);
@@ -1483,7 +1476,7 @@ MTYPE XMem::GetMemSize(const char * size)
 /* transform a size into a number (in Bytes) */
 MTYPE XMem::GetMemSizeInBytes(const char * size)
 {
-    char * s = DBG_NEW char[strlen(size) + 1];
+    char * s = new char[strlen(size) + 1];
     strcpy(s, size);
 
     ToLowercase(s);
@@ -1521,7 +1514,7 @@ MTYPE XMem::GetMemSizeInBytes(const char * size)
         return 0;
 }
 
-/* create a DBG_NEW cublas handle */
+/* create a new cublas handle */
 void XMem::CreateBLASHandle()
 {
 #ifdef USE_CUDA

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -116,7 +109,7 @@ void TestTrain()
 /* constructor */
 TTDataLoader::TTDataLoader()
 {
-    fileName = DBG_NEW char[MAX_FILE_NAME_LENGTH];
+    fileName = new char[MAX_FILE_NAME_LENGTH];
     file = NULL;
     batchSize = TT_BATCH_SIZE;
 }
@@ -146,7 +139,7 @@ bool TTDataLoader::Start()
     CheckNTErrors(file != NULL, "Cannot open the file");
 
     /* skip the first line */
-    char * line = DBG_NEW char[MAX_SAMPLE_LINE_LENGTH];
+    char * line = new char[MAX_SAMPLE_LINE_LENGTH];
     fgets(line, MAX_SAMPLE_LINE_LENGTH, file);
     delete[] line;
 
@@ -177,9 +170,9 @@ bool TTDataLoader::GetBatchSimple(XList * inputs, XList * golds)
 
     int count = 0;
     int sampleSize = MAX_SAMPLE_SIZE;
-    char * line = DBG_NEW char[MAX_SAMPLE_LINE_LENGTH];
-    int * inputBatch = DBG_NEW int[batchSize * sampleSize];
-    int * goldBatch = DBG_NEW int[batchSize];
+    char * line = new char[MAX_SAMPLE_LINE_LENGTH];
+    int * inputBatch = new int[batchSize * sampleSize];
+    int * goldBatch = new int[batchSize];
     int A, B, C, D, E;
     
     while (fgets(line, MAX_SAMPLE_LINE_LENGTH, file)) {
@@ -312,7 +305,7 @@ clone the model
 */
 XModel * TTModel::Clone(int devID)
 {
-    TTModel * model = DBG_NEW TTModel();
+    TTModel * model = new TTModel();
     model->SetConfig(config);
     model->Init(config, devID);
 
@@ -357,7 +350,7 @@ bool TTModel::RunSimple(XList * inputs, XList * outputs, XList * golds, XList* l
     /* gold standard in ong-hot representaiton */
     goldOneHot = IndexToOnehot(*gold, vSize, 0.0F);
 
-    int * dims = DBG_NEW int[goldOneHot.order];
+    int * dims = new int[goldOneHot.order];
     for (int i = 0; i < goldOneHot.order - 2; i++)
         dims[i] = goldOneHot.GetDim(i);
     dims[goldOneHot.order - 2] = goldOneHot.GetDim(goldOneHot.order - 1);

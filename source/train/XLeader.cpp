@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -289,14 +282,14 @@ void XLeader::AddJobWorker(XModel * model, int n, const int * devIDs)
 {
     /* we keep the input model */
     if (n >= 1) {
-        XWorkerJob * worker = DBG_NEW XWorkerJob();
+        XWorkerJob * worker = new XWorkerJob();
         worker->SetModel(model);
         jworkers.Add(worker);
     }
 
     /* we clone the input model */
     for (int i = 1; i < n; i++) {
-        XWorkerJob * worker = DBG_NEW XWorkerJob();
+        XWorkerJob * worker = new XWorkerJob();
         worker->SetModel(model->Clone(devIDs[i]));
         jworkers.Add(worker);
     }
@@ -308,7 +301,7 @@ add a data-collecting worker
 */
 void XLeader::AddCollectWorker(DATA_COLLECT_TYPE mode)
 {
-    XWorkerCollect * worker = DBG_NEW XWorkerCollect();
+    XWorkerCollect * worker = new XWorkerCollect();
     worker->SetCollectMode(mode);
     cworkers.Add(worker);
 }
@@ -317,7 +310,7 @@ void XLeader::AddCollectWorker(DATA_COLLECT_TYPE mode)
 void XLeader::AddUpdateWorker(int n)
 {
     for (int i = 0; i < n; i++) {
-        XWorkerUpdate* worker = DBG_NEW XWorkerUpdate();
+        XWorkerUpdate* worker = new XWorkerUpdate();
         uworkers.Add(worker);
     }
 }
@@ -325,7 +318,7 @@ void XLeader::AddUpdateWorker(int n)
 /*  add a data-broadcasting worker */
 void XLeader::AddBroadcastWorker()
 {
-    XWorkerBroadcast* worker = DBG_NEW XWorkerBroadcast();
+    XWorkerBroadcast* worker = new XWorkerBroadcast();
     bworkers.Add(worker);
 }
 
@@ -336,7 +329,7 @@ add parameter worker (or a pipeline)
 void XLeader::AddAuxiliaryWorker(int n)
 {
     for (int i = 0; i < n; i++) {
-        XWorker * worker = DBG_NEW XWorker();
+        XWorker * worker = new XWorker();
         aworkers.Add(worker);
     }
 }
@@ -359,12 +352,12 @@ void XLeader::MakeParamMap()
     
     if(modelCount != modelNum){
         DestroyParamMap();
-        paramMap = DBG_NEW XTensorKeeper*[serverModel.paramNum];
+        paramMap = new XTensorKeeper*[serverModel.paramNum];
     }
     
     for(int i = 0; i < serverModel.paramNum; i++){
         if(modelCount != modelNum){
-            paramMap[i] = DBG_NEW XTensorKeeper[modelCount];
+            paramMap[i] = new XTensorKeeper[modelCount];
         }
         
         for (int j = 0, c = 0; j < jworkers.count; j++) {
@@ -378,7 +371,7 @@ void XLeader::MakeParamMap()
                 c++;
             }
             else {
-                ShowNTErrors("TODO: support a DBG_NEW XWorker type!");
+                ShowNTErrors("TODO: support a new XWorker type!");
             }
         }
     }
@@ -397,7 +390,7 @@ int XLeader::CountModels()
             CheckNTErrors(worker->GetModelNum() == 1, "Wrong model number!");
         }
         else {
-            ShowNTErrors("TODO: support a DBG_NEW XWorker type!");
+            ShowNTErrors("TODO: support a new XWorker type!");
         }
     }
     

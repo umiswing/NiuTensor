@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -543,7 +536,7 @@ get device ids for the given device information
 */
 int XDevManager::GetDeviceIDs(char * devInfo, int * devIDs)
 {
-	StrList* terms = DBG_NEW StrList(1);
+	StrList* terms = new StrList(1);
     SplitALine(devInfo, " ", terms);
 
     for(int i = 0; i < terms->count; i++){

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2019, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -43,7 +36,7 @@ TensorListBase<T>::TensorListBase()
 {
     maxNum = 1;
     count = 0;
-    items = DBG_NEW T[1];
+    items = new T[1];
 }
 
 /* 
@@ -56,7 +49,7 @@ TensorListBase<T>::TensorListBase(int myMaxNum)
     CheckNTErrors(myMaxNum > 0, "check if the input number > 0");
     maxNum = myMaxNum;
     count = 0;
-    items = DBG_NEW T[myMaxNum];
+    items = new T[myMaxNum];
 }
 
 /*
@@ -69,7 +62,7 @@ TensorListBase<T>::TensorListBase(const T* inputItems, int inputItemCount)
     CheckNTErrors(inputItemCount > 0, "check if the input number > 0");
     maxNum = inputItemCount;
     count = inputItemCount;
-    items = DBG_NEW T[inputItemCount];
+    items = new T[inputItemCount];
     memcpy(items, inputItems, inputItemCount * sizeof(T));
 }
 
@@ -80,7 +73,7 @@ TensorListBase<T>::TensorListBase(const TensorListBase<T>& l)
     CheckNTErrors(l.maxNum > 0, "check if the input number > 0");
     maxNum = l.maxNum;
     count = l.count;
-    items = DBG_NEW T[maxNum];
+    items = new T[maxNum];
     memcpy(items, l.items, l.count * sizeof(T));
 }
 
@@ -101,7 +94,7 @@ TensorListBase<T> TensorListBase<T>::operator=(const TensorListBase<T>& l)
 {
     maxNum = l.maxNum;
     count = l.count;
-    items = DBG_NEW T[maxNum];
+    items = new T[maxNum];
     memcpy(items, l.items, l.count * sizeof(T));
     return *this;
 }
@@ -112,7 +105,7 @@ TensorListBase<T> TensorListBase<T>::operator=(TensorListBase<T>&& l)
 {
     maxNum = l.maxNum;
     count = l.count;
-    items = DBG_NEW T[maxNum];
+    items = new T[maxNum];
     memcpy(items, l.items, l.count * sizeof(T));
     return *this;
 }
@@ -134,10 +127,10 @@ template <typename T>
 void TensorListBase<T>::Reallocate(int itemNum)
 {
     if (maxNum < itemNum) {
-        T * DBG_NEWItems = DBG_NEW T[itemNum];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T * newItems = new T[itemNum];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum = itemNum;
     }
 }
@@ -150,10 +143,10 @@ template <typename T>
 void TensorListBase<T>::Add(T&& item)
 {
     if (count == maxNum) {
-        T * DBG_NEWItems = DBG_NEW T[count * 2 + 1];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T * newItems = new T[count * 2 + 1];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum = count * 2 + 1;
     }
     items[count++] = item;
@@ -174,10 +167,10 @@ template <typename T>
 void TensorListBase<T>::Add(const T& item)
 {
     if (count == maxNum) {
-        T * DBG_NEWItems = DBG_NEW T[count * 2 + 1];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T * newItems = new T[count * 2 + 1];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum = count * 2 + 1;
     }
 
@@ -226,10 +219,10 @@ template <typename T>
 void TensorListBase<T>::Add(const T* inputItems, int inputItemCount)
 {
     if (count + inputItemCount >= maxNum) {
-        T* DBG_NEWItems = DBG_NEW T[maxNum + count + inputItemCount + 1];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T* newItems = new T[maxNum + count + inputItemCount + 1];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum += (count + inputItemCount + 1);
     }
     memcpy(items + count, inputItems, sizeof(T) * inputItemCount);
@@ -255,10 +248,10 @@ template <typename T>
 void TensorListBase<T>::Insert(int pos, const T& item)
 {
     if (count == maxNum) {
-        T * DBG_NEWItems = DBG_NEW T[count * 2 + 1];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T * newItems = new T[count * 2 + 1];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum = count * 2 + 1;
     }
 
@@ -272,10 +265,10 @@ template<typename T>
 void TensorListBase<T>::Insert(int pos, T&& item)
 {
     if (count == maxNum) {
-        T * DBG_NEWItems = DBG_NEW T[count * 2 + 1];
-        memcpy(DBG_NEWItems, items, count * sizeof(T));
+        T * newItems = new T[count * 2 + 1];
+        memcpy(newItems, items, count * sizeof(T));
         delete[] items;
-        items = DBG_NEWItems;
+        items = newItems;
         maxNum = count * 2 + 1;
     }
 
@@ -472,7 +465,7 @@ void TensorListBase<T>::Reserve(int n)
         return;
     }
 
-    items = DBG_NEW T[n];
+    items = new T[n];
 }
 
 /* 
@@ -519,7 +512,7 @@ void TensorListBase<T>::ReadFromFile(FILE* fp, int num)
             Reserve(num - maxNum);
         else {
             delete[] items;
-            items = DBG_NEW T[num];
+            items = new T[num];
         }
     }
     fread(items, sizeof(T), num, fp);

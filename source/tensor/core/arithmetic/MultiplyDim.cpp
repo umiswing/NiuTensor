@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -130,7 +123,7 @@ void _MultiplyDim(const XTensor * a, const XTensor * b, XTensor * c, int n, DTYP
 
 /*
 tensor multiplication(do it on site)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 c = a * b + \alpha * c
 where the size of b is equal to the n-th dimension of a,
@@ -148,7 +141,7 @@ void _MultiplyDimMe(XTensor * a, const XTensor * b, int n, DTYPE alpha)
 
 /*
 tensor multiplication(do it on site)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 c = a * b + \alpha * c
 where the size of b is equal to the n-th dimension of a,
@@ -166,7 +159,7 @@ void MultiplyDimMe(XTensor& a, const XTensor& b, int n, DTYPE alpha)
 
 /*
 tensor multiplication (return an XTensor structure and make tensor connections)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 c = a * b
 where the size of b is equal to the n-th dimension of a,

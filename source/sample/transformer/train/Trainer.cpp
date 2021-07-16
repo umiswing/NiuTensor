@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -321,7 +314,7 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     Validate();
 
     LOG("make a checkpoint");
-    char* fn = DBG_NEW char[MAX_LINE_LENGTH];
+    char* fn = new char[MAX_LINE_LENGTH];
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
     model->DumpToFile(fn);
     delete[] fn;
@@ -329,7 +322,7 @@ void Trainer::MakeCheckpoint(const char* label, int id)
 
 /*
 update the model by delta rule
-\theta_{DBG_NEW} = \theta - \lrate * grad
+\theta_{new} = \theta - \lrate * grad
 where
 \lrate = d^-0.5 * min(stepNum^{-0.5}, stepNum * warmupStepNum^{-1.5})
 >> lr - learning rate
@@ -405,8 +398,8 @@ void Trainer::PrepareModel()
         XNoder::MakeGrad(para);
 
         if (config->training.useAdam) {
-            XTensor* m = DBG_NEW XTensor(para);
-            XTensor* m2 = DBG_NEW XTensor(para);
+            XTensor* m = new XTensor(para);
+            XTensor* m2 = new XTensor(para);
             m->SetZeroAll();
             m2->SetZeroAll();
             moments.Add(m);

@@ -23,13 +23,6 @@
 
 #include "TrainDataSet.h"
 
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 
 /* the nmt (NiuTrans.NMT) namespace */
 namespace nmt {
@@ -95,12 +88,12 @@ bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
     CheckNTErrors(maxSrcLen > 0, "Invalid source length for batching");
     CheckNTErrors(maxTgtLen > 0, "Invalid target length for batching");
 
-    int* batchEncValues = DBG_NEW int[sc * maxSrcLen];
-    float* paddingEncValues = DBG_NEW float[sc * maxSrcLen];
+    int* batchEncValues = new int[sc * maxSrcLen];
+    float* paddingEncValues = new float[sc * maxSrcLen];
 
-    int* labelVaues = DBG_NEW int[sc * maxTgtLen];
-    int* batchDecValues = DBG_NEW int[sc * maxTgtLen];
-    float* paddingDecValues = DBG_NEW float[sc * maxTgtLen];
+    int* labelVaues = new int[sc * maxTgtLen];
+    int* batchDecValues = new int[sc * maxTgtLen];
+    float* paddingDecValues = new float[sc * maxTgtLen];
 
     for (int i = 0; i < sc * maxSrcLen; i++) {
         batchEncValues[i] = config->model.pad;
@@ -179,7 +172,7 @@ void TrainDataSet::Init(NMTConfig& cfg)
 {
     bufIdx = 0;
     config = &cfg;
-    buf = DBG_NEW XList;
+    buf = new XList;
 
     fp = fopen(config->training.trainFN, "rb");
     CheckNTErrors(fp, "Failed to open the training file");
@@ -278,12 +271,12 @@ Sample* TrainDataSet::LoadSample()
     CheckNTErrors(srcLen > 0, "Invalid source sentence length");
     CheckNTErrors(tgtLen > 0, "Invalid target sentence length");
 
-    IntList* srcSent = DBG_NEW IntList(srcLen);
-    IntList* tgtSent = DBG_NEW IntList(tgtLen);
+    IntList* srcSent = new IntList(srcLen);
+    IntList* tgtSent = new IntList(tgtLen);
     srcSent->ReadFromFile(fp, srcLen);
     tgtSent->ReadFromFile(fp, tgtLen);
 
-    Sample* sample = DBG_NEW Sample(srcSent, tgtSent, 0);
+    Sample* sample = new Sample(srcSent, tgtSent, 0);
     
     return sample;
 }

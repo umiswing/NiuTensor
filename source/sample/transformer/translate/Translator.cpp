@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -46,7 +39,7 @@ Translator::Translator()
     config = NULL;
     model = NULL;
     seacher = NULL;
-    outputBuf = DBG_NEW XList;
+    outputBuf = new XList;
 }
 
 /* de-constructor */
@@ -66,16 +59,16 @@ void Translator::Init(NMTConfig& myConfig, NMTModel& myModel)
     config = &myConfig;
 
     if (config->translation.beamSize > 1) {
-        LOG("Translating with beam search (beam=%d, batchSize=%dtokens, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
+        LOG("Translating with beam search (beam=%d, batchSize=%d tokens, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
             config->translation.beamSize, config->common.wBatchSize,
             config->translation.lenAlpha, config->translation.maxLenAlpha);
-        seacher = DBG_NEW BeamSearch();
+        seacher = new BeamSearch();
         ((BeamSearch*)seacher)->Init(myConfig);
     }
     else if (config->translation.beamSize == 1) {
-        LOG("Translating with greedy search (batchSize=%dtokens, maxLenAlpha=%.2f)", 
+        LOG("Translating with greedy search (batchSize=%d tokens, maxLenAlpha=%.2f)", 
             config->common.wBatchSize, config->translation.maxLenAlpha);
-        seacher = DBG_NEW GreedySearch();
+        seacher = new GreedySearch();
         ((GreedySearch*)seacher)->Init(myConfig);
     }
     else {
@@ -108,9 +101,9 @@ void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList&
         model->decoder->enDeAttCache[i].miss = true;
     }
 
-    IntList** outputs = DBG_NEW IntList * [batchSize];
+    IntList** outputs = new IntList * [batchSize];
     for (int i = 0; i < batchSize; i++)
-        outputs[i] = DBG_NEW IntList();
+        outputs[i] = new IntList();
 
     /* greedy search */
     if (config->translation.beamSize == 1) {
@@ -125,7 +118,7 @@ void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList&
 
     /* save the outputs to the buffer */
     for (int i = 0; i < batchSize; i++) {
-        Sample* sample = DBG_NEW Sample(NULL, outputs[i]);
+        Sample* sample = new Sample(NULL, outputs[i]);
         sample->index = indices[i];
         outputBuf->Add(sample);
     }
@@ -162,7 +155,7 @@ bool Translator::Translate()
 
     /* handle empty lines */
     for (int i = 0; i < batchLoader.emptyLines.Size(); i++) {
-        Sample* sample = DBG_NEW Sample(NULL, NULL);
+        Sample* sample = new Sample(NULL, NULL);
         sample->index = batchLoader.emptyLines[i];
         outputBuf->Add(sample);
     }

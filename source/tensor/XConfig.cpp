@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2021
@@ -83,7 +76,7 @@ void XConfig::Create(const int myN, const char ** myArgs)
     nReal = n * 2;
     
     
-    args = DBG_NEW char*[nReal];
+    args = new char*[nReal];
 
     for (int i = 0; i < nReal; i++) {
         args[i] = NULL;
@@ -91,7 +84,7 @@ void XConfig::Create(const int myN, const char ** myArgs)
 
     for (int i = 0; i < n; i++) {
         CheckNTErrors(myArgs[i] != NULL, "Illegal parameter input!");
-        args[i] = DBG_NEW char[strlen(myArgs[i]) + 1];
+        args[i] = new char[strlen(myArgs[i]) + 1];
         strcpy(args[i], myArgs[i]);
     }
 }
@@ -107,20 +100,20 @@ void XConfig::Add(const char * myArg, const char * myValue)
 
     if (n + 2 > nReal) {
         nReal = MAX(n * 2 + 1, 128);
-        char ** DBG_NEWArgs = DBG_NEW char*[nReal];
-        memset(DBG_NEWArgs, 0, sizeof(char*) * n);
-        memcpy(DBG_NEWArgs, args, sizeof(char*) * n);
+        char ** newArgs = new char*[nReal];
+        memset(newArgs, 0, sizeof(char*) * n);
+        memcpy(newArgs, args, sizeof(char*) * n);
         delete[] args;
-        args = DBG_NEWArgs;
+        args = newArgs;
     }
 
-    args[n] = DBG_NEW char[strlen(myArg) + 2];
+    args[n] = new char[strlen(myArg) + 2];
     args[n][0] = '-';
     strcpy(args[n] + 1, myArg);
     n++;
 
     if (myValue != NULL) {
-        args[n] = DBG_NEW char[strlen(myValue) + 1];
+        args[n] = new char[strlen(myValue) + 1];
         strcpy(args[n], myValue);
         n++;
     }

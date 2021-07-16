@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -67,7 +60,7 @@ void _Sigmoid(const XTensor * x, XTensor * y)
 
 /*
 sigmoid function y = 1/(1+exp(-x)) (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> x - input tensor
 << return - output tensor

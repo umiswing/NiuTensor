@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -217,25 +210,25 @@ XTensor::~XTensor()
 {
     /* We make a hard copy of the tensor to keep
        the connectivity of the graph. To kill memory
-       leak, we release the data of the DBG_NEW tensor
+       leak, we release the data of the new tensor
        when its parent is deleted (see ClearIncoming). */
     if(outgo.tailNum > 0){
         int dims[MAX_TENSOR_DIM_NUM];
         memcpy(dims, dimSize, order * sizeof(int));
         dims[0] = -dims[0];
 
-        XTensor* DBG_NEWTensor = DBG_NEW XTensor(order, dims, dataType, denseRatio, devID, mem);
-        DBG_NEWTensor->SetTMPFlag();
+        XTensor* newTensor = new XTensor(order, dims, dataType, denseRatio, devID, mem);
+        newTensor->SetTMPFlag();
         if (reserved == -1) {
-            DBG_NEWTensor->data = NULL;
+            newTensor->data = NULL;
         }
         else {
-            DBG_NEWTensor->data = data;
+            newTensor->data = data;
             data = NULL;
         }
 
         if (enableGrad)
-            XLink::Replace(this, DBG_NEWTensor);
+            XLink::Replace(this, newTensor);
     }
 
     if (enableGrad) {
@@ -336,23 +329,23 @@ XTensor& XTensor::operator= (const XTensor& tensor)
         memcpy(dims, dimSize, order * sizeof(int));
         dims[0] = -dims[0];
         
-        XTensor* DBG_NEWTensor = DBG_NEW XTensor(order, dims, dataType, denseRatio, devID, mem);
-        DBG_NEWTensor->SetTMPFlag();
+        XTensor* newTensor = new XTensor(order, dims, dataType, denseRatio, devID, mem);
+        newTensor->SetTMPFlag();
         
         /* release the data if it won't be used in backward */
         if (reserved == -1) {
             DestroyData();
         }
-        DBG_NEWTensor->data = data;
-        DBG_NEWTensor->dataHost = dataHost;
-        DBG_NEWTensor->signature = tensor.signature;
+        newTensor->data = data;
+        newTensor->dataHost = dataHost;
+        newTensor->signature = tensor.signature;
         
         if (enableGrad) {
-            XLink::Replace(this, DBG_NEWTensor);
+            XLink::Replace(this, newTensor);
             XLink::ClearOutgoing(this);
             XLink::ClearIncoming(this);
         }
-        DBG_NEWTensor->ShallowCopy(this);
+        newTensor->ShallowCopy(this);
 
         data = NULL;
         dataHost = NULL;
@@ -407,7 +400,7 @@ XTensor& XTensor::operator= (const XTensor& tensor)
 
         CheckNTErrors(outgo.tailNum == 0, "The node has outgoing edge to other nodes!");
 
-        /* create tensor links for the DBG_NEW tensor */
+        /* create tensor links for the new tensor */
         if (enableGrad) {
             XLink::Copy(&tensor, this);
         }
@@ -426,23 +419,23 @@ XTensor& XTensor::operator= (const XTensor&& tensor)
         memcpy(dims, dimSize, order * sizeof(int));
         dims[0] = -dims[0];
         
-        XTensor* DBG_NEWTensor = DBG_NEW XTensor(order, dims, dataType, denseRatio, devID, mem);
-        DBG_NEWTensor->SetTMPFlag();
+        XTensor* newTensor = new XTensor(order, dims, dataType, denseRatio, devID, mem);
+        newTensor->SetTMPFlag();
 
         /* release the data if it won't be used in backward */
         if (reserved == -1) {
             DestroyData();
         }
-        DBG_NEWTensor->data = data;
-        DBG_NEWTensor->dataHost = dataHost;
-        DBG_NEWTensor->signature = tensor.signature;
+        newTensor->data = data;
+        newTensor->dataHost = dataHost;
+        newTensor->signature = tensor.signature;
         
         if (enableGrad) {
-            XLink::Replace(this, DBG_NEWTensor);
+            XLink::Replace(this, newTensor);
             XLink::ClearOutgoing(this);
             XLink::ClearIncoming(this);
         }
-        DBG_NEWTensor->ShallowCopy(this);
+        newTensor->ShallowCopy(this);
 
         data = NULL;
         dataHost = NULL;
@@ -1514,7 +1507,7 @@ bool XTensor::Resize(const int myOrder, const int* myDimSize,
             int* d = NULL;
 
             if(mem == NULL){
-                d = DBG_NEW int[size];
+                d = new int[size];
                 memset(d, 0, size);
             }
             else{
@@ -1533,7 +1526,7 @@ bool XTensor::Resize(const int myOrder, const int* myDimSize,
     }
     else{
         if(filledData){
-            /* allocate the DBG_NEW one */
+            /* allocate the new one */
             if(mem == NULL){
                 data = XMemAlloc(devID, unitNum * unitSize); 
 #if defined(UNSAFE_BUT_FAST_MEM)
@@ -1668,11 +1661,11 @@ void XTensor::Dump(FILE* file, const char* label, const int n, const int beg, co
             int tupleSize = sizeof(int) + sizeof(DTYPE);
             int size = sizeof(int) + tupleSize * (num);
 
-            d = DBG_NEW char[size];
+            d = new char[size];
             memset(d, 0, size);
         }
         else {
-            d = DBG_NEW char[unitNum * unitSize];
+            d = new char[unitNum * unitSize];
             memset(d, 0, unitNum * unitSize);
         }
         isNewData = true;
@@ -1919,21 +1912,21 @@ void XTensor::BinaryRead(FILE* file, size_t offset)
 {
     switch (dataType) {
         case X_INT: {
-            int* d = DBG_NEW int[unitNum];
+            int* d = new int[unitNum];
             fread(d, sizeof(int), unitNum, file);
             SetData(d, unitNum);
             delete[] d;
             break;
         }
         case X_FLOAT16: {
-            unsigned short* d = DBG_NEW unsigned short[unitNum];
+            unsigned short* d = new unsigned short[unitNum];
             fread(d, sizeof(unsigned short), unitNum, file);
             SetData(d, unitNum);
             delete[] d;
             break;
         }
         default: {
-            float* d = DBG_NEW float[unitNum];
+            float* d = new float[unitNum];
             fread(d, sizeof(float), unitNum, file);
             SetData(d, unitNum);
             delete[] d;
@@ -2023,7 +2016,7 @@ void XTensor::AllocateData(XTensor* tensor, XMem* myMem, bool useBuf)
         tensor->isInGlobalMem = true;
     }
     else{
-        CheckNTErrors((tensor->data == NULL), "Cannot reDBG_NEW the space for the tensor");
+        CheckNTErrors((tensor->data == NULL), "Cannot renew the space for the tensor");
         if(useBuf){
             tensor->data = myMem->AllocBuf(tensor->devID, tensor->GetDataSizeInChar());
             tensor->isInGlobalMem = false;

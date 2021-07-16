@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -182,7 +175,7 @@ void _funcName(const XTensor * input, XTensor * output, int dim)                
 
 /* 
 get the max value of the items along a dimension of the tensor (return an XTensor structure).
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> input - the input tensor
 >> dim - the dimension where the reduction is performed on
@@ -194,7 +187,7 @@ XTensor funcName(const XTensor & input, int dim)                                
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");                                   \
 	                                                                                                                \
     int order = input.order - 1;                                                                                    \
-    int * dimSize = DBG_NEW int[order];                                                                                 \
+    int * dimSize = new int[order];                                                                                 \
     for(int i = 0; i < order; i++){                                                                                 \
         if(i < dim)                                                                                                 \
             dimSize[i] = input.dimSize[i];                                                                          \

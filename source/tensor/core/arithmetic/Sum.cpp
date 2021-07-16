@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -154,7 +147,7 @@ void _Sum(const XTensor * a, const XTensor * b, XTensor * c, DTYPE beta)
                 int * bp = (int*)b->data;
                 int * cp = (int*)c->data;
 
-                /* TODO: DBG_NEW code for beta = 1. the follow code might be slow because it introduces 
+                /* TODO: new code for beta = 1. the follow code might be slow because it introduces 
                          additional floating-point computation. */
                 /* unrolling */
                 int num = a->unitNum;
@@ -267,7 +260,7 @@ int GetBroadcastDimIndex(const XTensor & a, const XTensor & b)
     
 /*
 tensor summation c = a + b * \beta (return an XTensor structure)
-make a DBG_NEW tensor c to keep the result and return it
+make a new tensor c to keep the result and return it
 
 >> a - a tensor
 >> b - another tensor

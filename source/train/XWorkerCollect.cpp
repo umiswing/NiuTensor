@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -73,7 +66,7 @@ void XWorkerCollect::CollectP2P(XTensor * source, XTensor * target)
     if (source != target) {
         XTensor * sourceOnSite = source;
         if (source->devID != target->devID) {
-            sourceOnSite = DBG_NEW XTensor(target);
+            sourceOnSite = new XTensor(target);
             _CopyValues(source, sourceOnSite);
         }
 
@@ -118,7 +111,7 @@ void XWorkerCollect::CollectDataP2P(XList * args)
 }
 
 /*
-add a DBG_NEW job of collecting data
+add a new job of collecting data
 >> jobQueue - the queue where we run the job
 >> source - where we collect the data from
 >> target - where we place the data (on the server end)
@@ -146,7 +139,7 @@ bool XWorkerCollect::AddJobCollectDataP2P(XQueue * jobQueue, XTensorKeeper * sou
 }
 
 /*
-add a DBG_NEW job of collecting gradient
+add a new job of collecting gradient
 >> jobQueue - the queue where we run the job
 >> source - where we collect the data from
 >> target - where we place the data (on the server end)
@@ -157,7 +150,7 @@ bool XWorkerCollect::AddJobCollectGradP2P(XQueue * jobQueue, XTensorKeeper * sou
 }
 
 /*
-add a DBG_NEW job of collecting data in standard tensors
+add a new job of collecting data in standard tensors
 >> jobQueue - the queue where we run the job
 >> source - where we collect the data from
 >> target - where we place the data (on the server end)
@@ -194,7 +187,7 @@ void XWorkerCollect::CollectDataAllReduce(XList * args)
 }
 
 /*
-add a DBG_NEW job of collecting data via all-reduce
+add a new job of collecting data via all-reduce
 >> jobQueue - the queue where we run the job
 >> all - the tensors for sum
 >> isGrad - indicates whether we collect gradient
@@ -218,13 +211,13 @@ bool XWorkerCollect::AddJobCollectDataAllReduce(XQueue * jobQueue, XList * all, 
     return true;
 }
 
-/* add a DBG_NEW job of collecting gradient via all-reduce */
+/* add a new job of collecting gradient via all-reduce */
 bool XWorkerCollect::AddJobCollectGradAllReduce(XQueue * jobQueue, XList * all)
 {
     return AddJobCollectDataAllReduce(jobQueue, all, true);
 }
 
-/* add a DBG_NEW job of collecting data in standard tensors via all-reduce */
+/* add a new job of collecting data in standard tensors via all-reduce */
 bool XWorkerCollect::AddJobCollectTensorAllReduce(XQueue * jobQueue, XList * all)
 {
     return AddJobCollectDataAllReduce(jobQueue, all, false);

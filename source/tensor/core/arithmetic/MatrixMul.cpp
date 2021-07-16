@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -116,9 +109,9 @@ void _MatrixMul(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
         cBlockNum *= b->dimSize[i];
     }
 
-    TensorList * aList = DBG_NEW TensorList(10);
-    TensorList * bList = DBG_NEW TensorList(10);
-    TensorList * cList = DBG_NEW TensorList(10);
+    TensorList * aList = new TensorList(10);
+    TensorList * bList = new TensorList(10);
+    TensorList * cList = new TensorList(10);
     int aDimSize[2] = { -a->dimSize[a->order - 2], a->dimSize[a->order - 1] };
     int bDimSize[2] = { -b->dimSize[b->order - 2], b->dimSize[b->order - 1] };
     int cDimSize[2] = { -c->dimSize[c->order - 2], c->dimSize[c->order - 1] };
@@ -236,7 +229,7 @@ bool CheckMMulShape(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
 
     int order = a->order + b->order - 2;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < a->order - 2; i++)
         dimSize[sub++] = a->dimSize[i];
     for (int i = 0; i < b->order - 2; i++)
@@ -257,7 +250,7 @@ bool CheckMMulShape(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
 
 /*
 matrix multiplication (return an XTensor structure) c = trans(a) * trans(b) * alpha
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 For the input tensors a and b, we perform matrix multiplication on the first two dimentsions. 
 E.g., let A be a tensor of size y * z * m and B be a tensor of size x * y * n. 
@@ -292,7 +285,7 @@ XTensor MatrixMul(const XTensor &a, MATRIX_TRANS_TYPE transposedA,
 
     int order = a.order + b.order - 2;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < a.order - 2; i++)
         dimSize[sub++] = a.dimSize[i];
     for (int i = 0; i < b.order - 2; i++)
@@ -339,7 +332,7 @@ void MatrixMul(const XTensor &a, MATRIX_TRANS_TYPE transposedA,
 
         int order = a.order + b.order - 2;
         int sub = 0;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
         for (int i = 0; i < a.order - 2; i++)
             dimSize[sub++] = a.dimSize[i];
         for (int i = 0; i < b.order - 2; i++)
@@ -390,7 +383,7 @@ XTensor MatrixMul(const XTensor &a, const XTensor &b,
 
     int order = a.order + b.order - 2;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < a.order - 2; i++)
         dimSize[sub++] = a.dimSize[i];
     for (int i = 0; i < b.order - 2; i++)
@@ -436,7 +429,7 @@ void MatrixMul(const XTensor &a, const XTensor &b, XTensor &c,
 
         int order = a.order + b.order - 2;
         int sub = 0;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
         for (int i = 0; i < a.order - 2; i++)
             dimSize[sub++] = a.dimSize[i];
         for (int i = 0; i < b.order - 2; i++)

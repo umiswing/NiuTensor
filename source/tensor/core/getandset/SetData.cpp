@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
  * NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
@@ -521,12 +514,12 @@ void _SetDataRand(XTensor * tensor, DTYPE lower, DTYPE upper)
 
         void * d = NULL;
         if (tensor->dataType == X_FLOAT) {
-            d = DBG_NEW float[num];
+            d = new float[num];
             for (int i = 0; i < num; i++) 
                 *((float*)d + i) = lower + variance * (float)rand() / RAND_MAX;
         }
         else if (tensor->dataType == X_DOUBLE) {
-            d = DBG_NEW double[num];
+            d = new double[num];
             for (int i = 0; i < num; i++) 
                 *((double*)d + i) = (double)lower + variance * rand() / RAND_MAX;
         }
@@ -565,13 +558,13 @@ void _SetDataRange(XTensor * tensor, int beg, int end, int step)
     /* init a integer array to store the sequence */
     void * data = NULL;
     if (tensor->dataType == X_INT) {
-        data = DBG_NEW int[num];
+        data = new int[num];
         for (int i = 0; i < num; i++)
             *((int*)data + i) = beg + i * step;
     }
     else if (tensor->dataType == X_FLOAT) {
         ShowNTErrors("TODO! Unsupported datatype!")
-        //data = DBG_NEW float[num];
+        //data = new float[num];
         //for (int i = 0; i < num; i++)
         //    *((float*)data + i) = beg + i * step;
     }
@@ -663,12 +656,12 @@ void _SetDataRandN(XTensor * tensor, DTYPE mean, DTYPE standardDeviation)
 
     void * d = NULL;
     if (tensor->dataType == X_FLOAT) {
-        d = DBG_NEW float[num];
+        d = new float[num];
         for (int i = 0; i < num; i++)
             *((float*)d + i) = (float)GaussRand(mean, standardDeviation);
     }
     else if (tensor->dataType == X_DOUBLE) {
-        d = DBG_NEW double[num];
+        d = new double[num];
         for (int i = 0; i < num; i++)
             *((double*)d + i) = GaussRand(mean, standardDeviation);
     }

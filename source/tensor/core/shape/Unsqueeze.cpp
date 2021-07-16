@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -41,7 +34,7 @@ insert a dimension by copying the blocks for x times
 >> a - input tensor
 >> b - output tensor
 >> dim - where to insert the dimension
->> dSize - size of the DBG_NEWly-inserted dimension
+>> dSize - size of the newly-inserted dimension
 */
 void _Unsqueeze(const XTensor * a, XTensor * b, int dim, int dSize)
 {
@@ -84,8 +77,8 @@ void _Unsqueeze(const XTensor * a, XTensor * b, int dim, int dSize)
 #endif
     }
     else {
-        StrList * sourceArrays = DBG_NEW StrList(blockNumB);
-        int * blockSizes = DBG_NEW int[blockNumB];
+        StrList * sourceArrays = new StrList(blockNumB);
+        int * blockSizes = new int[blockNumB];
 
         for (int i = 0; i < blockNumA; i++) {
             char * ap = (char*)a->data + i * realBlockSize;
@@ -111,7 +104,7 @@ bool CheckUnsqueezeSize(const XTensor * a, const XTensor * b, int dim, int dSize
         return false;
 
     int order = a->order + 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < order; i++) {
         if (i < dim)
@@ -133,17 +126,17 @@ bool CheckUnsqueezeSize(const XTensor * a, const XTensor * b, int dim, int dSize
 /*
 insert a dimension by copying the blocks for x times
 (where x is the size of the inerted dimension) (returna a XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> a - input tensor
 >> dim - where to insert the dimension
->> dSize - size of the DBG_NEWly-inserted dimension
+>> dSize - size of the newly-inserted dimension
 << return - a tensor by inserting a dimension by copying the blocks for x times
 */
 XTensor Unsqueeze(const XTensor &a, int dim, int dSize)
 {
     int order = a.order + 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < order; i++) {
         if (i < dim)
@@ -178,18 +171,18 @@ XTensor Unsqueeze(const XTensor &a, int dim, int dSize)
 /*
 insert a dimension by copying the blocks for x times
 (where x is the size of the inerted dimension) (returna a XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> a - the input tensor
 >> b - the output tensor
 >> dim - where to insert the dimension
->> dSize - size of the DBG_NEWly-inserted dimension
+>> dSize - size of the newly-inserted dimension
 */
 void Unsqueeze(const XTensor &a, XTensor &b, int dim, int dSize)
 {
     if (!b.isInit || !CheckUnsqueezeSize(&a, &b, dim, dSize)) {
         int order = a.order + 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
 
         for (int i = 0; i < order; i++) {
             if (i < dim)

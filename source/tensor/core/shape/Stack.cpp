@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -94,7 +87,7 @@ XTensor Stack(const TensorList &smalls, int dim)
 
     XTensor * tensor = smalls.GetItem(0);
     int order = tensor->order + 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < order; i++) {
         if (i < dim)
@@ -162,7 +155,7 @@ void Stack(const TensorList &smalls, XTensor &t, int dim)
     if (!t.isInit || !CheckStackShape(smalls, t, dim)) {
         XTensor * tensor = smalls.GetItem(0);
         int order = tensor->order + 1;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
 
         for (int i = 0; i < order; i++) {
             if (i < dim)

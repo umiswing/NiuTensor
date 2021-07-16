@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -115,7 +108,7 @@ run the model (for one time). Basically this is a map-reduce process.
 >> config - the configuration
 >> dataDistributor - data distributor
 >> optimizer - the optimization method
-<< return - if we can fetch the DBG_NEW data
+<< return - if we can fetch the new data
 */
 bool XLeaderPS::Run(XConfig* config, DataDistributeBase* dataDistributor, XOptimizer* optimizer)
 {
@@ -127,7 +120,7 @@ bool XLeaderPS::Run(XConfig* config, DataDistributeBase* dataDistributor, XOptim
 
     bool isToUpdate = (optimizer != NULL);
     int activeJobCount = 0;
-    int* active = DBG_NEW int[jworkers.count];
+    int* active = new int[jworkers.count];
 
     InitForRun();
 
@@ -245,13 +238,13 @@ void XLeaderPS::RunUpdate(XConfig* config, XOptimizer* optimizer, const int* act
         serverModel.params[j].flag = PARAM_STATE_NOT_READY;
 
     /* counts how many member models are collected for each parameter */
-    int* finishedCount = DBG_NEW int[serverModel.paramNum];
+    int* finishedCount = new int[serverModel.paramNum];
     memset(finishedCount, 0, sizeof(int) * serverModel.paramNum);
 
     /* flag active models */
     int modelCount = 0;
     int activeModelCount = 0;
-    int* modelFlag = DBG_NEW int[modelNum];
+    int* modelFlag = new int[modelNum];
     for (int i = 0; i < jworkers.count; i++) {
         XWorkerJob* worker = (XWorkerJob*)jworkers[i];
         for (int j = 0; j < worker->GetModelNum(); j++) {
@@ -261,7 +254,7 @@ void XLeaderPS::RunUpdate(XConfig* config, XOptimizer* optimizer, const int* act
         }
     }
 
-    XList* paramList = DBG_NEW XList[serverModel.paramNum];
+    XList* paramList = new XList[serverModel.paramNum];
 
     CheckNTErrors(modelCount == modelNum, "Wrong model number!");
 
@@ -314,7 +307,7 @@ void XLeaderPS::RunUpdate(XConfig* config, XOptimizer* optimizer, const int* act
                     finishedCount[j]++;
 
                     /* we call model update (in another thread) and then
-                       broadcast the DBG_NEW parameters to member models
+                       broadcast the new parameters to member models
                       (in another thread) */
                     if (finishedCount[j] == activeModelCount) {
                         paramServer.flag = PARAM_STATE_COLLECTED;
@@ -324,7 +317,7 @@ void XLeaderPS::RunUpdate(XConfig* config, XOptimizer* optimizer, const int* act
                             updater->AddJobUpdate(jobQueue, &paramServer, optimizer);
                             updater->AddJobEnqueueFinished(jobQueue);
 
-                            /* broadcast the DBG_NEW parameter to other models */
+                            /* broadcast the new parameter to other models */
                             broadcaster->AddJobBroadcast(jobQueue, &paramServer, &paramList[j]);
                             broadcaster->AddJobEnqueueFinished(jobQueue);
                         }

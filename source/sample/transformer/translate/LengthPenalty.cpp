@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -23,7 +16,7 @@
 
 /*
  * $Created by: XIAO Tong (xiaotong@mail.neu.edu.cn) 2019-04-08
- * Start of a DBG_NEW week - I just finished several documents.
+ * Start of a new week - I just finished several documents.
  * Writing document is harder than writing code :)
  * $Modified by: HU Chi (huchinlp@gmail.com) 2020-04
  */

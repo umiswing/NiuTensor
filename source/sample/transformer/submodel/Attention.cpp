@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -156,7 +149,7 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
             k2 = MulAndShift(k, weightK, biasK);
             v2 = MulAndShift(v, weightV, biasV);
 
-            /* if hit, we only concat the cache with the DBG_NEW token */
+            /* if hit, we only concat the cache with the new token */
             if (!cache->miss) {
                 k2 = Concatenate(cache->key, k2, 1);
                 v2 = Concatenate(cache->value, v2, 1);
@@ -320,7 +313,7 @@ XTensor Attention::GetRPEmbedding(int lenQ, int lenKV, bool isEnc)
     XTensor embMatrix;
 
     InitTensor1D(&range, lenKV, X_INT, devID);
-    int* index = DBG_NEW int[lenKV];
+    int* index = new int[lenKV];
 
     if (isEnc) {
         for (int i = 0; i < lenKV; i++)
@@ -394,12 +387,12 @@ XTensor Attention::RPDotProduct(XTensor& x, XTensor& y, XTensor& z, const bool i
     XTensor context;
     context = BMMul(x, y);
 
-    int DBG_NEWDims[]{ headNum, batchSize, context.GetDim(1), context.GetDim(2) };
+    int newDims[]{ headNum, batchSize, context.GetDim(1), context.GetDim(2) };
 
     if (isTraining)
-        context = Reshape(context, 4, DBG_NEWDims);
+        context = Reshape(context, 4, newDims);
     else
-        context.Reshape(4, DBG_NEWDims);
+        context.Reshape(4, newDims);
 
     XTensor xTrans;
     xTrans = Transpose(x, 0, 1);

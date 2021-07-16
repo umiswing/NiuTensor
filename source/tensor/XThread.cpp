@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -92,7 +85,7 @@ void XThread::SetFunc(TFunction myFunc, XList * myArgv)
 /* 
 Tunning for this thread. It is very very native implementation.
 We loop and wait for a signal to activate the job processing.
-After that, we wait again if there is no DBG_NEW job.
+After that, we wait again if there is no new job.
 */
 void XThread::Run()
 {

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -51,7 +44,7 @@ bool TestXMemCase1()
         devNum = 1;
     }*/
 
-    int * buf = DBG_NEW int[blcokSize * 10];
+    int * buf = new int[blcokSize * 10];
 
     for (int id = 0; id < devNum; id++) {
         int devID = devIDs[id];
@@ -62,8 +55,8 @@ bool TestXMemCase1()
 
             srand(907);
 
-            int ** p = DBG_NEW int*[caseNum];
-            int * size = DBG_NEW int[caseNum];
+            int ** p = new int*[caseNum];
+            int * size = new int[caseNum];
 
             for (int i = 0; i < caseNum; i++) {
                 p[i] = NULL;

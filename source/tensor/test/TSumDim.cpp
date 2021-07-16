@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -44,7 +37,7 @@ bool TestSumDim1()
 {
     /* a tensor of size (2, 4) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 2;
     aDimSize[1] = 4;
 
@@ -54,7 +47,7 @@ bool TestSumDim1()
 
     /* a tensor of size (2) */
     int bOrder = 1;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 2;
 
     int bUnitNum = 1;
@@ -156,7 +149,7 @@ bool TestSumDim2()
 {
     /* a tensor of size (2, 4) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 2;
     aDimSize[1] = 4;
 
@@ -166,7 +159,7 @@ bool TestSumDim2()
 
     /* a tensor of size (2, 2) */
     int bOrder = 2;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 2;
     bDimSize[1] = 2;
 
@@ -271,7 +264,7 @@ bool TestSumDim3()
 {
     /* a tensor of size (20, 40, 4000) */
     int aOrder = 3;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 20;
     aDimSize[1] = 40;
     aDimSize[2] = 4000;
@@ -282,7 +275,7 @@ bool TestSumDim3()
 
     /* a tensor of size (40) */
     int bOrder = 1;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 40;
 
     int bUnitNum = 1;
@@ -381,7 +374,7 @@ bool TestSumDim4()
 {
     /* a tensor of size (200, 40, 4000) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 1000000;
     aDimSize[1] = 50;
 
@@ -391,7 +384,7 @@ bool TestSumDim4()
 
     /* a tensor of size (40) */
     int bOrder = 1;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 50;
 
     int bUnitNum = 1;

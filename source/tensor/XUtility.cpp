@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -323,7 +316,7 @@ void * XMemAlloc(int devID, size_t size)
     void * p = NULL;
 
     if(devID < 0){
-        p = DBG_NEW char[size];
+        p = new char[size];
         return p;
     }
     else{
@@ -353,7 +346,7 @@ void * XMemAllocOnDev(int devID, size_t size)
     void * p = NULL;
 
     if(devID < 0){
-        p = DBG_NEW char[size];
+        p = new char[size];
         return p;
     }
     else{
@@ -844,7 +837,7 @@ int SplitALine(char* inputString, const char* seperator, StrList* items)
         return 0;
 
     if (sepLen == 0) {
-        char* item = DBG_NEW char[(long)inputLen + 1];
+        char* item = new char[(long)inputLen + 1];
         strcpy(item, inputString);
         items->Add(item);
     }
@@ -854,13 +847,13 @@ int SplitALine(char* inputString, const char* seperator, StrList* items)
         while (p != NULL) {
             char* q = strstr(p, seperator);
             if (q == NULL) {
-                item = DBG_NEW char[inputLen - (p - inputString) + 1];
+                item = new char[inputLen - (p - inputString) + 1];
                 memcpy(item, p, inputLen - (p - inputString) + 1);
                 item[inputLen - (p - inputString)] = '\0'; // no use?
                 p = NULL;
             }
             else {
-                item = DBG_NEW char[q - p + 1];
+                item = new char[q - p + 1];
                 memcpy(item, p, q - p);
                 item[q - p] = '\0';
                 p = q + sepLen;

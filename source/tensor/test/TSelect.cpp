@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -40,7 +33,7 @@ bool TestSelect1()
 {
     /* a input tensor of size (2, 2, 4) */
     int sOrder = 3;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 2;
     sDimSize[2] = 4;
@@ -51,7 +44,7 @@ bool TestSelect1()
 
     /* a output tensor of size (2, 2, 2) */
     int tOrder = 3;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
     tDimSize[2] = 2;

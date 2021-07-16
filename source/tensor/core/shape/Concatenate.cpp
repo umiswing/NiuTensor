@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -64,7 +57,7 @@ void _Concatenate(const TensorList * smalls, XTensor * big, int dim)
 
 /*
 concatenate a list of tensors along a given dimension (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 Note that this is actually a wrapper that selects "ConcatenateSolely"
 or "Merge" by means of the tensor shapes
@@ -89,7 +82,7 @@ XTensor Concatenate(const TensorList &smalls, int dim)
     }
     XTensor * tensor = (XTensor*)smalls.GetItem(0);
     int order = tensor->order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     if (uniform) {
         for (int i = 0; i < tensor->order; i++) {
@@ -153,7 +146,7 @@ bool CheckConcatenateShape(const TensorList &smalls, int dim, XTensor &big, bool
 {
     XTensor * tensor = (XTensor*)smalls.GetItem(0);
     int order = tensor->order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     if (uniform) {
         for (int i = 0; i < tensor->order; i++) {
@@ -204,7 +197,7 @@ void Concatenate(const TensorList & smalls, XTensor & big, int dim)
     if (!big.isInit || !CheckConcatenateShape(smalls, dim, big, uniform)) {
         XTensor * tensor = (XTensor*)smalls.GetItem(0);
         int order = tensor->order;
-        int * dimSize = DBG_NEW int[order];
+        int * dimSize = new int[order];
 
         if (uniform) {
             for (int i = 0; i < tensor->order; i++) {
@@ -277,7 +270,7 @@ void _Concatenate(const XTensor * smallA, const XTensor * smallB, XTensor * big,
 
 /*
 concatenate two tensors along a given dimension (return an XTensor structure).
-make a DBG_NEW tensor to keep the result and return it.
+make a new tensor to keep the result and return it.
 
 >> smallA - one tensor for concatenation
 >> smallB - the other tensor for concatenation
@@ -303,7 +296,7 @@ XTensor Concatenate(const XTensor &smallA, const XTensor &smallB, int dim)
     }
     XTensor * tensor = (XTensor*)smalls.Get(0);
     int order = tensor->order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     if (uniform) {
         for (int i = 0; i < tensor->order; i++) {

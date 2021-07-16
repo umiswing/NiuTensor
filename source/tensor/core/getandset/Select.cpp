@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -86,7 +79,7 @@ void _Select(const XTensor * a, XTensor * c, XTensor* index, int dim)
 {
     if (index->devID >= 0)
     {
-        int* indexCPU = DBG_NEW int[index->unitNum];
+        int* indexCPU = new int[index->unitNum];
         XMemCopy(indexCPU, -1, index->data,index->devID, index->unitNum * sizeof(int));
 
         _Select(a, c, indexCPU, dim);
@@ -109,7 +102,7 @@ c = select(a)
 XTensor Select(const XTensor &a, XTensor &index, int dim)
 {
     int order = a.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     CheckNTErrors(dim >= 0 && dim < a.order, "The input dimension is out of bounds!");
 
@@ -194,7 +187,7 @@ void _SelectRange(const XTensor * a, XTensor * c, int dim, int low, int high)
 
 /* 
 generate a tensor with selected data in range[low,high] along the given dimension (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 c = select(a) 
 
@@ -208,7 +201,7 @@ c = select(a)
 XTensor SelectRange(const XTensor &a, int dim, int low, int high)
 {
     int order = a.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     CheckNTErrors(dim >= 0 && dim < a.order, "The input dimension is out of bounds!");
     CheckNTErrors(low < high, "Illegal range specified!");

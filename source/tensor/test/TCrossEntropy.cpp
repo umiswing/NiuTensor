@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -43,7 +36,7 @@ bool TestCrossEntropy1()
 {
     /* a tensor of size (1, 4) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 1;
     dimSize[1] = 4;
 
@@ -131,7 +124,7 @@ bool TestCrossEntropy2()
 {
     /* a tensor of size (4, 10) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 4;
     dimSize[1] = 10;
 
@@ -238,7 +231,7 @@ bool TestCrossEntropy3()
 {
     /* a output tensor of size (4, 4) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 4;
     dimSize[1] = 4;
 
@@ -248,7 +241,7 @@ bool TestCrossEntropy3()
         
     /* a weight tensor of size (4) */
     int wOrder = 1;
-    int * wDimSize = DBG_NEW int[wOrder];
+    int * wDimSize = new int[wOrder];
     wDimSize[0] = 4;
 
     int wUnitNum = 1;
@@ -346,7 +339,7 @@ bool TestCrossEntropy4()
 {
     /* a tensor of size (10, 1) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 10;
     dimSize[1] = 1;
 

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* 
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -112,7 +105,7 @@ void XTrainer::Run(XConfig * config, DataDistributeBase * dataDistributor,
 
     CheckNTErrors(accumulation >= 1, "accumulation must be larger than 0!");
 
-    int * ids = DBG_NEW int[MAX_DEVICE_NUM_TRAINING];
+    int * ids = new int[MAX_DEVICE_NUM_TRAINING];
     GetDevIDs(config, ids, jobNum, MAX_DEVICE_NUM_TRAINING);
 
     optimizer->ShowSettings();
@@ -179,7 +172,7 @@ void XTrainer::Run(XConfig * config, DataDistributeBase * dataDistributor,
 void XTrainer::ShowSettings(XConfig* config)
 {
     int workerNum = 0;
-    int* ids = DBG_NEW int[MAX_DEVICE_NUM_TRAINING];
+    int* ids = new int[MAX_DEVICE_NUM_TRAINING];
 
     GetDevIDs(config, ids, workerNum, MAX_DEVICE_NUM_TRAINING);
 

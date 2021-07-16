@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -37,7 +30,7 @@ bool TestSetAscendingOrder1()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 

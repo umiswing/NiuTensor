@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -35,7 +28,7 @@
 namespace nts { // namespace nts(NiuTrans.Tensor)
 
 /*************************************************
-* we define the "DBG_NEW and delete" functions below
+* we define the "new and delete" functions below
 */
 bool X_ENABLE_GRAD = true;
 
@@ -454,7 +447,7 @@ void InitTensorOnCPU(XTensor * tensor, const XTensor * reference)
 /* generate a XTensor with no initialization */
 XTensor * NewTensor()
 {
-    XTensor * tensor = DBG_NEW XTensor();
+    XTensor * tensor = new XTensor();
     return tensor;
 }
 
@@ -475,9 +468,9 @@ XTensor * NewTensorV2(const int myOrder, const int * myDimSize, const TENSOR_DAT
                     const float myDenseRatio, const int myDevID, XMem * myMem)
 {
     if(myMem != NULL)
-        return DBG_NEW XTensor(myOrder, myDimSize, myDataType, myDenseRatio, myDevID, myMem);
+        return new XTensor(myOrder, myDimSize, myDataType, myDenseRatio, myDevID, myMem);
     else{
-        XTensor * tensor = DBG_NEW XTensor();
+        XTensor * tensor = new XTensor();
         InitTensorV2(tensor, myOrder, myDimSize, myDataType, myDenseRatio, myDevID, myMem);
         return tensor;
     }
@@ -497,7 +490,7 @@ XTensor * NewTensor(const int myOrder, const int * myDimSize, const TENSOR_DATA_
                       const int myDevID, const bool isEnableGrad)
 {
     XMem * myMem = GMems.GetMem(myDevID);
-    XTensor * tensor = DBG_NEW XTensor(myOrder, myDimSize, myDataType, 1.0F, myDevID, myMem);
+    XTensor * tensor = new XTensor(myOrder, myDimSize, myDataType, 1.0F, myDevID, myMem);
     tensor->enableGrad = isEnableGrad;
     return tensor;
 }
@@ -862,7 +855,7 @@ XTensor * NewTensorRange(int lower, int upper, int step, const TENSOR_DATA_TYPE 
 generate a copy of XTensor 
 >> a - the tensor we copy from
 >> isFilledData - indicates whether we allocate the data for
-                  the DBG_NEWly-generated tensor
+                  the newly-generated tensor
 */
 XTensor * NewTensor(const XTensor * a, bool isFilledData)
 {
@@ -878,11 +871,11 @@ XTensor * NewTensor(const XTensor * a, bool isFilledData)
     if(!isFilledData)
         dims[0] = -dims[0];
 
-    XTensor * DBG_NEWTensor = DBG_NEW XTensor(a->order, dims,
+    XTensor * newTensor = new XTensor(a->order, dims,
                                       a->dataType, a->denseRatio,
                                       a->devID, a->mem);
 
-    return DBG_NEWTensor;
+    return newTensor;
 }
 
 /* 

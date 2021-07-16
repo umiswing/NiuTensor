@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -237,7 +230,7 @@ XTensor GetReduceTensor(const XTensor & input, int dim)
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
 
     int order = input.order - 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for(int i = 0; i < order; i++){
         if(i < dim)
             dimSize[i] = input.dimSize[i];
@@ -255,7 +248,7 @@ XTensor GetReduceTensor(const XTensor & input, int dim)
 
 /*
 compute the cross entropy loss (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 loss = sum_{i} (-gold_i * log(output_i))
 where gold and output are distributions 
@@ -353,7 +346,7 @@ DTYPE _CrossEntropy(const XTensor * output, const XTensor * gold,
                  "The loss tensor and padding tensor must be same shape!");
     CheckNTErrors(gold->dataType == DEFAULT_DTYPE && output->dataType == DEFAULT_DTYPE, "TODO!");
 
-    int * dimSize = DBG_NEW int[order - 1];
+    int * dimSize = new int[order - 1];
     for (int i = 0; i < order; i++) {
         if(i < n)
             dimSize[i] = output->dimSize[i];

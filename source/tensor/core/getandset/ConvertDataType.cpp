@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -117,7 +110,7 @@ void _ConvertDataType(const XTensor * input, XTensor * output)
 
 /*
 convert data type (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> input - the input tensor
 << return - the output tensor with the specified data type
@@ -148,7 +141,7 @@ XTensor ConvertDataType(const XTensor & input, TENSOR_DATA_TYPE dataType)
 
 /*
 convert data type (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> input - the input tensor
 >> output - the output tensor

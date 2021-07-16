@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -131,7 +124,7 @@ void _Gather(const XTensor * s, XTensor * t, XTensor * srcIndex)
 
 /*
 gather indexed sub-tensors (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> s - the source tensor(2D)
 >> index - the index tensor
@@ -144,7 +137,7 @@ XTensor Gather(XTensor &s, XTensor &index)
     CheckNTErrors(s.order == 2, "The order of the input tensor must be 2!");
  
     int order = s.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
 
     for (int i = 0; i < s.order; i++) {
         if (i == dim)
@@ -168,7 +161,7 @@ XTensor Gather(XTensor &s, XTensor &index)
     }
 
     if(index.order > 1) {
-        int * dims = DBG_NEW int[index.order + 1];
+        int * dims = new int[index.order + 1];
         memcpy(dims, index.dimSize, index.order * sizeof(int));
         dims[index.order] = t.GetDim(-1);
 

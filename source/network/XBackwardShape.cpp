@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -254,7 +247,7 @@ void XShapeGrad::GradMerge(XTensor * node, bool isEfficient)
     if (!isEfficient || input->isGrad) {
         XNoder::MakeGrad(input);
 
-        int * dims = DBG_NEW int[input->order];
+        int * dims = new int[input->order];
         memset(dims, 0, sizeof(int) * input->order);
         for (int i = 0, j = 0; i < input->order; i++) {
             if (i >= leadDim) {
@@ -369,7 +362,7 @@ void XShapeGrad::GradMergeList(XTensor * node, bool isEfficient)
        accumulation after spliting, i.e., we need an additional 
        SUM operation */
     else{
-        int * dims = DBG_NEW int[last->order + 1];
+        int * dims = new int[last->order + 1];
         dims[0] = smalls.count;
         for(int i = 0; i < last->order; i++)
             dims[i + 1] = last->dimSize[i];

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -44,7 +37,7 @@ BeamSearch::BeamSearch()
     batchSize = 0;
     endSymbolNum = 0;
     fullHypos = NULL;
-    endSymbols = DBG_NEW int[32];
+    endSymbols = new int[32];
     startSymbol = -1;
     isEarlyStop = false;
     needReorder = false;
@@ -94,7 +87,7 @@ void BeamSearch::Prepare(int myBatchSize, int myBeamSize)
     if (fullHypos != NULL)
         delete[] fullHypos;
 
-    fullHypos = DBG_NEW XHeap<MIN_HEAP, float>[batchSize];
+    fullHypos = new XHeap<MIN_HEAP, float>[batchSize];
 
     for (int i = 0; i < batchSize; i++)
         fullHypos[i].Init(beamSize);
@@ -153,7 +146,7 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     CheckNTErrors(lengthLimit > 0, "no max length specified!");
 
-    StateBundle* states = DBG_NEW StateBundle[lengthLimit + 1];
+    StateBundle* states = new StateBundle[lengthLimit + 1];
     StateBundle* first = states;
     StateBundle* cur = NULL;
     StateBundle* next = NULL;
@@ -383,7 +376,7 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
 expand the search graph
 >> prev - the last beam
 >> beam - the beam that keeps a number of states
->> reorderState - the DBG_NEW order of states
+>> reorderState - the new order of states
 */
 void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderState)
 {
@@ -617,7 +610,7 @@ void BeamSearch::SetEnd(const int* tokens, const int tokenNum)
         return;
 
     /* we may have multiple end symbols */
-    tokens = DBG_NEW int[tokenNum];
+    tokens = new int[tokenNum];
     for (int i = 0; i < tokenNum; i++)
         endSymbols[i] = tokens[i];
     endSymbolNum = tokenNum;
@@ -643,9 +636,9 @@ bool BeamSearch::IsAllCompleted(StateBundle* beam)
 /*
 update the beam by removing finished hypotheses
 >> beam - the beam that keeps the searching states
->> aliveEncoding - DBG_NEW input embeddings for the encoder, (B, L, E)
->> aliveInput - DBG_NEW input tokens of the encoder, (B, L)
->> alivePadding - DBG_NEW paddings for the inputs, (B, L)
+>> aliveEncoding - new input embeddings for the encoder, (B, L, E)
+>> aliveInput - new input tokens of the encoder, (B, L)
+>> alivePadding - new paddings for the inputs, (B, L)
 << aliveIdx - the indices of alive states
 */
 void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
@@ -734,7 +727,7 @@ GreedySearch::GreedySearch()
     maxLen = 0;
     batchSize = 0;
     endSymbolNum = 0;
-    endSymbols = DBG_NEW int[32];
+    endSymbols = new int[32];
     startSymbol = -1;
     scalarMaxLength = -1;
 }
@@ -795,7 +788,7 @@ void GreedySearch::SetEnd(const int* tokens, const int tokenNum)
         return;
 
     /* we may have multiple end symbols */
-    tokens = DBG_NEW int[tokenNum];
+    tokens = new int[tokenNum];
     for (int i = 0; i < tokenNum; i++)
         endSymbols[i] = tokens[i];
     endSymbolNum = tokenNum;
@@ -835,7 +828,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     inputDec.SetDataFixed(startSymbol);
 
     /* initialize the finished flags */
-    int* finishedFlags = DBG_NEW int[batchSize];
+    int* finishedFlags = new int[batchSize];
     for (int i = 0; i < batchSize; i++)
         finishedFlags[i] = 0;
 

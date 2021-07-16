@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -36,7 +29,7 @@ bool TestSum1()
 {
     /* a tensor of size (2, 4) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 2;
     dimSize[1] = 4;
 
@@ -133,7 +126,7 @@ bool TestSum2()
 {
     /* a tensor of size (2, 4) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 2;
     dimSize[1] = 4;
 
@@ -231,7 +224,7 @@ bool TestSum3()
 {
     /* a tensor of size (2, 4) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 2;
     aDimSize[1] = 4;
 
@@ -241,13 +234,13 @@ bool TestSum3()
 
     /* a scalar */
     int bOrder = 0;
-    int * bDimSize = DBG_NEW int[MAX_TENSOR_DIM_NUM];
+    int * bDimSize = new int[MAX_TENSOR_DIM_NUM];
     int bUnitNum = 1;
 
 
     /* a tensor of size (2, 4) */
     int cOrder = 2;
-    int * cDimSize = DBG_NEW int[cOrder];
+    int * cDimSize = new int[cOrder];
     cDimSize[0] = 2;
     cDimSize[1] = 4;
 
@@ -326,7 +319,7 @@ bool TestSum4()
 {
     /* a tensor of size (3, 4, 2) */
     int aOrder = 3;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 3;
     aDimSize[1] = 4;
     aDimSize[2] = 2;
@@ -337,7 +330,7 @@ bool TestSum4()
 
     /* a tensor of size (4) */
     int bOrder = 1;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 4;
 
     int bUnitNum = 1;
@@ -346,7 +339,7 @@ bool TestSum4()
 
     /* a tensor of size (3, 4, 2) */
     int cOrder = 3;
-    int * cDimSize = DBG_NEW int[cOrder];
+    int * cDimSize = new int[cOrder];
     cDimSize[0] = 3;
     cDimSize[1] = 4;
     cDimSize[2] = 2;
@@ -428,7 +421,7 @@ bool TestSum5()
 {
     /* a tensor of size (4, 4) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 4;
     aDimSize[1] = 4;
 
@@ -438,7 +431,7 @@ bool TestSum5()
 
     /* a tensor of size (4) */
     int bOrder = 1;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 4;
 
     int bUnitNum = 1;
@@ -447,7 +440,7 @@ bool TestSum5()
 
     /* a tensor of size (4, 4) */
     int cOrder = 2;
-    int * cDimSize = DBG_NEW int[cOrder];
+    int * cDimSize = new int[cOrder];
     cDimSize[0] = 4;
     cDimSize[1] = 4;
 

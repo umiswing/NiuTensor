@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -40,7 +33,7 @@ bool TestMatrixMulBatched1()
 {
     /* a source tensor of size (2, 3) */
     int sOrder1 = 2;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 3;
 
@@ -50,7 +43,7 @@ bool TestMatrixMulBatched1()
 
     /* a source tensor of size (3, 2) */
     int sOrder2 = 2;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 3;
     sDimSize2[1] = 2;
 
@@ -60,7 +53,7 @@ bool TestMatrixMulBatched1()
 
     /* a target tensor of size (2, 2) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
 
@@ -154,7 +147,7 @@ bool TestMatrixMulBatched2()
 {
     /* a source tensor of size (2, 2, 3) */
     int sOrder1 = 3;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 2;
     sDimSize1[2] = 3;
@@ -165,7 +158,7 @@ bool TestMatrixMulBatched2()
 
     /* a source tensor of size (2, 3, 2) */
     int sOrder2 = 3;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 2;
     sDimSize2[1] = 3;
     sDimSize2[2] = 2;
@@ -176,7 +169,7 @@ bool TestMatrixMulBatched2()
 
     /* a target tensor of size (2, 2, 2) */
     int tOrder = 3;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
     tDimSize[2] = 2;

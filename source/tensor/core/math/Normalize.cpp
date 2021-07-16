@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -149,7 +142,7 @@ void NormalizeMe(XTensor& input, int dim,
 
 /*
 normalized the data with normal distribution (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it 
+make a new tensor to keep the result and return it 
 
 For an input x, y = a * (x-mean)/sqrt(variance+\epsilon) + b
 where a and b are the scalar and bias respectively, and \epsilon is the adjustment parameter.
@@ -191,7 +184,7 @@ XTensor Normalize(const XTensor &input, int dim,
 
 /*
 normalized the data with normal distribution (return an XTensor structure)
-make a DBG_NEW tensor to keep the result and return it 
+make a new tensor to keep the result and return it 
 
 For an input x, y = a * (x-mean)/sqrt(variance+\epsilon) + b
 where a and b are the scalar and bias respectively, and \epsilon is the adjustment parameter.

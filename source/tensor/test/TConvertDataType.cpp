@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -41,7 +34,7 @@ bool TestConvertDataType1()
 {
     /* a tensor of size (3, 2) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 3;
     aDimSize[1] = 2;
 
@@ -116,7 +109,7 @@ bool TestConvertDataType2()
 {
     /* a tensor of size (3, 2) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 3;
     aDimSize[1] = 2;
 
@@ -192,7 +185,7 @@ bool TestConvertDataType3()
     int order = 2;
 
     /* a tensor of size (3, 2) */
-    int * dimSize1 = DBG_NEW int[order];
+    int * dimSize1 = new int[order];
     dimSize1[0] = 3;
     dimSize1[1] = 2;
 
@@ -201,7 +194,7 @@ bool TestConvertDataType3()
         unitNum1 *= dimSize1[i];
         
     /* a tensor of size (3, 2) */
-    int * dimSize2 = DBG_NEW int[order];
+    int * dimSize2 = new int[order];
     dimSize2[0] = 2;
     dimSize2[1] = 3;
 
@@ -210,7 +203,7 @@ bool TestConvertDataType3()
         unitNum2 *= dimSize2[i];
         
     /* a tensor of size (3, 3) */
-    int * dimSize3 = DBG_NEW int[order];
+    int * dimSize3 = new int[order];
     dimSize3[0] = 3;
     dimSize3[1] = 3;
 

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -74,7 +67,7 @@ void _Transpose(const XTensor * a, XTensor * b, const int i, const int j)
     else{
         int I = MIN(i, j);
         int J = MAX(i, j);
-        int * dims = DBG_NEW int[a->order + 1];
+        int * dims = new int[a->order + 1];
 
         for(int k = 0; k <= J; k++)
             dims[k] = a->dimSize[k];
@@ -83,7 +76,7 @@ void _Transpose(const XTensor * a, XTensor * b, const int i, const int j)
             dims[k + 1] = a->dimSize[k];
 
         /* reshape tensor a form (..., n_I, ..., n_J, ...) => (..., n_I, ..., n_J, 1, ...)*/
-        XTensor * aTMP =  DBG_NEW XTensor(a->order + 1, dims, a->dataType, a->denseRatio, a->devID, a->mem);
+        XTensor * aTMP =  new XTensor(a->order + 1, dims, a->dataType, a->denseRatio, a->devID, a->mem);
         aTMP->data = a->data;
 
         for(int k = 0; k < I; k++)
@@ -115,7 +108,7 @@ void _Transpose(const XTensor * a, XTensor * b, const int i, const int j)
 
 /*
 tensor transposition of dimensions i and j (return an XTensor structure).
-make a DBG_NEW tensor to keep the result and return it.
+make a new tensor to keep the result and return it.
 b = transposed(a)
 
 For a input tensor a, we tranpose the dimensions i and j of it.
@@ -133,7 +126,7 @@ XTensor Transpose(const XTensor &a, const int i, const int j)
     CheckNTErrors(a.order > j && j >= 0, "index of dimension is out of scope!");
 
     int order = a.order;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for(int k = 0; k < order; k++){
         if(k == i)
             dimSize[k] = a.dimSize[j];

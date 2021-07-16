@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -69,7 +62,7 @@ void _Dropout(const XTensor * x, XTensor * y, unsigned int seed, DTYPE dropProb,
     
     /* generate a mask tensor again with special probability */
     int unitNum = x->dimSize[n];
-    DTYPE * maskArray = DBG_NEW DTYPE[unitNum];
+    DTYPE * maskArray = new DTYPE[unitNum];
 
     srand(seed);
     for (int i = 0; i < unitNum; i++)
@@ -114,7 +107,7 @@ void _DropoutBackward(const XTensor * y, const XTensor * x,
 
         /* generate a mask tensor again with special probability */
         int unitNum = x->dimSize[n];
-        DTYPE * maskArray = DBG_NEW DTYPE[unitNum];
+        DTYPE * maskArray = new DTYPE[unitNum];
         
         srand(seed);
         for (int i = 0; i < unitNum; i++)
@@ -170,7 +163,7 @@ XTensor Dropout(const XTensor &x, DTYPE dropProb, bool inplace, int leadingDim, 
 
         /* dropout with index */
         /*int unitNum = floor(x.unitNum*dropProb);
-        maskArrayInt = DBG_NEW int[unitNum];
+        maskArrayInt = new int[unitNum];
 
         for (int i = 0; i < unitNum; i++)
             maskArrayInt[i] = rand() % x.unitNum;
@@ -192,7 +185,7 @@ XTensor Dropout(const XTensor &x, DTYPE dropProb, bool inplace, int leadingDim, 
 
         /* generate a mask tensor with probability p */
         int unitNum = x.dimSize[n];
-        maskArray = DBG_NEW DTYPE[unitNum];
+        maskArray = new DTYPE[unitNum];
 
         //srand((unsigned int)time(NULL));
         for (int i = 0; i < unitNum; i++)
@@ -215,7 +208,7 @@ XTensor Dropout(const XTensor &x, DTYPE dropProb, bool inplace, int leadingDim, 
     
         /* generate a mask tensor with probability p */
         int unitNum = x.dimSize[n] * x.dimSize[m];
-        maskArray = DBG_NEW DTYPE[unitNum];
+        maskArray = new DTYPE[unitNum];
 
         //srand((unsigned int)time(NULL));
         for (int i = 0; i < unitNum; i++)
@@ -252,7 +245,7 @@ XTensor DropoutWithoutBroadcast(const XTensor &x, DTYPE dropProb)
     
     /* generate a mask tensor with probability p */
     int unitNum = x.unitNum;
-    DTYPE * maskArray = DBG_NEW DTYPE[unitNum];
+    DTYPE * maskArray = new DTYPE[unitNum];
 
     for (int i = 0; i < unitNum; i++)
         maskArray[i] = RandomBernoulli(dropProb, scaleFactor);

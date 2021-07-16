@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -41,7 +34,7 @@ bool TestMerge1()
 {
     /* a source tensor of size (2, 3) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 3;
 
@@ -51,7 +44,7 @@ bool TestMerge1()
 
     /* a target tensor of size (6, ) */
     int tOrder = 1;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 6;
 
     int tUnitNum = 1;
@@ -133,7 +126,7 @@ bool TestMerge2()
 {
     /* a source tensor of size (2, 2, 3) */
     int sOrder = 3;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 2;
     sDimSize[2] = 3;
@@ -144,7 +137,7 @@ bool TestMerge2()
 
     /* a target tensor of size (4, 3) */
     int tOrder1 = 2;
-    int * tDimSize1 = DBG_NEW int[tOrder1];
+    int * tDimSize1 = new int[tOrder1];
     tDimSize1[0] = 4;
     tDimSize1[1] = 3;
 
@@ -154,7 +147,7 @@ bool TestMerge2()
 
     /* a target tensor of size (2, 6) */
     int tOrder2 = 2;
-    int * tDimSize2 = DBG_NEW int[tOrder2];
+    int * tDimSize2 = new int[tOrder2];
     tDimSize2[0] = 2;
     tDimSize2[1] = 6;
 
@@ -260,11 +253,11 @@ In this case, 2 * (2, 4) -> (4, 4), whereToMerge=0.
 bool TestMerge3()
 {
     /* create list */
-    TensorList * smallList = DBG_NEW TensorList();
+    TensorList * smallList = new TensorList();
 
     /* a small tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -279,7 +272,7 @@ bool TestMerge3()
 
     /* a target tensor of size (4, 4) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 4;
     tDimSize[1] = 4;
 
@@ -380,11 +373,11 @@ In this case, 2 * (2, 4) -> (2, 8), whereToMerge=1.
 bool TestMerge4()
 {
     /* create list */
-    TensorList * smallList = DBG_NEW TensorList();
+    TensorList * smallList = new TensorList();
 
     /* a small tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -399,7 +392,7 @@ bool TestMerge4()
 
     /* a target tensor of size (4, 4) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 8;
 

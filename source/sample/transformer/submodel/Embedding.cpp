@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -100,7 +93,7 @@ void Embedder::MakePosEmbedding(int length)
 {
     InitTensor2D(&posEmbeddingBase, length, eSize, X_FLOAT, devID);
 
-    float* data = DBG_NEW float[posEmbeddingBase.unitNum];
+    float* data = new float[posEmbeddingBase.unitNum];
 
     for (int pos = 0; pos < length; pos++) {
         float* dp = data + pos * eSize;

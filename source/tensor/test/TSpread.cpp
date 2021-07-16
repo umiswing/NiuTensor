@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -41,7 +34,7 @@ bool TestSpread1()
 {
     /* a input tensor of size (4, 4, 3) */
     int sOrder = 3;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 4;
     sDimSize[1] = 4;
     sDimSize[2] = 3;
@@ -52,7 +45,7 @@ bool TestSpread1()
     
     /* a data tensor of size (2, 4, 3) */
     int dataOrder = 3;
-    int * dataDimSize = DBG_NEW int[dataOrder];
+    int * dataDimSize = new int[dataOrder];
     dataDimSize[0] = 2;
     dataDimSize[1] = 4;
     dataDimSize[2] = 3;
@@ -149,7 +142,7 @@ bool TestSpread2()
 {
     /* a input tensor of size (3, 3) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 3;
     sDimSize[1] = 3;
 
@@ -159,7 +152,7 @@ bool TestSpread2()
 
     /* a output tensor of size (2, 3) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 3;
 
@@ -169,7 +162,7 @@ bool TestSpread2()
         
     /* a index tensor of size (2) */
     int indexOrder = 1;
-    int * indexDimSize = DBG_NEW int[indexOrder];
+    int * indexDimSize = new int[indexOrder];
     indexDimSize[0] = 2;
 
     int indexUnitNum = 1;
@@ -283,7 +276,7 @@ bool TestSpread3()
 {
     /* a input tensor of size (3, 3) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 3;
     sDimSize[1] = 3;
 
@@ -293,7 +286,7 @@ bool TestSpread3()
 
     /* a output tensor of size (2, 3) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 3;
     tDimSize[1] = 2;
 
@@ -303,7 +296,7 @@ bool TestSpread3()
         
     /* a index tensor of size (2) */
     int indexOrder = 1;
-    int * indexDimSize = DBG_NEW int[indexOrder];
+    int * indexDimSize = new int[indexOrder];
     indexDimSize[0] = 2;
 
     int indexUnitNum = 1;

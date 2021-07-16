@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -40,7 +33,7 @@ bool TestTopK1()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -50,7 +43,7 @@ bool TestTopK1()
 
     /* a output tensor of size (2, 4) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 4;
 
@@ -211,10 +204,10 @@ bool TestTopK1()
     TopK(sUserGPU, tUserGPU2, indexUserGPU2, dim, k);
     
     /* check results */
-    float* checkData = DBG_NEW float[tUnitNum];
-    int* checkIndex = DBG_NEW int[tUnitNum];
-    float* checkDataUser = DBG_NEW float[tUnitNum];
-    int* checkIndexUser = DBG_NEW int[tUnitNum];
+    float* checkData = new float[tUnitNum];
+    int* checkIndex = new int[tUnitNum];
+    float* checkDataUser = new float[tUnitNum];
+    int* checkIndexUser = new int[tUnitNum];
 
     cudaMemcpy(checkData, tGPU1->data, sizeof(DTYPE)*tUnitNum,cudaMemcpyDeviceToHost);
     cudaMemcpy(checkIndex, indexGPU1->data, sizeof(int)*tUnitNum, cudaMemcpyDeviceToHost);
@@ -321,7 +314,7 @@ bool TestTopK2()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -331,7 +324,7 @@ bool TestTopK2()
 
     /* a output tensor of size (2, 2) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
 
@@ -431,10 +424,10 @@ bool TestTopK2()
     TopK(sUserGPU, tUserGPU, indexUserGPU, dim, k);
 
     /* check results */
-    float* checkData = DBG_NEW float[tUnitNum];
-    int* checkIndex = DBG_NEW int[tUnitNum];
-    float* checkDataUser = DBG_NEW float[tUnitNum];
-    int* checkIndexUser = DBG_NEW int[tUnitNum];
+    float* checkData = new float[tUnitNum];
+    int* checkIndex = new int[tUnitNum];
+    float* checkDataUser = new float[tUnitNum];
+    int* checkIndexUser = new int[tUnitNum];
 
     cudaMemcpy(checkData, tGPU->data, sizeof(DTYPE)*tUnitNum, cudaMemcpyDeviceToHost);
     cudaMemcpy(checkIndex, indexGPU->data, sizeof(int)*tUnitNum, cudaMemcpyDeviceToHost);

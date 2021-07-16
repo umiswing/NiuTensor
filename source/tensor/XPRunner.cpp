@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
@@ -64,11 +57,11 @@ XPRunner::XPRunner()
     isMultiThreaded = true;
     availableThreadNum = 0;
     runningThreadNum = 0;
-    runningThreads = DBG_NEW int[MAX_THREAD_NUM];
+    runningThreads = new int[MAX_THREAD_NUM];
     memset(runningThreads, 0 ,sizeof(int) * MAX_THREAD_NUM);
-    runningStates = DBG_NEW int[MAX_THREAD_NUM];
+    runningStates = new int[MAX_THREAD_NUM];
     memset(runningStates, 0 ,sizeof(int) * MAX_THREAD_NUM);
-    availableThreads = DBG_NEW int[MAX_THREAD_NUM];
+    availableThreads = new int[MAX_THREAD_NUM];
     memset(availableThreads, 0 ,sizeof(int) * MAX_THREAD_NUM);
 }
 
@@ -110,7 +103,7 @@ void XPRunner::CreateThreads(int tNum)
         exit(1);
     }
 
-    threads = DBG_NEW XThread[tNum];
+    threads = new XThread[tNum];
     for(int i = 0; i < tNum; i++){
         if(!threads[i].Start()){
             XPRINT1(0, stderr, "[XPRunner::CreateThreads] Error! cannot create thread %d\n", i);

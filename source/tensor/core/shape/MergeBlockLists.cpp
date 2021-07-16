@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -53,8 +46,8 @@ void _MergeBlockLists(const StrList* sourceList, int * blockSizes, int blockNum,
     else {
         int devID = myMem != NULL ? myMem->devID : -1;
 
-        char ** dataArrays = DBG_NEW char*[sourceList->count];
-        int * offsets = DBG_NEW int[sourceList->count];
+        char ** dataArrays = new char*[sourceList->count];
+        int * offsets = new int[sourceList->count];
         for (int i = 0; i < sourceList->count; i++) {
             dataArrays[i] = (char*)sourceList->GetItem(i);
             offsets[i] = 0;

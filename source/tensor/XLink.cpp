@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -223,7 +216,7 @@ add a tail
 void XLink::AddTail(XTensor * t)
 {
     XTensor ** ts = tails;
-    tails = DBG_NEW XTensor*[tailNum + 1];
+    tails = new XTensor*[tailNum + 1];
     memcpy(tails, ts, sizeof(XTensor*) * tailNum);
     tails[tailNum++] = t;
     delete[] ts;
@@ -237,7 +230,7 @@ add two tails in one time
 void XLink::AddTwoTails(XTensor * t1, XTensor * t2)
 {
     XTensor ** ts = tails;
-    tails = DBG_NEW XTensor*[tailNum + 2];
+    tails = new XTensor*[tailNum + 2];
     memcpy(tails, ts, sizeof(XTensor*) * tailNum);
     tails[tailNum++] = t1;
     tails[tailNum++] = t2;
@@ -251,7 +244,7 @@ add a parameter
 void XLink::AddParam(DTYPE param)
 {
     void * ps = params;
-    params = DBG_NEW char[(paramNum + 1) * paramSize];
+    params = new char[(paramNum + 1) * paramSize];
     memcpy(params, ps, paramNum * paramSize);
     DTYPE * p = (DTYPE*)((char*)params + paramNum * paramSize);
     *p = param;
@@ -267,7 +260,7 @@ add a parameter
 void XLink::AddParam(void * param, int size)
 {
     void * ps = params;
-    params = DBG_NEW char[(paramNum + 1) * paramSize];
+    params = new char[(paramNum + 1) * paramSize];
     memcpy(params, ps, paramNum * paramSize);
     char * p = (char*)params + paramNum * paramSize;
     memcpy(p, param, size);
@@ -525,46 +518,46 @@ void XLink::AddParamToHeadPointer(XTensor * h, void * param)
 
 
 /* 
-replace a node with another, i.e., we redirect the links to the DBG_NEW node 
+replace a node with another, i.e., we redirect the links to the new node 
 >> oldOne - the node to be replaced
->> DBG_NEWOne - the DBG_NEW node
+>> newOne - the new node
 */
-void XLink::Replace(const XTensor * oldOne, XTensor * DBG_NEWOne)
+void XLink::Replace(const XTensor * oldOne, XTensor * newOne)
 {
-    if(oldOne == NULL || DBG_NEWOne == NULL)
+    if(oldOne == NULL || newOne == NULL)
         return;
     
-    XLink &DBG_NEWIncome = DBG_NEWOne->income;
-    XLink &DBG_NEWOutgo  = DBG_NEWOne->outgo;
+    XLink &newIncome = newOne->income;
+    XLink &newOutgo  = newOne->outgo;
 
-    XLink::ClearOutgoing(DBG_NEWOne);
-    XLink::ClearIncoming(DBG_NEWOne);
+    XLink::ClearOutgoing(newOne);
+    XLink::ClearIncoming(newOne);
 
     /* incoming nodes */
     if(oldOne->income.typeID != 0){
-        if(DBG_NEWIncome.tailNum < oldOne->income.tailNum){
-            delete[] DBG_NEWIncome.tails;
-            DBG_NEWIncome.tails = DBG_NEW XTensor*[oldOne->income.tailNum];
+        if(newIncome.tailNum < oldOne->income.tailNum){
+            delete[] newIncome.tails;
+            newIncome.tails = new XTensor*[oldOne->income.tailNum];
         }
         
-        DBG_NEWIncome.SetType(oldOne->income.typeID);
-        DBG_NEWIncome.head = DBG_NEWOne;
-        DBG_NEWIncome.tailNum = oldOne->income.tailNum;
-        memcpy(DBG_NEWIncome.tails, oldOne->income.tails, sizeof(XTensor*) * DBG_NEWIncome.tailNum);
+        newIncome.SetType(oldOne->income.typeID);
+        newIncome.head = newOne;
+        newIncome.tailNum = oldOne->income.tailNum;
+        memcpy(newIncome.tails, oldOne->income.tails, sizeof(XTensor*) * newIncome.tailNum);
 
         int paraArraySize = oldOne->income.paramNum * oldOne->income.paramSize;
-        DBG_NEWIncome.params = DBG_NEW char[paraArraySize];
-        memcpy(DBG_NEWIncome.params, oldOne->income.params, paraArraySize);
-        DBG_NEWIncome.paramNum = oldOne->income.paramNum;
+        newIncome.params = new char[paraArraySize];
+        memcpy(newIncome.params, oldOne->income.params, paraArraySize);
+        newIncome.paramNum = oldOne->income.paramNum;
 
         /* update the link to each child node */
-        for(int i = 0; i < DBG_NEWIncome.tailNum; i++){
-            XTensor * child = DBG_NEWIncome.tails[i];
+        for(int i = 0; i < newIncome.tailNum; i++){
+            XTensor * child = newIncome.tails[i];
             XLink &childOutgo = child->outgo;
             bool hit = false;
             for(int j = 0; j < childOutgo.tailNum; j++){
                 if(childOutgo.tails[j] == oldOne){
-                    childOutgo.tails[j] = DBG_NEWOne;
+                    childOutgo.tails[j] = newOne;
                     hit = true;
                     break;
                 }
@@ -576,24 +569,24 @@ void XLink::Replace(const XTensor * oldOne, XTensor * DBG_NEWOne)
         }
     }
     
-    if(DBG_NEWOutgo.tailNum < oldOne->outgo.tailNum){
-        delete[] DBG_NEWOutgo.tails;
-        DBG_NEWOutgo.tails = DBG_NEW XTensor*[oldOne->outgo.tailNum];
+    if(newOutgo.tailNum < oldOne->outgo.tailNum){
+        delete[] newOutgo.tails;
+        newOutgo.tails = new XTensor*[oldOne->outgo.tailNum];
     }
 
     /* outgoing nodes */
-    DBG_NEWOutgo.head = DBG_NEWOne;
-    DBG_NEWOutgo.tailNum = oldOne->outgo.tailNum;
-    memcpy(DBG_NEWOutgo.tails, oldOne->outgo.tails, sizeof(XTensor*) * DBG_NEWOutgo.tailNum);
+    newOutgo.head = newOne;
+    newOutgo.tailNum = oldOne->outgo.tailNum;
+    memcpy(newOutgo.tails, oldOne->outgo.tails, sizeof(XTensor*) * newOutgo.tailNum);
 
     /* update the link to each parent node */
-    for(int i = 0; i < DBG_NEWOutgo.tailNum; i++){
-        XTensor * parent = DBG_NEWOutgo.tails[i];
+    for(int i = 0; i < newOutgo.tailNum; i++){
+        XTensor * parent = newOutgo.tails[i];
         XLink &parentIncome = parent->income;
         bool hit = false;
         for(int j = 0; j < parentIncome.tailNum; j++){
             if(parentIncome.tails[j] == oldOne){
-                parentIncome.tails[j] = DBG_NEWOne;
+                parentIncome.tails[j] = newOne;
                 hit = true;
             }
         }
@@ -606,41 +599,41 @@ void XLink::Replace(const XTensor * oldOne, XTensor * DBG_NEWOne)
 
 
 /*
-copy a node with another, i.e., we add the links to the DBG_NEW node
+copy a node with another, i.e., we add the links to the new node
 >> src - the node to be copied
->> tgt - the DBG_NEW node
+>> tgt - the new node
 */
 void XLink::Copy(const XTensor * reference, XTensor * target)
 {
     if (reference == NULL || target == NULL)
         return;
 
-    XLink &DBG_NEWIncome = target->income;
-    XLink &DBG_NEWOutgo = target->outgo;
+    XLink &newIncome = target->income;
+    XLink &newOutgo = target->outgo;
 
     XLink::ClearOutgoing(target);
     XLink::ClearIncoming(target);
 
     /* incoming nodes */
     if (reference->income.typeID != 0) {
-        if (DBG_NEWIncome.tailNum < reference->income.tailNum) {
-            delete[] DBG_NEWIncome.tails;
-            DBG_NEWIncome.tails = DBG_NEW XTensor*[reference->income.tailNum];
+        if (newIncome.tailNum < reference->income.tailNum) {
+            delete[] newIncome.tails;
+            newIncome.tails = new XTensor*[reference->income.tailNum];
         }
 
-        DBG_NEWIncome.SetType(reference->income.typeID);
-        DBG_NEWIncome.head = target;
-        DBG_NEWIncome.tailNum = reference->income.tailNum;
-        memcpy(DBG_NEWIncome.tails, reference->income.tails, sizeof(XTensor*) * DBG_NEWIncome.tailNum);
+        newIncome.SetType(reference->income.typeID);
+        newIncome.head = target;
+        newIncome.tailNum = reference->income.tailNum;
+        memcpy(newIncome.tails, reference->income.tails, sizeof(XTensor*) * newIncome.tailNum);
 
         int paraArraySize = reference->income.paramNum * reference->income.paramSize;
-        DBG_NEWIncome.params = DBG_NEW char[paraArraySize];
-        memcpy(DBG_NEWIncome.params, reference->income.params, paraArraySize);
-        DBG_NEWIncome.paramNum = reference->income.paramNum;
+        newIncome.params = new char[paraArraySize];
+        memcpy(newIncome.params, reference->income.params, paraArraySize);
+        newIncome.paramNum = reference->income.paramNum;
 
         /* update the link to each child node */
-        for (int i = 0; i < DBG_NEWIncome.tailNum; i++) {
-            XTensor * child = DBG_NEWIncome.tails[i];
+        for (int i = 0; i < newIncome.tailNum; i++) {
+            XTensor * child = newIncome.tails[i];
             XLink &childOutgo = child->outgo;
             bool hit = false;
             for (int j = 0; j < childOutgo.tailNum; j++) {
@@ -658,19 +651,19 @@ void XLink::Copy(const XTensor * reference, XTensor * target)
         }
     }
 
-    if (DBG_NEWOutgo.tailNum < reference->outgo.tailNum) {
-        delete[] DBG_NEWOutgo.tails;
-        DBG_NEWOutgo.tails = DBG_NEW XTensor*[reference->outgo.tailNum];
+    if (newOutgo.tailNum < reference->outgo.tailNum) {
+        delete[] newOutgo.tails;
+        newOutgo.tails = new XTensor*[reference->outgo.tailNum];
     }
 
     /* outgoing nodes */
-    DBG_NEWOutgo.head = target;
-    DBG_NEWOutgo.tailNum = reference->outgo.tailNum;
-    memcpy(DBG_NEWOutgo.tails, reference->outgo.tails, sizeof(XTensor*) * DBG_NEWOutgo.tailNum);
+    newOutgo.head = target;
+    newOutgo.tailNum = reference->outgo.tailNum;
+    memcpy(newOutgo.tails, reference->outgo.tails, sizeof(XTensor*) * newOutgo.tailNum);
 
     /* update the link to each parent node */
-    for (int i = 0; i < DBG_NEWOutgo.tailNum; i++) {
-        XTensor * parent = DBG_NEWOutgo.tails[i];
+    for (int i = 0; i < newOutgo.tailNum; i++) {
+        XTensor * parent = newOutgo.tails[i];
         XLink &parentIncome = parent->income;
         bool hit = false;
         for (int j = 0; j < parentIncome.tailNum; j++) {
@@ -713,7 +706,7 @@ void XLink::CopyIncoming(const XTensor * reference, XTensor * target)
 
     delete[] (char*)target->income.params;
     int size = paraNum * reference->income.paramSize;
-    target->income.params = DBG_NEW char[size];
+    target->income.params = new char[size];
     memcpy(target->income.params, reference->income.params, size);
 }
 

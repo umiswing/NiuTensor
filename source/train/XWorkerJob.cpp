@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /*
 * NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2016-2021
@@ -87,22 +80,22 @@ void XWorkerJob::Clear()
     for (int i = 0; i < inputs.count; i++)
         delete (XTensor*)inputs[i];
     inputs.Clear();
-    inputs.Add(DBG_NEW XTensor());
+    inputs.Add(new XTensor());
 
     for (int i = 0; i < outputs.count; i++)
         delete (XTensor*)outputs[i];
     outputs.Clear();
-    outputs.Add(DBG_NEW XTensor());
+    outputs.Add(new XTensor());
 
     for (int i = 0; i < golds.count; i++)
         delete (XTensor*)golds[i];
     golds.Clear();
-    golds.Add(DBG_NEW XTensor());
+    golds.Add(new XTensor());
 
     for (int i = 0; i < losses.count; i++)
         delete (XTensor*)losses[i];
     losses.Clear();
-    losses.Add(DBG_NEW XTensor());
+    losses.Add(new XTensor());
 
     record.Clear();
 
@@ -183,7 +176,7 @@ int XWorkerJob::GetPredictNum()
 }
 
 /* 
-add a DBG_NEW job of model refreshment 
+add a new job of model refreshment 
 >> myModel - the model
 << return - succeeded or not
 */
@@ -207,7 +200,7 @@ bool XWorkerJob::AddJobRefresh(XModel * myModel)
 }
 
 /* 
-add a DBG_NEW job of neural network forward and backward computation (with the input) 
+add a new job of neural network forward and backward computation (with the input) 
 >> myModel - the model
 >> inputs - inputs of the neural network
 >> outputs - outputs of the neural network
@@ -263,7 +256,7 @@ void XWorkerJob::RecordMeStatic(XList* args)
 }
 
 /* 
-add a DBG_NEW job of recording the running of the nerual network 
+add a new job of recording the running of the nerual network 
 >> serverRecord - the model record on the server side
 */
 bool XWorkerJob::AddJobRecord(XNNRecord * serverRecord)

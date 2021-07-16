@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -40,7 +33,7 @@ bool TestTranspose1()
 {
     /* a tensor of size (3, 2) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 3;
     aDimSize[1] = 2;
 
@@ -50,7 +43,7 @@ bool TestTranspose1()
 
     /* a tensor of size (2, 3) */
     int bOrder = 2;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 2;
     bDimSize[1] = 3;
 
@@ -131,7 +124,7 @@ bool TestTranspose2()
 {
     /* a tensor of size (4, 3, 2) */
     int aOrder = 3;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 4;
     aDimSize[1] = 3;
     aDimSize[2] = 2;
@@ -142,7 +135,7 @@ bool TestTranspose2()
 
     /* a tensor of size (2, 3, 4) */
     int bOrder = 3;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 2;
     bDimSize[1] = 3;
     bDimSize[2] = 4;

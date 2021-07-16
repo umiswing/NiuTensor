@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
  * All rights reserved.
@@ -40,7 +33,7 @@ bool TestSetData1()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -97,7 +90,7 @@ bool TestSetData2()
 {
     /* a input tensor of size (2, 4) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
 
@@ -107,7 +100,7 @@ bool TestSetData2()
 
     /* a data tensor of size (4) for GPU test */
     int dataOrder = 1;
-    int * dataDimSize = DBG_NEW int[dataOrder];
+    int * dataDimSize = new int[dataOrder];
     dataDimSize[0] = 4;
 
     int dataUnitNum = 1;
@@ -180,7 +173,7 @@ bool TestSetData3()
 {
     /* a input tensor of size (2, 4, 3) */
     int sOrder = 3;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 4;
     sDimSize[2] = 3;
@@ -191,7 +184,7 @@ bool TestSetData3()
     
     /* a data tensor of size (2, 3) for GPU test */
     int dataOrder = 2;
-    int * dataDimSize = DBG_NEW int[dataOrder];
+    int * dataDimSize = new int[dataOrder];
     dataDimSize[0] = 2;
     dataDimSize[1] = 3;
 
@@ -274,7 +267,7 @@ bool TestSetData4()
 {
     /* a input tensor of size (3, 3) */
     int order = 2;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 3;
     dimSize[1] = 3;
 
@@ -342,7 +335,7 @@ bool TestSetData5()
 {
     /* a input tensor of size (2, 4, 3) */
     int order = 3;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 2;
     dimSize[1] = 4;
     dimSize[2] = 3;
@@ -422,7 +415,7 @@ bool TestSetData6()
 {
     /* a input tensor of size (5) */
     int order = 1;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     dimSize[0] = 5;
 
     int unitNum = 1;

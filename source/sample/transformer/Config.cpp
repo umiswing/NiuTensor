@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -42,16 +35,16 @@ load configurations from the command
 */
 NMTConfig::NMTConfig(int argc, const char** argv)
 {
-    char** args = DBG_NEW char* [MAX_PARAM_NUM];
+    char** args = new char* [MAX_PARAM_NUM];
     for (int i = 0; i < argc; i++) {
-        args[i] = DBG_NEW char[strlen(argv[i]) + 1];
+        args[i] = new char[strlen(argv[i]) + 1];
         strcpy(args[i], argv[i]);
     }
     for (int i = argc; i < MAX_PARAM_NUM; i++) {
         args[i] = NULL;
     }
 
-    char* configFN = DBG_NEW char[1024];
+    char* configFN = new char[1024];
     LoadParamString(argc, args, "config", configFN, "");
 
     int argsNum = argc;
@@ -97,8 +90,8 @@ int NMTConfig::LoadFromFile(const char* configFN, char** args)
         if (args[argsNum + 1] != NULL) {
             delete[] args[argsNum + 1];
         }
-        args[argsNum] = DBG_NEW char[1024];
-        args[argsNum + 1] = DBG_NEW char[1024];
+        args[argsNum] = new char[1024];
+        args[argsNum + 1] = new char[1024];
         strcpy(args[argsNum++], key.c_str());
         strcpy(args[argsNum++], value.c_str());
     }

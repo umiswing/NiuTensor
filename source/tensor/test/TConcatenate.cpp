@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -38,11 +31,11 @@ In this case, 2 * (2, 1) -> (2, 2), dim=1.
 bool TestConcatenate1()
 {
     /* create list */
-    TensorList * sList = DBG_NEW TensorList();
+    TensorList * sList = new TensorList();
 
     /* a source tensor of size (2, 1) */
     int sOrder1 = 2;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 1;
 
@@ -52,7 +45,7 @@ bool TestConcatenate1()
 
     /* a source tensor of size (2, 1) */
     int sOrder2 = 2;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 2;
     sDimSize2[1] = 1;
 
@@ -62,7 +55,7 @@ bool TestConcatenate1()
 
     /* a target tensor of size (2, 2) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 2;
 
@@ -167,11 +160,11 @@ In this case, 2 * (2, 1) -> (4, 1), dim=0.
 bool TestConcatenate2()
 {
     /* create list */
-    TensorList * sList = DBG_NEW TensorList();
+    TensorList * sList = new TensorList();
 
     /* a source tensor of size (2, 1) */
     int sOrder1 = 2;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 1;
 
@@ -181,7 +174,7 @@ bool TestConcatenate2()
 
     /* a source tensor of size (2, 1) */
     int sOrder2 = 2;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 2;
     sDimSize2[1] = 1;
 
@@ -191,7 +184,7 @@ bool TestConcatenate2()
 
     /* a target tensor of size (4, 1) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 4;
     tDimSize[1] = 1;
 
@@ -298,11 +291,11 @@ In this case, (2, 1) + (2, 2) -> (2, 3), dim=1.
 bool TestConcatenate3()
 {
     /* create list */
-    TensorList * sList = DBG_NEW TensorList();
+    TensorList * sList = new TensorList();
 
     /* a source tensor of size (2, 1) */
     int sOrder1 = 2;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 1;
 
@@ -312,7 +305,7 @@ bool TestConcatenate3()
 
     /* a source tensor of size (2, 2) */
     int sOrder2 = 2;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 2;
     sDimSize2[1] = 2;
 
@@ -322,7 +315,7 @@ bool TestConcatenate3()
 
     /* a target tensor of size (2, 3) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 3;
 
@@ -428,7 +421,7 @@ bool TestConcatenate4()
 {
     /* a source tensor of size (2, 1) */
     int sOrder1 = 2;
-    int * sDimSize1 = DBG_NEW int[sOrder1];
+    int * sDimSize1 = new int[sOrder1];
     sDimSize1[0] = 2;
     sDimSize1[1] = 1;
 
@@ -438,7 +431,7 @@ bool TestConcatenate4()
 
     /* a source tensor of size (2, 2) */
     int sOrder2 = 2;
-    int * sDimSize2 = DBG_NEW int[sOrder2];
+    int * sDimSize2 = new int[sOrder2];
     sDimSize2[0] = 2;
     sDimSize2[1] = 2;
 
@@ -448,7 +441,7 @@ bool TestConcatenate4()
 
     /* a target tensor of size (2, 3) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 3;
 

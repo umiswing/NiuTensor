@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -60,7 +53,7 @@ void _LogSoftmax(const XTensor * x, XTensor * y, int leadDim)
     if (!x->isSparse && !y->isSparse &&
         x->dataType == DEFAULT_DTYPE && y->dataType == DEFAULT_DTYPE)
     {
-        int * dimSize = DBG_NEW int[x->order - 1];
+        int * dimSize = new int[x->order - 1];
         for (int i = 0; i < x->order; i++) {
             if (i < leadDim)
                 dimSize[i] = -x->dimSize[i];
@@ -180,7 +173,7 @@ void _LogSoftmax(const XTensor * x, XTensor * y, int leadDim)
 
 /*
 log scale softmax y = log(e^x / \sum_{i} e^{x_i}) (return an XTensor structure) 
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> x - input vector
 >> leadDim - leading dimension (along which we perform reduction)
@@ -209,7 +202,7 @@ XTensor LogSoftmax(const XTensor &x, int leadDim)
 
 /*
 log scale softmax y = log(e^x / \sum_{i} e^{x_i})
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 >> x - input vector
 >> y - output vector
@@ -446,7 +439,7 @@ void _LogSoftmaxBackward(XTensor * gold, XTensor * y, XTensor * x,
                 int sm = dedx->dimSize[dedx->order - 1];
                 int sn = dedx->dimSize[dedx->order - 2];
 
-                int * flags = DBG_NEW int[sm];
+                int * flags = new int[sm];
                 memset(flags, 0, sizeof(int)*sm);
                 int num = gold->GetNonzeroSize();
                 for (int i = 0; i < num; i++) {

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
@@ -92,16 +85,16 @@ void AttEncoder::InitModel(NMTConfig& config)
     CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
     CheckNTErrors(vSize > 1, "Set vocabulary size by \"-vsize\"");
 
-    ffns = DBG_NEW FFN[nlayer];
-    selfAtts = DBG_NEW Attention[nlayer];
-    attLayerNorms = DBG_NEW LayerNorm[nlayer];
-    fnnLayerNorms = DBG_NEW LayerNorm[nlayer];
+    ffns = new FFN[nlayer];
+    selfAtts = new Attention[nlayer];
+    attLayerNorms = new LayerNorm[nlayer];
+    fnnLayerNorms = new LayerNorm[nlayer];
 
     if (finalNorm)
-        encoderLayerNorm = DBG_NEW LayerNorm;
+        encoderLayerNorm = new LayerNorm;
 
     if (useHistory)
-        history = DBG_NEW LayerHistory;
+        history = new LayerHistory;
 
     /* initialize the stacked layers */
     embedder.InitModel(config);

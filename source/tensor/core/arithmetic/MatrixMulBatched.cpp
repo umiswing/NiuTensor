@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -280,7 +273,7 @@ void _MatrixMulBatchedCPU(const TensorList * a, MATRIX_TRANS_TYPE transposedA,
 /*
 matrix multiplication of the two tensors (do it on site)
 c = trans(a) * trans(b) * alpha
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 for each 2-dimensional data array in a (denoted as ai) and
 each 2-dimensional data array in b (denoted as bi), we have
@@ -311,7 +304,7 @@ XTensor MatrixMulBatched(const XTensor &a, MATRIX_TRANS_TYPE transposedA, const 
 
     int order = a.order;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < a.order - 2; i++)
         dimSize[sub++] = a.dimSize[i];
     dimSize[sub++] = an;
@@ -341,7 +334,7 @@ XTensor MatrixMulBatched(const XTensor &a, MATRIX_TRANS_TYPE transposedA, const 
 /*
 matrix multiplication of the two tensors (do it on site)
 c = a * b * alpha
-make a DBG_NEW tensor to keep the result and return it
+make a new tensor to keep the result and return it
 
 for each 2-dimensional data array in a (denoted as ai) and
 each 2-dimensional data array in b (denoted as bi), we have
@@ -369,7 +362,7 @@ XTensor MatrixMulBatched(const XTensor &a, const XTensor &b,
 
     int order = a.order;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < a.order - 2; i++)
         dimSize[sub++] = a.dimSize[i];
     dimSize[sub++] = an;

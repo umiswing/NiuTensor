@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -57,7 +50,7 @@ XTensor MulAndShift(const XTensor &x, const XTensor &w, const XTensor &b,
 
     int order = x.order + w.order - 2;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < x.order - 2; i++)
         dimSize[sub++] = x.dimSize[i];
     for (int i = 0; i < w.order - 2; i++)
@@ -138,7 +131,7 @@ XTensor MulAndShift(const XTensor& x, MATRIX_TRANS_TYPE transposedX,
 
     int order = x.order + w.order - 2;
     int sub = 0;
-    int * dimSize = DBG_NEW int[order];
+    int * dimSize = new int[order];
     for (int i = 0; i < x.order - 2; i++)
         dimSize[sub++] = x.dimSize[i];
     for (int i = 0; i < w.order - 2; i++)

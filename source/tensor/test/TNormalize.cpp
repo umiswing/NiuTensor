@@ -1,10 +1,3 @@
-#ifdef WIN32
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#endif
-#else
-#define DBG_NEW new
-#endif
 /* NiuTrans.Tensor - an open-source tensor library
 * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University.
 * All rights reserved.
@@ -41,7 +34,7 @@ bool TestNormalize1()
 {
     /* a source tensor of size (2, 3) */
     int sOrder = 2;
-    int * sDimSize = DBG_NEW int[sOrder];
+    int * sDimSize = new int[sOrder];
     sDimSize[0] = 2;
     sDimSize[1] = 3;
 
@@ -51,7 +44,7 @@ bool TestNormalize1()
 
     /* a target tensor of size (2, 3) */
     int tOrder = 2;
-    int * tDimSize = DBG_NEW int[tOrder];
+    int * tDimSize = new int[tOrder];
     tDimSize[0] = 2;
     tDimSize[1] = 3;
 
@@ -61,7 +54,7 @@ bool TestNormalize1()
 
     /* a mean tensor of size (3) */
     int meanOrder = 1;
-    int * meanDimSize = DBG_NEW int[meanOrder];
+    int * meanDimSize = new int[meanOrder];
     meanDimSize[0] = 3;
 
     int meanUnitNum = 1;
@@ -70,7 +63,7 @@ bool TestNormalize1()
 
     /* a variance tensor of size (3) */
     int varOrder = 1;
-    int * varDimSize = DBG_NEW int[varOrder];
+    int * varDimSize = new int[varOrder];
     varDimSize[0] = 3;
 
     int varUnitNum = 1;
@@ -79,7 +72,7 @@ bool TestNormalize1()
 
     /* a scale tensor of size (2, 3) */
     int aOrder = 2;
-    int * aDimSize = DBG_NEW int[aOrder];
+    int * aDimSize = new int[aOrder];
     aDimSize[0] = 2;
     aDimSize[1] = 3;
 
@@ -89,7 +82,7 @@ bool TestNormalize1()
 
     /* a bias tensor of size (2, 3) */
     int bOrder = 2;
-    int * bDimSize = DBG_NEW int[bOrder];
+    int * bDimSize = new int[bOrder];
     bDimSize[0] = 2;
     bDimSize[1] = 3;
 
