@@ -85,6 +85,7 @@ void _Normalize(const XTensor * input, XTensor * output, int dim,
 #endif
     }
     else {
+        CheckNTErrors((input->dataType == DEFAULT_DTYPE), "TODO!");
         for (int k = 0; k < blockNum; k++) {
             DTYPE * ip = (DTYPE*)input->data + k * blockSize;
             DTYPE * op = (DTYPE*)output->data + k * blockSize;
