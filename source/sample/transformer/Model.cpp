@@ -409,114 +409,168 @@ void NMTModel::GetParams(TensorList& list)
 {
     list.Clear();
 
-    /* encoder parameters */
-    if (!config->model.decoderOnly) {
-        if (encoder->useHistory) {
-            for (int i = 0; i < encoder->nlayer + 1; i++)
-                list.Add(&encoder->history->weights[i]);
-            for (int i = 0; i < encoder->nlayer; i++) {
-                list.Add(&encoder->history->layerNorms[i].weight);
-                list.Add(&encoder->history->layerNorms[i].bias);
-            }
-        }
-        for (int i = 0; i < encoder->nlayer; i++) {
-            if (config->model.useBigAtt) {
-                list.Add(&encoder->selfAtts[i].weightQ);
-                list.Add(&encoder->selfAtts[i].weightK);
-                list.Add(&encoder->selfAtts[i].weightV);
-                list.Add(&encoder->selfAtts[i].biasQ);
-                list.Add(&encoder->selfAtts[i].biasK);
-                list.Add(&encoder->selfAtts[i].biasV);
-            }
-            else {
-                list.Add(&encoder->selfAtts[i].weightK);
-                list.Add(&encoder->selfAtts[i].biasK);
-                list.Add(&encoder->selfAtts[i].weightV);
-                list.Add(&encoder->selfAtts[i].biasV);
-                list.Add(&encoder->selfAtts[i].weightQ);
-                list.Add(&encoder->selfAtts[i].biasQ);
-            }
-            if (encoder->selfAtts[i].useRPR)
-                list.Add(&encoder->selfAtts[i].RPEmbK);
-            list.Add(&encoder->selfAtts[i].weightO);
-            list.Add(&encoder->selfAtts[i].biasO);
-            list.Add(&encoder->ffns[i].w1);
-            list.Add(&encoder->ffns[i].b1);
-            list.Add(&encoder->ffns[i].w2);
-            list.Add(&encoder->ffns[i].b2);
-            list.Add(&encoder->attLayerNorms[i].weight);
-            list.Add(&encoder->attLayerNorms[i].bias);
-            list.Add(&encoder->fnnLayerNorms[i].weight);
-            list.Add(&encoder->fnnLayerNorms[i].bias);
-        }
-        if (encoder->finalNorm) {
-            list.Add(&encoder->encoderLayerNorm->weight);
-            list.Add(&encoder->encoderLayerNorm->bias);
-        }
-    }
+    if (config->model.useBigAtt) {
 
-    /* decoder parameters */
-    if (decoder->useHistory) {
-        for (int i = 0; i < decoder->nlayer + 1; i++)
-            list.Add(&decoder->history->weights[i]);
-        for (int i = 0; i < decoder->nlayer; i++) {
-            list.Add(&decoder->history->layerNorms[i].weight);
-            list.Add(&decoder->history->layerNorms[i].bias);
-        }
-    }
-
-    for (int i = 0; i < decoder->nlayer; i++) {
-        if (config->model.useBigAtt) {
-            list.Add(&decoder->selfAtts[i].weightQ);
-            list.Add(&decoder->selfAtts[i].weightK);
-            list.Add(&decoder->selfAtts[i].weightV);
-            list.Add(&decoder->selfAtts[i].biasQ);
-            list.Add(&decoder->selfAtts[i].biasK);
-            list.Add(&decoder->selfAtts[i].biasV);
-        }
-        else {
-            list.Add(&decoder->selfAtts[i].weightK);
-            list.Add(&decoder->selfAtts[i].biasK);
-            list.Add(&decoder->selfAtts[i].weightV);
-            list.Add(&decoder->selfAtts[i].biasV);
-            list.Add(&decoder->selfAtts[i].weightQ);
-            list.Add(&decoder->selfAtts[i].biasQ);
-        }
-        if (decoder->selfAtts[i].useRPR)
-            list.Add(&decoder->selfAtts[i].RPEmbK);
-        list.Add(&decoder->selfAtts[i].weightO);
-        list.Add(&decoder->selfAtts[i].biasO);
-        list.Add(&decoder->selfAttLayerNorms[i].weight);
-        list.Add(&decoder->selfAttLayerNorms[i].bias);
+        /* encoder parameters */
         if (!config->model.decoderOnly) {
-            if (config->model.useBigAtt) {
-                list.Add(&decoder->enDeAtts[i].weightQ);
-                list.Add(&decoder->enDeAtts[i].weightK);
-                list.Add(&decoder->enDeAtts[i].weightV);
-                list.Add(&decoder->enDeAtts[i].biasQ);
-                list.Add(&decoder->enDeAtts[i].biasK);
-                list.Add(&decoder->enDeAtts[i].biasV);
+            if (encoder->useHistory) {
+                for (int i = 0; i < encoder->nlayer + 1; i++)
+                    list.Add(&encoder->history->weights[i]);
+                for (int i = 0; i < encoder->nlayer; i++) {
+                    list.Add(&encoder->history->layerNorms[i].weight);
+                    list.Add(&encoder->history->layerNorms[i].bias);
+                }
             }
-            else {
-                list.Add(&decoder->enDeAtts[i].weightK);
-                list.Add(&decoder->enDeAtts[i].biasK);
-                list.Add(&decoder->enDeAtts[i].weightV);
-                list.Add(&decoder->enDeAtts[i].biasV);
-                list.Add(&decoder->enDeAtts[i].weightQ);
-                list.Add(&decoder->enDeAtts[i].biasQ);
+            for (int i = 0; i < encoder->nlayer; i++) {
+                list.Add(&encoder->selfAtts[i].weightQ);
+                list.Add(&encoder->selfAtts[i].weightK);
+                list.Add(&encoder->selfAtts[i].weightV);
+                list.Add(&encoder->selfAtts[i].biasQ);
+                list.Add(&encoder->selfAtts[i].biasK);
+                list.Add(&encoder->selfAtts[i].biasV);
+                if (encoder->selfAtts[i].useRPR)
+                    list.Add(&encoder->selfAtts[i].RPEmbK);
+                list.Add(&encoder->selfAtts[i].weightO);
+                list.Add(&encoder->selfAtts[i].biasO);
+                list.Add(&encoder->ffns[i].w1);
+                list.Add(&encoder->ffns[i].b1);
+                list.Add(&encoder->ffns[i].w2);
+                list.Add(&encoder->ffns[i].b2);
+                list.Add(&encoder->attLayerNorms[i].weight);
+                list.Add(&encoder->attLayerNorms[i].bias);
+                list.Add(&encoder->fnnLayerNorms[i].weight);
+                list.Add(&encoder->fnnLayerNorms[i].bias);
             }
-            list.Add(&decoder->enDeAtts[i].weightO);
-            list.Add(&decoder->enDeAtts[i].biasO);
-            list.Add(&decoder->enDeAttLayerNorms[i].weight);
-            list.Add(&decoder->enDeAttLayerNorms[i].bias);
+            if (encoder->finalNorm) {
+                list.Add(&encoder->encoderLayerNorm->weight);
+                list.Add(&encoder->encoderLayerNorm->bias);
+            }
         }
-        list.Add(&decoder->ffns[i].w1);
-        list.Add(&decoder->ffns[i].b1);
-        list.Add(&decoder->ffns[i].w2);
-        list.Add(&decoder->ffns[i].b2);
-        list.Add(&decoder->ffnLayerNorms[i].weight);
-        list.Add(&decoder->ffnLayerNorms[i].bias);
+
+        /* decoder parameters */
+        if (decoder->useHistory) {
+            for (int i = 0; i < decoder->nlayer + 1; i++)
+                list.Add(&decoder->history->weights[i]);
+            for (int i = 0; i < decoder->nlayer; i++) {
+                list.Add(&decoder->history->layerNorms[i].weight);
+                list.Add(&decoder->history->layerNorms[i].bias);
+            }
+        }
+
+        for (int i = 0; i < decoder->nlayer; i++) {
+            list.Add(&decoder->selfAtts[i].weightQ);
+            list.Add(&decoder->selfAtts[i].weightK);
+            list.Add(&decoder->selfAtts[i].weightV);
+            list.Add(&decoder->selfAtts[i].biasQ);
+            list.Add(&decoder->selfAtts[i].biasK);
+            list.Add(&decoder->selfAtts[i].biasV);
+            if (decoder->selfAtts[i].useRPR)
+                list.Add(&decoder->selfAtts[i].RPEmbK);
+            list.Add(&decoder->selfAtts[i].weightO);
+            list.Add(&decoder->selfAtts[i].biasO);
+            list.Add(&decoder->selfAttLayerNorms[i].weight);
+            list.Add(&decoder->selfAttLayerNorms[i].bias);
+            if (!config->model.decoderOnly) {
+                list.Add(&decoder->enDeAtts[i].weightQ);
+                list.Add(&decoder->enDeAtts[i].weightK);
+                list.Add(&decoder->enDeAtts[i].weightV);
+                list.Add(&decoder->enDeAtts[i].biasQ);
+                list.Add(&decoder->enDeAtts[i].biasK);
+                list.Add(&decoder->enDeAtts[i].biasV);
+                list.Add(&decoder->enDeAtts[i].weightO);
+                list.Add(&decoder->enDeAtts[i].biasO);
+                list.Add(&decoder->enDeAttLayerNorms[i].weight);
+                list.Add(&decoder->enDeAttLayerNorms[i].bias);
+            }
+            list.Add(&decoder->ffns[i].w1);
+            list.Add(&decoder->ffns[i].b1);
+            list.Add(&decoder->ffns[i].w2);
+            list.Add(&decoder->ffns[i].b2);
+            list.Add(&decoder->ffnLayerNorms[i].weight);
+            list.Add(&decoder->ffnLayerNorms[i].bias);
+        }
     }
+    else {
+        /* encoder parameters */
+        if (!config->model.decoderOnly) {
+            if (encoder->useHistory) {
+                for (int i = 0; i < encoder->nlayer + 1; i++)
+                    list.Add(&encoder->history->weights[i]);
+                for (int i = 0; i < encoder->nlayer; i++) {
+                    list.Add(&encoder->history->layerNorms[i].weight);
+                    list.Add(&encoder->history->layerNorms[i].bias);
+                }
+            }
+            for (int i = 0; i < encoder->nlayer; i++) {
+                if (encoder->selfAtts[i].useRPR)
+                    list.Add(&encoder->selfAtts[i].RPEmbK);
+                list.Add(&encoder->selfAtts[i].weightK);
+                list.Add(&encoder->selfAtts[i].biasK);
+                list.Add(&encoder->selfAtts[i].weightV);
+                list.Add(&encoder->selfAtts[i].biasV);
+                list.Add(&encoder->selfAtts[i].weightQ);
+                list.Add(&encoder->selfAtts[i].biasQ);
+                list.Add(&encoder->selfAtts[i].weightO);
+                list.Add(&encoder->selfAtts[i].biasO);
+                list.Add(&encoder->attLayerNorms[i].weight);
+                list.Add(&encoder->attLayerNorms[i].bias);
+                list.Add(&encoder->ffns[i].w1);
+                list.Add(&encoder->ffns[i].b1);
+                list.Add(&encoder->ffns[i].w2);
+                list.Add(&encoder->ffns[i].b2);
+                list.Add(&encoder->fnnLayerNorms[i].weight);
+                list.Add(&encoder->fnnLayerNorms[i].bias);
+            }
+            if (encoder->finalNorm) {
+                list.Add(&encoder->encoderLayerNorm->weight);
+                list.Add(&encoder->encoderLayerNorm->bias);
+            }
+        }
+
+        /* decoder parameters */
+        if (decoder->useHistory) {
+            for (int i = 0; i < decoder->nlayer + 1; i++)
+                list.Add(&decoder->history->weights[i]);
+            for (int i = 0; i < decoder->nlayer; i++) {
+                list.Add(&decoder->history->layerNorms[i].weight);
+                list.Add(&decoder->history->layerNorms[i].bias);
+            }
+        }
+
+        for (int i = 0; i < decoder->nlayer; i++) {
+            if (decoder->selfAtts[i].useRPR)
+                list.Add(&decoder->selfAtts[i].RPEmbK);
+            list.Add(&decoder->selfAtts[i].weightK);
+            list.Add(&decoder->selfAtts[i].biasK);
+            list.Add(&decoder->selfAtts[i].weightV);
+            list.Add(&decoder->selfAtts[i].biasV);
+            list.Add(&decoder->selfAtts[i].weightQ);
+            list.Add(&decoder->selfAtts[i].biasQ);
+            list.Add(&decoder->selfAtts[i].weightO);
+            list.Add(&decoder->selfAtts[i].biasO);
+            list.Add(&decoder->selfAttLayerNorms[i].weight);
+            list.Add(&decoder->selfAttLayerNorms[i].bias);
+            if (!config->model.decoderOnly) {
+                list.Add(&decoder->enDeAtts[i].weightK);
+                list.Add(&decoder->enDeAtts[i].biasK);
+                list.Add(&decoder->enDeAtts[i].weightV);
+                list.Add(&decoder->enDeAtts[i].biasV);
+                list.Add(&decoder->enDeAtts[i].weightQ);
+                list.Add(&decoder->enDeAtts[i].biasQ);
+                list.Add(&decoder->enDeAtts[i].weightO);
+                list.Add(&decoder->enDeAtts[i].biasO);
+                list.Add(&decoder->enDeAttLayerNorms[i].weight);
+                list.Add(&decoder->enDeAttLayerNorms[i].bias);
+            }
+            list.Add(&decoder->ffns[i].w1);
+            list.Add(&decoder->ffns[i].b1);
+            list.Add(&decoder->ffns[i].w2);
+            list.Add(&decoder->ffns[i].b2);
+            list.Add(&decoder->ffnLayerNorms[i].weight);
+            list.Add(&decoder->ffnLayerNorms[i].bias);
+        }
+    }
+
     if (decoder->finalNorm) {
         list.Add(&decoder->decoderLayerNorm->weight);
         list.Add(&decoder->decoderLayerNorm->bias);

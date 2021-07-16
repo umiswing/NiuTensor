@@ -173,7 +173,7 @@ void TranslationConfig::Load(int argsNum, const char** args)
     LoadString("output", outputFN, "");
     LoadInt("maxlen", &maxLen, 200);
     LoadInt("beam", &beamSize, 1);
-    LoadFloat("lenalpha", &lenAlpha, 3.0F);
+    LoadFloat("lenalpha", &lenAlpha, 0.F);
 
     /* smaller value may leads to worse translations but higher speed */
     LoadFloat("maxlenalpha", &maxLenAlpha, 1.25F);

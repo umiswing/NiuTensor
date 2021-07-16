@@ -1,1 +1,1 @@
--dev 0 -model ../data/model.fp32 -srcvocab ../data/vocab -tgtvocab ../data/vocab -input ../data/en.txt -output ../data/res.txt -beam 1 -sbatch 512 -wbatch 5120
+-dev 0 -model ../data/model.fp32 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en -input ../data/en.txt -output ../data/res.txt -beam 1 -sbatch 512 -wbatch 5120 --maxlenalpha 2.0

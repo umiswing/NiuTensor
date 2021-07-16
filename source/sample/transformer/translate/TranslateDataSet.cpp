@@ -114,7 +114,7 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
     Sample* longestsample = (Sample*)(buf->Get(bufIdx));
     int maxLen = int(longestsample->srcSeq->Size());
 
-    /* todo: test with different settings */
+    /* we choose the max-token strategy to maximize the throughput */
     const int REQUIRE_MULTIPLE = 8;
     const int MAX_BATCH_SIZE = 1024;
     while (realBatchSize * maxLen * config->translation.beamSize < config->common.wBatchSize

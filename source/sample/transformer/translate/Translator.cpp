@@ -66,15 +66,15 @@ void Translator::Init(NMTConfig& myConfig, NMTModel& myModel)
     config = &myConfig;
 
     if (config->translation.beamSize > 1) {
-        LOG("Translating with beam search (beam=%d, batchSize=%d, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
-            config->translation.beamSize, config->common.sBatchSize,
+        LOG("Translating with beam search (beam=%d, batchSize=%dtokens, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
+            config->translation.beamSize, config->common.wBatchSize,
             config->translation.lenAlpha, config->translation.maxLenAlpha);
         seacher = DBG_NEW BeamSearch();
         ((BeamSearch*)seacher)->Init(myConfig);
     }
     else if (config->translation.beamSize == 1) {
-        LOG("Translating with greedy search (batchSize=%d, maxLenAlpha=%.2f)", 
-            config->common.sBatchSize, config->translation.maxLenAlpha);
+        LOG("Translating with greedy search (batchSize=%dtokens, maxLenAlpha=%.2f)", 
+            config->common.wBatchSize, config->translation.maxLenAlpha);
         seacher = DBG_NEW GreedySearch();
         ((GreedySearch*)seacher)->Init(myConfig);
     }
@@ -198,7 +198,7 @@ void Translator::DumpResToFile(const char* ofn)
         buffer += "\n";
     }
     FILE* f = fopen(ofn, "w");
-    fwrite(buffer.c_str(), 1, buffer.length() - 1, f);
+    fwrite(buffer.c_str(), 1, buffer.length(), f);
 }
 
 /* dump the translation results to stdout */
@@ -216,7 +216,7 @@ void Translator::DumpResToStdout()
         }
         buffer += "\n";
     }
-    fwrite(buffer.c_str(), 1, buffer.length() - 1, stdout);
+    fwrite(buffer.c_str(), 1, buffer.length(), stdout);
 }
 
 } /* end of the nmt (NiuTrans.NMT) namespace */
