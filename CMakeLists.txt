@@ -117,13 +117,13 @@ if(USE_CUDA)
     if(USE_HALF_PRECISION)
         message(STATUS "try to compile with half precision")
         if(NOT DEFINED GPU_ARCH)
-            set(ARCH_FLAGS -arch=sm_60
-                -gencode=arch=compute_60,code=sm_60
-                -gencode=arch=compute_61,code=sm_61
-                -gencode=arch=compute_62,code=sm_62
-                -gencode=arch=compute_70,code=sm_70
-                -gencode=arch=compute_72,code=sm_72
+            message(STATUS "compile cuda with multiple archs")
+            set(ARCH_FLAGS -gencode=arch=compute_70,code=sm_70
                 -gencode=arch=compute_70,code=compute_70
+                -gencode=arch=compute_75,code=sm_75
+                -gencode=arch=compute_75,code=compute_75
+                -gencode=arch=compute_80,code=sm_80
+                -gencode=arch=compute_80,code=compute_80
             )
         elseif(${GPU_ARCH} STREQUAL K OR ${GPU_ARCH} STREQUAL M)
             message(FATAL_ERROR "your GPU cannot use the function half precision")
@@ -140,10 +140,10 @@ if(USE_CUDA)
         include_directories("${CUDA_TOOLKIT_ROOT}/include")
         set(CUDA_LIB_DIR "${CUDA_TOOLKIT_ROOT}/lib/x64/")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}cublas.lib")
-        if(CUDA_VERSION GREATER_EQUAL 10.1)
+        if(CUDA_VERSION_MAJOR GREATER_EQUAL 10)
+            message(STATUS "CUDA_LIB_PATH:" "${CUDA_LIB_PATH}")
             set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}cublasLt.lib")
         endif()
-        message(STATUS "CUDA_LIB_PATH:" "${CUDA_LIB_PATH}")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}npps.lib")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}nppc.lib")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}cudadevrt.lib")
@@ -157,10 +157,10 @@ if(USE_CUDA)
         include_directories("${CUDA_TOOLKIT_ROOT}/include")
         set(CUDA_LIB_DIR "${CUDA_TOOLKIT_ROOT}/lib64/")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}libcublas_static.a")
-        if(CUDA_VERSION GREATER_EQUAL 10.1)
+        if(CUDA_VERSION_MAJOR GREATER_EQUAL 10)
+            message(STATUS "CUDA_LIB_PATH:" "${CUDA_LIB_PATH}")
             set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}libcublasLt_static.a")
         endif()
-        message(STATUS "CUDA_LIB_PATH:" "${CUDA_LIB_PATH}")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}libculibos.a")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}libnpps_static.a")
         set(CUDA_LIB_PATH ${CUDA_LIB_PATH} "${CUDA_LIB_DIR}libnppc_static.a")

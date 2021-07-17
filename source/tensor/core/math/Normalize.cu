@@ -79,8 +79,8 @@ void KernelNormalize(T * input, T * output, T * mean, T * var,
     }
     else if (datatype == X_FLOAT16) {
 #if __CUDA_ARCH__ >= 600
-        output[offset] = __hadd(__hdiv(__hmul(a[inBlockOffset], __hsub(input[offset], iMean[threadIdx.x])),
-                         hsqrt(iVar[threadIdx.x] + epsilon)), __float2half(b[inBlockOffset]));
+        output[offset] = __hadd(__hdiv(__hmul(a[inBlockOffset], __hsub((half)input[offset], (half)iMean[threadIdx.x])),
+                         hsqrt((half)iVar[threadIdx.x] + (half)epsilon)), __float2half(b[inBlockOffset]));
 #endif
     }
 }
