@@ -22,13 +22,13 @@ Windows上会生成NiuTensor.sln，打开后右键解决方案中的NiuTensor，
 bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab -wbatch 40960 -input ../data/en.txt -output ../data/res.txt 
 ```
 
-# 读取标准输入并打印结果
+## 读取标准输入并打印结果
 
 ```bash
 bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab -wbatch 40960 < input.txt
 ```
 
-# 读取标准输入并重定向结果
+## 读取标准输入并重定向结果
 
 ```bash
 bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab -wbatch 40960 < input.txt > output.txt
