@@ -8,13 +8,8 @@ build/
 xxx/
 bin/
 .vs/
-data/config.fp16
-data/config.fp32
 data/model.fp32
 data/model.fp16
 data/res.txt
 data/output.txt
-data/report1.qdrep
-res.txt
-data/
 replace.py
