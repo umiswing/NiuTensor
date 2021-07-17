@@ -109,7 +109,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
-    LoadInt("maxsrc", &maxSrcLen, -1);
+    LoadInt("maxsrc", &maxSrcLen, 160);
     LoadInt("encheads", &encSelfAttHeadNum, -1);
     LoadInt("encemb", &encEmbDim, -1);
     LoadInt("encffn", &encFFNHiddenDim, -1);
@@ -185,7 +185,7 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadInt("loginterval", &logInterval, 100);
     LoadInt("wbatch", &wBatchSize, 51200);
     LoadInt("sbatch", &sBatchSize, 128);
-    LoadInt("bufsize", &bufSize, 1000000);
+    LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, -1);
     LoadBool("fp16", &useFP16, false);
 }

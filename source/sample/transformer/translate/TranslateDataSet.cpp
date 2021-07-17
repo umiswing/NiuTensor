@@ -215,7 +215,7 @@ bool TranslateDataset::IsEmpty() {
 /* de-constructor */
 TranslateDataset::~TranslateDataset()
 {
-    if (ifp != NULL) {
+    if (ifp != NULL && strcmp(config->translation.inputFN, "") != 0) {
         ((ifstream*)(ifp))->close();
         delete ifp;
     }

@@ -25,7 +25,7 @@ using namespace nmt;
 
 int main(int argc, const char ** argv)
 {
-    NMTMain(argc - 1, argv + 1);
+    NMTMain(argc, argv);
 
     return 0;
 }

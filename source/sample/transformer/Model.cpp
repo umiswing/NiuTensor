@@ -101,11 +101,13 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         fread(&(config->model.useDecHistory), sizeof(bool), 1, modelFile);
         fread(&(config->model.shareEncDecEmb), sizeof(bool), 1, modelFile);
         fread(&(config->model.shareDecInputOutputEmb), sizeof(bool), 1, modelFile);
+
+        int maxSrcLen = config->model.maxSrcLen;
         for (auto c : intConfig) {
             fread(c, sizeof(int), 1, modelFile);
         }
-        /* note that the maximum source length is reset to 150 */
-        //config->model.maxSrcLen = MIN(150, config->model.maxSrcLen);
+        /* reset the maximum source sentence length */
+        config->model.maxSrcLen = MIN(maxSrcLen, config->model.maxSrcLen);
     }
     else {
         /* read the source and target vocab size */
