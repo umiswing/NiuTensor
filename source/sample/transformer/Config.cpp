@@ -169,7 +169,7 @@ void TranslationConfig::Load(int argsNum, const char** args)
     LoadFloat("lenalpha", &lenAlpha, 0.F);
 
     /* smaller value may leads to worse translations but higher speed */
-    LoadFloat("maxlenalpha", &maxLenAlpha, 1.25F);
+    LoadFloat("maxlenalpha", &maxLenAlpha, 1.15F);
 }
 
 /* load training configuration from the command */
@@ -183,8 +183,8 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadInt("dev", &devID, -1);
     LoadInt("seed", &seed, 1);
     LoadInt("loginterval", &logInterval, 100);
-    LoadInt("wbatch", &wBatchSize, 51200);
-    LoadInt("sbatch", &sBatchSize, 128);
+    LoadInt("wbatch", &wBatchSize, 40960);
+    LoadInt("sbatch", &sBatchSize, 768);
     LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, -1);
     LoadBool("fp16", &useFP16, false);

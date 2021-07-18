@@ -64,9 +64,6 @@ public:
     /* initialize the model */
     void InitModel(int myDevID, int hiddenSize);
 
-    /* make the network */
-    XTensor Make(XTensor& input);
-
     /* run layernorm for inference */
     XTensor RunFast(XTensor& input);
 };

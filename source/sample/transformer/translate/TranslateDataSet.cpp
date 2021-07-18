@@ -109,9 +109,9 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     /* we choose the max-token strategy to maximize the throughput */
     const int REQUIRE_MULTIPLE = 8;
-    const int MAX_BATCH_SIZE = 1024;
+    const int MAX_BATCH_SIZE = 512;
     while (realBatchSize * maxLen * config->translation.beamSize < config->common.wBatchSize
-           && realBatchSize < MAX_BATCH_SIZE) {
+           && realBatchSize < config->common.sBatchSize) {
         realBatchSize++;
     }
     realBatchSize = MAX(8 * (realBatchSize / 8), realBatchSize % 8);

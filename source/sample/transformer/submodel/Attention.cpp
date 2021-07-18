@@ -201,6 +201,10 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* ma
 
     /* Some operations may cause numerical overflow under FP16 including
        BMMul, Mask, Div and Softmax. So we need to cast the input to FP32 */
+    if (isTraining)
+        qheads = ScaleAndShift(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
+    else
+        ScaleMe(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
     if (qheads.dataType == X_FLOAT16) {
         qheads = ConvertDataType(qheads, X_FLOAT);
         kheads = ConvertDataType(kheads, X_FLOAT);
@@ -212,8 +216,6 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* ma
 
     if (mask)
         dot = Sum(dot, *mask, /*inplace=*/true);
-
-    dot = Linear(dot, 1.0F / (float)sqrt((float)kDim / nhead), 0.0F, true);
 
     scalar = Softmax(dot, -1);
 

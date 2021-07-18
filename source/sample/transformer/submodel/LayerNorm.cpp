@@ -61,58 +61,6 @@ void LayerNorm::InitModel(int myDevID, int hiddenSize)
 }
 
 /*
-make the network
->> input - the input tensor
->> return - layer normalization output
-*/
-XTensor LayerNorm::Make(XTensor& input)
-{
-    XTensor& x = input;
-    XTensor xn;
-    XTensor mean;
-    XTensor variance;
-    XTensor standard;
-    XTensor meanFilled;
-    XTensor standardFilled;
-
-    TENSOR_DATA_TYPE dataType = input.dataType;
-
-    if (dataType == X_FLOAT16) {
-        /* reduce functions can only run with FP32 */
-        x = ConvertDataType(input, X_FLOAT);
-    }
-
-    /* \mu = (sum_i x_i)/m */
-    mean = ReduceMean(x, x.order - 1);
-
-    /* \sigma = (sum_i (x_i - \mu)^2)/m */
-    variance = ReduceVariance(x, x.order - 1, mean);
-
-    /* standard = sqrt(variance) */
-    standard = Power(variance, 0.5F);
-
-    /* unsqueeze mean and standard deviation to fit them into
-       the same shape of x */
-    meanFilled = Unsqueeze(mean, x.order - 1, x.GetDim(-1));
-    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1));
-
-    /* x' = (x - \mu)/standard */
-    xn = (x - meanFilled) / standardFilled;
-
-    if (dataType != mean.dataType) {
-        x = ConvertDataType(x, dataType);
-        xn = ConvertDataType(xn, dataType);
-    }
-
-    /* result = x' * w + b   */
-    xn = xn * weight;
-
-    xn = Sum(xn, bias, true);
-
-    return xn;
-}
-
-/*
 run layernorm for inference
 >> input - the input tensor
 >> return - layer normalization output
@@ -129,10 +77,6 @@ XTensor LayerNorm::RunFast(XTensor& input)
     if (dataType == X_FLOAT16) {
         x = ConvertDataType(x, X_FLOAT);
     }
-    if (weight.dataType != x.dataType) {
-        weight = ConvertDataType(weight, x.dataType);
-        bias = ConvertDataType(bias, x.dataType);
-    }
 
     /* \mu = (sum_i x_i)/m */
     mean = ReduceMean(x, x.order - 1);
@@ -140,12 +84,13 @@ XTensor LayerNorm::RunFast(XTensor& input)
     /* \sigma = (sum_i (x_i - \mu)^2)/m */
     variance = ReduceVariance(x, x.order - 1, mean);
 
-    xn = Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
-
-    if (dataType != mean.dataType) {
+    if (dataType != x.dataType) {
         x = ConvertDataType(x, dataType);
-        xn = ConvertDataType(xn, dataType);
+        mean = ConvertDataType(mean, dataType);
+        variance = ConvertDataType(variance, dataType);
     }
+
+    xn = Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
 
     return xn;
 }
