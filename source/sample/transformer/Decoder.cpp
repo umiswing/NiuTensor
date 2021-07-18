@@ -248,68 +248,42 @@ run decoding for inference with pre-norm
 */
 XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTensor* maskEncDec, int nstep)
 {
-    /* clear the history */
-    if (useHistory)
-        history->ClearHistory();
-
     XTensor x;
 
     x = embedder.Make(inputDec, true, nstep);
 
-    if (useHistory)
-        history->Add(x);
-
     for (int i = 0; i < nlayer; i++) {
-        XTensor selfAtt;
-        XTensor endeAtt;
-        XTensor selfAttnBefore;
-        XTensor endeAttnBefore;
-        XTensor ffnBefore;
-        XTensor ffn;
-
-        if (useHistory)
-            x = history->Pop();
+        XTensor xn;
 
         /* layer normalization with pre-norm for self-attn */
-        selfAttnBefore = selfAttLayerNorms[i].RunFast(x);
+        xn = selfAttLayerNorms[i].RunFast(x);
 
         /******************/
         /* self attention */
-        selfAtt = selfAtts[i].Make(selfAttnBefore, selfAttnBefore, selfAttnBefore,
-                                   NULL, &selfAttCache[i], SELF_ATT);
+        xn = selfAtts[i].Make(xn, xn, xn, NULL, &selfAttCache[i], SELF_ATT);
 
         /* residual connection */
-        SumMe(selfAtt, x);
+        SumMe(xn, x);
 
         /* layer normalization with pre-norm for encoder-decoder attention */
-        endeAttnBefore = enDeAttLayerNorms[i].RunFast(selfAtt);
+        x = enDeAttLayerNorms[i].RunFast(xn);
 
         /* encoder-decoder attention */
-        endeAtt = enDeAtts[i].Make(outputEnc, endeAttnBefore, outputEnc, maskEncDec,
-                                   &enDeAttCache[i], EN_DE_ATT);
+        x = enDeAtts[i].Make(outputEnc, x, outputEnc, maskEncDec,
+                             &enDeAttCache[i], EN_DE_ATT);
 
         /* residual connection */
-        SumMe(endeAtt, selfAtt);
+        SumMe(x, xn);
 
         /* layer normalization with pre-norm for ffn */
-        ffnBefore = ffnLayerNorms[i].RunFast(endeAtt);
+        xn = ffnLayerNorms[i].RunFast(x);
 
         /* ffn */
-        ffn = ffns[i].Make(ffnBefore);
+        xn = ffns[i].Make(xn);
 
         /* residual connection */
-        x = ffn + endeAtt;
-
-        if (useHistory)
-            history->Add(x);
+        SumMe(x, xn);
     }
-
-    if (useHistory)
-        x = history->Pop();
-
-    /* clear the history while not training */
-    if (useHistory && !isTraining)
-        history->ClearHistory();
 
     if (finalNorm)
         return decoderLayerNorm->RunFast(x);

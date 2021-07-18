@@ -206,7 +206,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTenso
     /* scalar = softmax(Q * K^T / sqrt(dk)) * V */
     att = BMMul(qheads, X_NOTRANS, kheads, X_TRANS);
 
-    if (qheads.dataType == X_FLOAT16) {
+    if (att.dataType == X_FLOAT16) {
         att = ConvertDataType(att, X_FLOAT);
     }
 
