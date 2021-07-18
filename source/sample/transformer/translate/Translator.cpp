@@ -192,6 +192,7 @@ void Translator::DumpResToFile(const char* ofn)
     }
     FILE* f = fopen(ofn, "w");
     fwrite(buffer.c_str(), 1, buffer.length(), f);
+    fclose(f);
 }
 
 /* dump the translation results to stdout */
