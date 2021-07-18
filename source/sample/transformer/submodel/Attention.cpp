@@ -182,22 +182,19 @@ make the attention network given keys, queries and values (after linear transfor
 >> v - values, B * L * H
 >> mask - as it is
 */
-XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* mask)
+XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTensor* mask)
 {
     XTensor kheads;
-    XTensor qheads;
     XTensor vheads;
 
     const auto dataType = k.dataType;
 
     /* multi head */
     kheads = Split(k, k.order - 1, nhead);
-    qheads = Split(q, q.order - 1, nhead);
+    qheads = Split(qheads, qheads.order - 1, nhead);
     vheads = Split(v, v.order - 1, nhead);
 
     XTensor att;
-    XTensor dot;
-    XTensor scalar;
 
     /* Some operations may cause numerical overflow under FP16 including
        BMMul, Mask, Div and Softmax. So we need to cast the input to FP32 */
@@ -208,24 +205,28 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* ma
     if (qheads.dataType == X_FLOAT16) {
         qheads = ConvertDataType(qheads, X_FLOAT);
         kheads = ConvertDataType(kheads, X_FLOAT);
-        vheads = ConvertDataType(vheads, X_FLOAT);
+        //vheads = ConvertDataType(vheads, X_FLOAT);
     }
 
     /* scalar = softmax(Q * K^T / sqrt(dk)) * V */
-    dot = BMMul(qheads, X_NOTRANS, kheads, X_TRANS);
+    att = BMMul(qheads, X_NOTRANS, kheads, X_TRANS);
 
-    if (mask)
-        dot = Sum(dot, *mask, /*inplace=*/true);
+    if (mask) {
+        if (isTraining)
+            att = Sum(att, *mask, /*inplace=*/true);
+        else
+            SumMe(att, *mask);
+    }
 
-    scalar = Softmax(dot, -1);
+    att = Softmax(att, -1);
 
     if (isTraining && dropoutP > 0)
-        scalar = Dropout(scalar, dropoutP);
-
-    att = BMMul(scalar, vheads);
+        att = Dropout(att, dropoutP);
 
     if (dataType != att.dataType)
         att = ConvertDataType(att, dataType);
+
+    att = BMMul(att, vheads);
 
     /* concatenate the heads */
     return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
