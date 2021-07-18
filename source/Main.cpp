@@ -19,12 +19,16 @@
  * $Created by: XIAO Tong (xiaotong@mail.neu.edu.cn) 2018-07-10
  */
 
+#include <iostream>
 #include "./sample/transformer/NMT.h"
 
 using namespace nmt;
 
 int main(int argc, const char ** argv)
 {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
+
     NMTMain(argc, argv);
 
     return 0;

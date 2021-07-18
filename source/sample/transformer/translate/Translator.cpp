@@ -178,39 +178,33 @@ bool Translator::Translate()
 /* dump the translation results to a file */
 void Translator::DumpResToFile(const char* ofn)
 {
-    string buffer;
+    ofstream f(ofn);
     for (int i = 0; i < outputBuf->Size(); i++) {
         Sample* sample = (Sample*)outputBuf->Get(i);
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {
                 int id = sample->tgtSeq->Get(j);
-                buffer += batchLoader.tgtVocab.id2token[id];
-                buffer += " ";
+                f << batchLoader.tgtVocab.id2token[id] << " ";
             }
         }
-        buffer += "\n";
+        f << "\n";
     }
-    FILE* f = fopen(ofn, "w");
-    fwrite(buffer.c_str(), 1, buffer.length(), f);
-    fclose(f);
+    f.close();
 }
 
 /* dump the translation results to stdout */
 void Translator::DumpResToStdout()
 {
-    string buffer;
     for (int i = 0; i < outputBuf->Size(); i++) {
         Sample* sample = (Sample*)outputBuf->Get(i);
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {
                 int id = sample->tgtSeq->Get(j);
-                buffer += batchLoader.tgtVocab.id2token[id];
-                buffer += " ";
+                cout << batchLoader.tgtVocab.id2token[id] <<  " ";
             }
         }
-        buffer += "\n";
+        cout << "\n";
     }
-    fwrite(buffer.c_str(), 1, buffer.length(), stdout);
 }
 
 } /* end of the nmt (NiuTrans.NMT) namespace */
