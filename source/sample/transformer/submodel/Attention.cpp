@@ -202,14 +202,13 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTenso
         qheads = ScaleAndShift(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
     else
         ScaleMe(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
-    if (qheads.dataType == X_FLOAT16) {
-        qheads = ConvertDataType(qheads, X_FLOAT);
-        kheads = ConvertDataType(kheads, X_FLOAT);
-        //vheads = ConvertDataType(vheads, X_FLOAT);
-    }
 
     /* scalar = softmax(Q * K^T / sqrt(dk)) * V */
     att = BMMul(qheads, X_NOTRANS, kheads, X_TRANS);
+
+    if (qheads.dataType == X_FLOAT16) {
+        att = ConvertDataType(att, X_FLOAT);
+    }
 
     if (mask) {
         if (isTraining)

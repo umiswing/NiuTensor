@@ -155,7 +155,7 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
     XTensor* batchEnc = (XTensor*)(inputs->Get(0));
     XTensor* paddingEnc = (XTensor*)(inputs->Get(1));
     InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT);
-    InitTensor2D(paddingEnc, realBatchSize, maxLen, X_FLOAT);
+    InitTensor2D(paddingEnc, realBatchSize, maxLen, config->common.useFP16 ? X_FLOAT : X_FLOAT);
     batchEnc->SetData(batchValues, batchEnc->unitNum);
     paddingEnc->SetData(paddingValues, paddingEnc->unitNum);
 

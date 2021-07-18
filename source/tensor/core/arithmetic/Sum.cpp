@@ -206,6 +206,7 @@ keep the result in the tensor a and return nothing
 */
 void SumMe(XTensor & a, const XTensor & b, DTYPE beta)
 {
+    CheckNTErrors(a.dataType == b.dataType, "Unmatched data type");
     if (b.order == 0){
         DTYPE shift = b.Get0D() * beta;
         _ScaleAndShift(&a, &a, 1.0F, shift);
