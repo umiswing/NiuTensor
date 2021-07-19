@@ -1,1 +1,1 @@
--dev 0 -model ../data/model.fp32 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en -input ../data/test.txt -output ../data/res.txt -beam 1
+-dev 0 -model ../data/model.fp32 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en -input ../data/test.txt -output ../data/res.txt

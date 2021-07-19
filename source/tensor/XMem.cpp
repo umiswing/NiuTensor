@@ -847,13 +847,13 @@ void * XMem::AllocStandard(int myDevID, MTYPE mySize, bool myIsRebuiltIndex)
 /* lock the buffer mutex */
 void XMem::LockBuf()
 {
-    MUTEX_LOCK(bufMutex);
+    //MUTEX_LOCK(bufMutex);
 }
 
 /* unlock the buffer mutex */
 void XMem::UnlockBuf()
 {
-    MUTEX_UNLOCK(bufMutex);
+    //MUTEX_UNLOCK(bufMutex);
 }
 
 /* 

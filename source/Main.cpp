@@ -20,9 +20,21 @@
  */
 
 #include <iostream>
+#include "tensor/core/CHeader.h"
+#include "tensor/function/Softmax.h"
 #include "./sample/transformer/NMT.h"
 
+
+using namespace nts;
 using namespace nmt;
+
+void test() {
+    XTensor x;
+    InitTensor4D(&x, 8, 1, 1, 1, X_FLOAT, 0);
+    x.SetDataRand();
+    x = Softmax(x, -1);
+    x.Dump(stderr);
+}
 
 int main(int argc, const char ** argv)
 {
@@ -30,6 +42,7 @@ int main(int argc, const char ** argv)
     std::cin.tie(NULL);
 
     NMTMain(argc, argv);
+    //test();
 
     return 0;
 }

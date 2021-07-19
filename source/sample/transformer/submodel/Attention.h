@@ -141,7 +141,7 @@ public:
                  XTensor* mask, Cache* cache, int cacheType);
 
     /* make the attention network given keys, queries and values (after linear transformation) */
-    XTensor MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* mask);
+    XTensor MakeAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* mask, bool isEnc);
 
     /* make the attention network given keys, queries and values (after linear transformation) */
     XTensor MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v, XTensor* mask, bool isEnc);

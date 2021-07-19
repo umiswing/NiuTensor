@@ -66,6 +66,9 @@ public:
 
     /* run layernorm for inference */
     XTensor RunFast(XTensor& input);
+
+    /* run layernorm-l1 for inference */
+    XTensor RunL1Fast(XTensor& input);
 };
 
 } /* end of the nmt (NiuTrans.NMT) namespace */

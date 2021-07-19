@@ -141,7 +141,7 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
 
         if (useRPR && attType == SELF_ATT)
             return MakeRPRAttention(k2, q2, v2, mask, isEnc);
-        return MakeAttention(k2, q2, v2, mask);
+        return MakeAttention(k2, q2, v2, mask, isEnc);
     }
 
     else {
@@ -160,7 +160,7 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
 
             if (useRPR)
                 return MakeRPRAttention(cache->key, q2, cache->value, mask, isEnc);
-            return MakeAttention(cache->key, q2, cache->value, mask);
+            return MakeAttention(cache->key, q2, cache->value, mask, isEnc);
         }
         else if (attType == EN_DE_ATT) {
             if (cache->miss) {
@@ -169,7 +169,7 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
                 cache->miss = false;
             }
 
-            return MakeAttention(cache->key, q2, cache->value, mask);
+            return MakeAttention(cache->key, q2, cache->value, mask, isEnc);
         }
         CheckNTErrors(0, "invalid cache type");
     }
@@ -181,8 +181,10 @@ make the attention network given keys, queries and values (after linear transfor
 >> q - queries, B * L * H
 >> v - values, B * L * H
 >> mask - as it is
+>> isEnc - indicates whether it is a encoder module
 */
-XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTensor* mask)
+XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v, 
+                                 XTensor* mask, bool isEnc)
 {
     XTensor kheads;
     XTensor vheads;
@@ -190,21 +192,24 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTenso
     const auto dataType = k.dataType;
 
     /* multi head */
-    kheads = Split(k, k.order - 1, nhead);
-    qheads = Split(qheads, qheads.order - 1, nhead);
-    vheads = Split(v, v.order - 1, nhead);
+    if (nhead > 1) {
+        q = Split(q, q.order - 1, nhead);
+        kheads = Split(k, k.order - 1, nhead);
+        vheads = Split(v, v.order - 1, nhead);
+    }
 
     XTensor att;
 
-    /* Some operations may cause numerical overflow under FP16 including
-       BMMul, Mask, Div and Softmax. So we need to cast the input to FP32 */
     if (isTraining)
-        qheads = ScaleAndShift(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
+        q = Scale(q, 1.0F / (float)sqrt((float)kDim / nhead));
     else
-        ScaleMe(qheads, 1.0F / (float)sqrt((float)kDim / nhead));
+        ScaleMe(q, 1.0F / (float)sqrt((float)kDim / nhead));
 
     /* scalar = softmax(Q * K^T / sqrt(dk)) * V */
-    att = BMMul(qheads, X_NOTRANS, kheads, X_TRANS);
+    if(nhead > 1)
+        att = BMMul(q, X_NOTRANS, kheads, X_TRANS);
+    else
+        att = BMMul(q, X_NOTRANS, k, X_TRANS);
 
     if (att.dataType == X_FLOAT16) {
         att = ConvertDataType(att, X_FLOAT);
@@ -217,20 +222,29 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& qheads, XTensor& v, XTenso
             SumMe(att, *mask);
     }
 
+    /*if (!isEnc)
+        LOG("try");*/
+
     att = Softmax(att, -1);
+
+    /*if (!isEnc)
+        LOG("ok");*/
 
     if (isTraining && dropoutP > 0)
         att = Dropout(att, dropoutP);
 
     if (dataType != att.dataType)
         att = ConvertDataType(att, dataType);
-
-    att = BMMul(att, vheads);
+    
+    if (nhead > 1)
+        att = BMMul(att, vheads);
+    else
+        att = BMMul(att, v);
 
     /* concatenate the heads */
     return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
 }
-
+    
 /*
 make the attention network by incorporating the relative position representation
 with the given keys, queries and values (after linear transformation)

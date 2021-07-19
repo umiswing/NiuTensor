@@ -7,7 +7,7 @@ mkdir build && cd build && cmake ..
 
 GPU版本：
 ```bash
-cmake -DUSE_CUDA=ON -DUSE_HALF_PRECISION=ON -DCUDA_TOOLKIT_ROOT="/home/huchi/cuda-11.2/" && make -j
+cmake -DUSE_CUDA=ON -DUSE_HALF_PRECISION=ON -DCUDA_TOOLKIT_ROOT="/home/huchi/cuda-11.2/" .. && make -j
 ```
 
 注意：目前只在Titan V和RTX上进行测试，因此不需要指定GPU架构，默认为多个架构生成目标代码

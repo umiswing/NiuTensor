@@ -95,4 +95,39 @@ XTensor LayerNorm::RunFast(XTensor& input)
     return xn;
 }
 
+/*
+run layernorm-l1 for inference
+>> input - the input tensor
+>> return - layer normalization output
+*/
+XTensor LayerNorm::RunL1Fast(XTensor& input)
+{
+    XTensor& x = input;
+    XTensor xn;
+    XTensor mean;
+    XTensor variance;
+
+    TENSOR_DATA_TYPE dataType = input.dataType;
+
+    if (dataType == X_FLOAT16) {
+        x = ConvertDataType(x, X_FLOAT);
+    }
+
+    /* \mu = (sum_i x_i)/m */
+    mean = ReduceMean(x, x.order - 1);
+
+    /* \sigma = (sum_i (x_i - \mu)^2)/m */
+    variance = ReduceVariance(x, x.order - 1, mean);
+
+    if (dataType != x.dataType) {
+        x = ConvertDataType(x, dataType);
+        mean = ConvertDataType(mean, dataType);
+        variance = ConvertDataType(variance, dataType);
+    }
+
+    xn = Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+
+    return xn;
+}
+
 } /* end of the nmt (NiuTrans.NMT) namespace */
