@@ -391,7 +391,10 @@ void NMTModel::MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
     XTensor maskEncDecTMP;
 
     Unsqueeze(paddingEnc, maskEncDecTMP, paddingEnc.order - 1, paddingDec.GetDim(-1));
-    Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.decSelfAttHeadNum);
+    if (config->model.encDecAttHeadNum > 1)
+        Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.encDecAttHeadNum);
+    else
+        maskEncDec = maskEncDecTMP;
     ScaleAndShiftMe(maskEncDec, 6e3F, -6e3F);
 }
 

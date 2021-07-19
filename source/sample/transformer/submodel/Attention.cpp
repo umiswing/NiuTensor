@@ -236,7 +236,10 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
         att = BMMul(att, v);
 
     /* concatenate the heads */
-    return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
+    if (nhead > 1)
+        return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
+    else
+        return MulAndShift(att, weightO, biasO);
 }
     
 /*

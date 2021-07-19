@@ -1,4 +1,4 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
+﻿/* NiuTrans.NMT - an open-source neural machine translation system.
  * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
