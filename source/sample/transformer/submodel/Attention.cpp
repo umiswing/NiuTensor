@@ -222,13 +222,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
             SumMe(att, *mask);
     }
 
-    /*if (!isEnc)
-        LOG("try");*/
-
     att = Softmax(att, -1);
-
-    /*if (!isEnc)
-        LOG("ok");*/
 
     if (isTraining && dropoutP > 0)
         att = Dropout(att, dropoutP);

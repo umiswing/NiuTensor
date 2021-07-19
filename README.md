@@ -16,27 +16,25 @@ Windows上会生成NiuTensor.sln，打开后右键解决方案中的NiuTensor，
 
 # 翻译
 
-## 指定输出输出文件
+## GPU
 
 ```bash
-bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab -input ../data/en.txt -output ../data/res.txt 
+cd data
+../bin/NiuTensor -nmt -dev 0 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en < test.txt > output.txt
 ```
 
-## 读取标准输入并打印结果
+## CPU
 
 ```bash
-bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab < input.txt
-```
-
-## 读取标准输入并重定向结果
-
-```bash
-bin/NiuTensor -nmt -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab -tgtvocab ../data/vocab < input.txt > output.txt
+cd data
+../bin/NiuTensor -nmt -dev -1 -model ../data/model.fp32 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en < test.txt > output.txt
 ```
 
 参数说明：
 
 dev: 设备号，>=0为显卡，-1为CPU
+
+fp16: 使用半精度，注意不能忽略后面的1
 
 model: 模型文件路径
 
