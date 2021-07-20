@@ -107,8 +107,6 @@ XTensor LayerNorm::RunL1Fast(XTensor& input)
     XTensor mean;
     XTensor variance;
 
-    TENSOR_DATA_TYPE dataType = input.dataType;
-
     /* \mu = (sum_i x_i)/m */
     mean = ReduceMean(x, x.order - 1);
 

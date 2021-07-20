@@ -109,7 +109,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
-    LoadInt("maxsrc", &maxSrcLen, 160);
+    LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("encheads", &encSelfAttHeadNum, -1);
     LoadInt("encemb", &encEmbDim, -1);
     LoadInt("encffn", &encFFNHiddenDim, -1);
@@ -169,7 +169,7 @@ void TranslationConfig::Load(int argsNum, const char** args)
     LoadFloat("lenalpha", &lenAlpha, 0.F);
 
     /* smaller value may leads to worse translations but higher speed */
-    LoadFloat("maxlenalpha", &maxLenAlpha, 1.15F);
+    LoadFloat("maxlenalpha", &maxLenAlpha, 1.25F);
 }
 
 /* load training configuration from the command */
