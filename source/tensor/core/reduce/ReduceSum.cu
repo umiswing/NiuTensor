@@ -128,6 +128,8 @@ void KernelReduceSum(DTYPE * input, DTYPE * output,
             value = value * value;
         else if(power == (DTYPE)0.5)
             value = sqrt(value);
+        else if (power == (DTYPE)-1.0)
+            value = abs(value);
         else
             value = pow(value, power);
     }
@@ -213,6 +215,8 @@ void KernelReduceSum(__half * input, __half * output,
             value = __hmul(value, value);
         else if(power2 == (DTYPE)0.5)
             value = hsqrt(value);
+        else if (power2 == (DTYPE)-1.0)
+            value = __habs(value);
     }
 
     if(isExp && isValid)
@@ -226,6 +230,8 @@ void KernelReduceSum(__half * input, __half * output,
             value = value * value;
         else if(power2 == (DTYPE)0.5)
             value = sqrt(value);
+        else if (power2 == (DTYPE)-1.0)
+            value = abs(value);
         else
             value = pow(value, power2);
     }
@@ -313,6 +319,10 @@ void KernelReduceSumFast(DTYPE * input, DTYPE * output,
         else if(power == (DTYPE)0.5){
             value = sqrt(value);
             value2 = sqrt(value2);
+        }
+        else if (power == (DTYPE)-1.0) {
+            value = abs(value);
+            value2 = abs(value2);
         }
         else{
             value = pow(value, power);
@@ -416,6 +426,10 @@ void KernelReduceSumFast(__half * input, __half * output,
             value = hsqrt(value);
             value2 = hsqrt(value2);
         }
+        else if (powerf == (DTYPE)-1.0) {
+            value = __habs(value);
+            value2 = __habs(value2);
+        }
     }
 
     if(isExp){
@@ -441,6 +455,10 @@ void KernelReduceSumFast(__half * input, __half * output,
         else if(powerf == (DTYPE)0.5){
             value = sqrt(value);
             value2 = sqrt(value2);
+        }
+        else if (powerf == (DTYPE)-1.0) {
+            value = abs(value);
+            value2 = abs(value2);
         }
         else{
             value = pow(value, powerf);
@@ -512,6 +530,9 @@ void KernelReduceSumDiscontinuousStorage(DTYPE * input, DTYPE * output, int stri
             else if (power == (DTYPE)0.5) {
                 value = sqrt(value);
             }
+            else if (power == (DTYPE)-1.0) {
+                value = abs(value);
+            }
             else {
                 value = pow(value, power);
             }
@@ -561,6 +582,9 @@ void KernelReduceSumOp(DTYPE * input, DTYPE * output,
             else if (power == (DTYPE)0.5) {
                 value = sqrt(value);
             }
+            else if (power == (DTYPE)-1.0) {
+                value = abs(value);
+            }
             else {
                 value = pow(value, power);
             }
@@ -606,6 +630,9 @@ void KernelReduceSumOpLessBlocks(DTYPE * input, DTYPE * output,
             }
             else if (power == (DTYPE)0.5) {
                 value = sqrt(value);
+            }
+            else if (power == (DTYPE)-1.0) {
+                value = abs(value);
             }
             else {
                 value = pow(value, power);
@@ -702,7 +729,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
     }
 
     if(input->dataType == X_FLOAT16)
-        CheckNTErrors(power == 0 || power == 0.5 || power == 1.0 || power == 2.0, "TODO!");
+        CheckNTErrors(power == 0 || power == 0.5 || power == 1.0 || power == 2.0 || power == -1.0, "TODO!");
 
     int cudaGridSize[3];
     int cudaBlockSize[3];

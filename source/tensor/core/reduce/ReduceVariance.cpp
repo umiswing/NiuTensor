@@ -36,10 +36,13 @@ For a 1-dimensional data array a, variance = 1/n * \sum_i (a_i - mean)^2
 >> dim - the dimension where the reduction is performed on
 >> mean - the mean value
 */
-void _ReduceVariance(const XTensor * input, XTensor * output, int dim, const XTensor * mean)
+void _ReduceVariance(const XTensor * input, XTensor * output, int dim, const XTensor * mean, bool L1Normed)
 {
     int num = input->dimSize[dim];
-    _ReduceSum(input, output, dim, mean, 2.0F);
+    if (!L1Normed)
+        _ReduceSum(input, output, dim, mean, 2.0F);
+    else
+        _ReduceSum(input, output, dim, mean, -1.0F);
     _ScaleAndShiftMe(output, (DTYPE)1 / num, 0);
 }
 
@@ -54,7 +57,7 @@ For a 1-dimensional data array a, variance = 1/n * \sum_i (a_i - mean)^2
 >> mean - the mean value
 << return - the variance of the items along a dimension of the tensor
 */
-XTensor ReduceVariance(const XTensor &input, int dim, const XTensor &mean)
+XTensor ReduceVariance(const XTensor &input, int dim, const XTensor &mean, bool L1Normed)
 {
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
     
@@ -72,7 +75,7 @@ XTensor ReduceVariance(const XTensor &input, int dim, const XTensor &mean)
     output.SetTMPFlag();
 
     /* call _ReduceVariance function */
-    _ReduceVariance(&input, &output, dim, &mean);
+    _ReduceVariance(&input, &output, dim, &mean, L1Normed);
                 
     /* tensor connection */
     if (input.enableGrad) {
@@ -96,7 +99,7 @@ For a 1-dimensional data array a, variance = 1/n * \sum_i (a_i - mean)^2
 >> dim - the dimension where the reduction is performed on
 >> mean - the mean value
 */
-void ReduceVariance(const XTensor &input, XTensor &output, int dim, const XTensor &mean)
+void ReduceVariance(const XTensor &input, XTensor &output, int dim, const XTensor &mean, bool L1Normed)
 {
     CheckNTErrors(dim >= 0 && dim < input.order, "Illegal dimension to reduce!");
 
@@ -118,7 +121,7 @@ void ReduceVariance(const XTensor &input, XTensor &output, int dim, const XTenso
     }
 
     /* call _ReduceVariance function */
-    _ReduceVariance(&input, &output, dim, &mean);
+    _ReduceVariance(&input, &output, dim, &mean, L1Normed);
 
     if (input.enableGrad) {
         /* tensor connection */

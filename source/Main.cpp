@@ -23,17 +23,26 @@
 #include "tensor/core/CHeader.h"
 #include "tensor/function/Softmax.h"
 #include "./sample/transformer/NMT.h"
-
+#include "tensor/test/Test.h"
 
 using namespace nts;
 using namespace nmt;
 
 void test() {
-    XTensor x;
-    InitTensor4D(&x, 8, 1, 1, 1, X_FLOAT, 0);
-    x.SetDataRand();
-    x = Softmax(x, -1);
-    x.Dump(stderr);
+    XTensor a, b, c, d;
+    InitTensor2D(&a, 2, 4, X_FLOAT, -1);
+
+    DTYPE sData[2][4] = { {0.0F, 1.0F, 2.0F, 3.0F},
+                          {4.0F, 5.0F, 6.0F, 7.0F} };
+    DTYPE meanData[4] = { 2.0F, 3.0F, 4.0F, 5.0F };
+    DTYPE answer[4] = { 2.0F, 2.0F, 2.0F, 2.0F };
+
+    a.SetData(sData, 8);
+    //a = ConvertDataType(a, X_FLOAT16);
+    b = ReduceMean(a, 0);
+    c = ReduceVariance(a, 0, b, true);
+    c = ConvertDataType(c, X_FLOAT);
+    c.Dump(stderr);
 }
 
 int main(int argc, const char ** argv)
@@ -42,7 +51,6 @@ int main(int argc, const char ** argv)
     std::cin.tie(NULL);
 
     NMTMain(argc, argv);
-    //test();
 
     return 0;
 }
