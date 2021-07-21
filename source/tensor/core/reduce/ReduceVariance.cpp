@@ -38,12 +38,16 @@ For a 1-dimensional data array a, variance = 1/n * \sum_i (a_i - mean)^2
 */
 void _ReduceVariance(const XTensor * input, XTensor * output, int dim, const XTensor * mean, bool L1Normed)
 {
+    const float scale = sqrtf(3.1415926F / 2.0F);
     int num = input->dimSize[dim];
-    if (!L1Normed)
+    if (!L1Normed) {
         _ReduceSum(input, output, dim, mean, 2.0F);
-    else
+        _ScaleAndShiftMe(output, (DTYPE)1 / num, 0);
+    }
+    else {
         _ReduceSum(input, output, dim, mean, -1.0F);
-    _ScaleAndShiftMe(output, (DTYPE)1 / num, 0);
+        _ScaleAndShiftMe(output, scale * (DTYPE)1 / num, 0);
+    }
 }
 
 /* 

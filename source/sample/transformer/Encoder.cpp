@@ -101,11 +101,11 @@ void AttEncoder::InitModel(NMTConfig& config)
     for (int i = 0; i < nlayer; i++) {
         selfAtts[i].InitModel(config, true, true);
         ffns[i].InitModel(config, true);
-        attLayerNorms[i].InitModel(devID, embDim);
-        fnnLayerNorms[i].InitModel(devID, embDim);
+        attLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
+        fnnLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
     }
     if (finalNorm)
-        encoderLayerNorm->InitModel(devID, embDim);
+        encoderLayerNorm->InitModel(devID, embDim, config.model.encoderL1Norm);
     if (useHistory)
         history->InitModel(config);
 }
@@ -215,54 +215,30 @@ run encoding for inference with pre-norm
 */
 XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)
 {
-    /* clear the history */
-    if (useHistory)
-        history->ClearHistory();
-
     XTensor x;
     x = embedder.Make(input, false, 0);
 
-    if (useHistory)
-        history->Add(x);
-
     for (int i = 0; i < nlayer; i++) {
-
-        if (useHistory)
-            x = history->Pop();
-
-        XTensor selfAtt;
-        XTensor ffn;
-        XTensor selfAttBefore;
-        XTensor ffnBefore;
+        XTensor xn;
 
         /* layer normalization with pre-norm for self-attn */
-        selfAttBefore = attLayerNorms[i].RunFast(x);
+        xn = attLayerNorms[i].RunFast(x);
 
         /* self attention */
-        selfAtt = selfAtts[i].Make(selfAttBefore, selfAttBefore, selfAttBefore, mask, NULL, SELF_ATT);
+        xn = selfAtts[i].Make(xn, xn, xn, mask, NULL, SELF_ATT);
 
         /* residual connection */
-        SumMe(selfAtt, x);
+        SumMe(xn, x);
 
         /* layer normalization with pre-norm for ffn */
-        ffnBefore = fnnLayerNorms[i].RunFast(selfAtt);
+        x = fnnLayerNorms[i].RunFast(xn);
 
         /* ffn */
-        ffn = ffns[i].Make(ffnBefore);
+        x = ffns[i].Make(x);
 
         /* residual connection */
-        x = ffn + selfAtt;
-
-        if (useHistory)
-            history->Add(x);
+        SumMe(x, xn);
     }
-
-    if (useHistory)
-        x = history->Pop();
-
-    /* clear the history while not training */
-    if (useHistory && !isTraining)
-        history->ClearHistory();
 
     if (finalNorm)
         return encoderLayerNorm->RunFast(x);

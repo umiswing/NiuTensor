@@ -104,7 +104,9 @@ int NMTConfig::LoadFromFile(const char* configFN, char** args)
 void ModelConfig::Load(int argsNum, const char** args)
 {
     Create(argsNum, args);
-    LoadBool("usebigatt", &useBigAtt, false);
+    LoadBool("encl1norm", &encoderL1Norm, false);
+    LoadBool("decl1norm", &decoderL1Norm, false);
+    LoadBool("bigatt", &useBigAtt, false);
     LoadBool("decoderonly", &decoderOnly, false);
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);

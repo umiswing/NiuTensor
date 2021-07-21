@@ -81,7 +81,7 @@ bool TranslateDataset::LoadBatchToBuf()
     }
 
     SortBySrcLengthDescending();
-    XPRINT1(0, stderr, "[INFO] Loaded %d sentences\n", id);
+    XPRINT1(0, stderr, "[INFO] loaded %d sentences\n", id);
 
     return true;
 }
@@ -154,8 +154,8 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     XTensor* batchEnc = (XTensor*)(inputs->Get(0));
     XTensor* paddingEnc = (XTensor*)(inputs->Get(1));
-    InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT);
-    InitTensor2D(paddingEnc, realBatchSize, maxLen, config->common.useFP16 ? X_FLOAT : X_FLOAT);
+    InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT, config->common.devID);
+    InitTensor2D(paddingEnc, realBatchSize, maxLen, config->common.useFP16 ? X_FLOAT : X_FLOAT, config->common.devID);
     batchEnc->SetData(batchValues, batchEnc->unitNum);
     paddingEnc->SetData(paddingValues, paddingEnc->unitNum);
 

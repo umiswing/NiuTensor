@@ -114,15 +114,15 @@ void AttDecoder::InitModel(NMTConfig& config)
     for (int i = 0; i < nlayer; i++) {
         selfAtts[i].InitModel(config, false, true);
         ffns[i].InitModel(config, false);
-        selfAttLayerNorms[i].InitModel(devID, embDim);
-        ffnLayerNorms[i].InitModel(devID, embDim);
+        selfAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
+        ffnLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
         enDeAtts[i].InitModel(config, false, false);
-        enDeAttLayerNorms[i].InitModel(devID, embDim);
+        enDeAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
         selfAttCache[i].enable = !isTraining;
         enDeAttCache[i].enable = !isTraining;
     }
     if (finalNorm)
-        decoderLayerNorm->InitModel(devID, embDim);
+        decoderLayerNorm->InitModel(devID, embDim, false);
     if (useHistory)
         history->InitModel(config);
 }

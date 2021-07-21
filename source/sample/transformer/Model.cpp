@@ -92,6 +92,8 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         modelFile = fopen(config->common.modelFN, "rb");
         CheckNTErrors(modelFile, "Failed to open the model file");
 
+        fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
+        fread(&(config->model.decoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.useBigAtt), sizeof(bool), 1, modelFile);
         fread(&(config->model.encFinalNorm), sizeof(bool), 1, modelFile);
         fread(&(config->model.decFinalNorm), sizeof(bool), 1, modelFile);
@@ -148,18 +150,19 @@ void NMTModel::ShowModelConfig()
 {
     LOG("model configuration:");
     if (config->model.encPreLN)
-        LOG("encoder pre-norm");
+        LOG("encoder pre-norm with %s", config->model.encoderL1Norm ? "l1-norm" : "l2-norm");
     else
-        LOG("encoder post-norm");
+        LOG("encoder post-norm with %s", config->model.encoderL1Norm ? "l1-norm" : "l2-norm");
     if (config->model.decPreLN)
-        LOG("decoder pre-norm");
+        LOG("decoder pre-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
     else
-        LOG("decoder post-norm");
+        LOG("decoder post-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
     if (config->model.useBigAtt)
         LOG("use big qkv weights");
     else
         LOG("use splitting qkv weights");
-    LOG("rpr length: %d", config->model.maxRelativeLength);
+    if (config->model.maxRelativeLength > 0)
+        LOG("rpr length: %d", config->model.maxRelativeLength);
     LOG("encoder embedding dim: %d", config->model.encEmbDim);
     LOG("encoder layers: %d", config->model.encLayerNum);
     LOG("encoder heads: %d", config->model.encSelfAttHeadNum);
@@ -600,6 +603,8 @@ void NMTModel::DumpToFile(const char* fn)
     vector<int*> intConfig = GetConfigList();
 
     /* save the configurations */
+    fwrite(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
+    fwrite(&(config->model.decoderL1Norm), sizeof(bool), 1, modelFile);
     fwrite(&(config->model.useBigAtt), sizeof(bool), 1, modelFile);
     fwrite(&(config->model.encFinalNorm), sizeof(bool), 1, modelFile);
     fwrite(&(config->model.decFinalNorm), sizeof(bool), 1, modelFile);
@@ -640,7 +645,7 @@ void NMTModel::LoadFromFile(FILE* file)
 
     /* convert parameters to FP16 before reading files */
     if (config->common.useFP16) {
-        LOG("Convert parameters to FP16");
+        LOG("running with fp16");
         for (int i = 0; i < params.Size(); i++) {
             XTensor* p = params[i];
             InitTensor(p, p->order, p->dimSize, X_FLOAT16, p->devID, p->enableGrad && X_ENABLE_GRAD);

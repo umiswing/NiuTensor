@@ -25,6 +25,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <chrono>
 #include <vector>
 #include <string>
 #include "../../tensor/XConfig.h"
@@ -122,6 +123,12 @@ public:
 class ModelConfig : public XConfig 
 {
 public:
+    /* indicates whether the encoder uses L1-Norm */
+    bool encoderL1Norm;
+
+    /* indicates whether the decoder uses L1-Norm */
+    bool decoderL1Norm;
+
     /* indicates whether qkv weights are continuous */
     bool useBigAtt;
 

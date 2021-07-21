@@ -89,7 +89,7 @@ void LayerHistory::InitModel(NMTConfig& config)
 
     /* initialize the layer normalization of each layer */
     for (int i = 0; i < nlayer; i++) {
-        layerNorms[i].InitModel(config.common.devID, config.model.encEmbDim);
+        layerNorms[i].InitModel(config.common.devID, config.model.encEmbDim, config.model.encoderL1Norm);
     }
 }
 

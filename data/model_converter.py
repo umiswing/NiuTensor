@@ -75,6 +75,8 @@ def get_model_configs(model_config, model):
         model_config.unk = 3
     flattened_configs = [
         # booleans
+        'encoder.layers.0.final_layer_norm.gamma' in model.keys(),
+        'decoder.layers.0.final_layer_norm.gamma' in model.keys(),
         'encoder.layers.0.self_attn.in_proj_weight' in model.keys(),
         'encoder.layer_norm.weight' in model.keys(),
         'decoder.layer_norm.weight' in model.keys(),
@@ -112,7 +114,7 @@ def get_model_configs(model_config, model):
         model['decoder.embed_tokens.weight'].shape[0],
     ]
 
-    assert len(flattened_configs) == 27
+    assert len(flattened_configs) == 29
 
     return flattened_configs
 

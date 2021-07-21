@@ -34,6 +34,7 @@ LayerNorm::LayerNorm()
     d = 0;
     devID = -1;
     isTraining = false;
+    isL1Normed = false;
 }
 
 /* de-constructor */
@@ -45,11 +46,13 @@ LayerNorm::~LayerNorm()
 initialize the model
 >> myDevID - the device id
 >> hiddenSize - the hidden size of layer normalization
+>> myL1Normed - whether use L1-Norm
 */
-void LayerNorm::InitModel(int myDevID, int hiddenSize)
+void LayerNorm::InitModel(int myDevID, int hiddenSize, bool myL1Normed)
 {
     devID = myDevID;
 
+    isL1Normed = myL1Normed;
     d = hiddenSize;
 
     InitTensor1D(&weight, d, X_FLOAT, devID);
@@ -61,11 +64,27 @@ void LayerNorm::InitModel(int myDevID, int hiddenSize)
 }
 
 /*
+initialize the model
+>> myDevID - the device id
+>> hiddenSize - the hidden size of layer normalization
+>> myL1Normed - whether use L1-Norm
+*/
+XTensor LayerNorm::RunFast(XTensor& input)
+{
+    if (isL1Normed)
+        return RunL1Norm(input);
+    else
+        return RunL2Norm(input);
+}
+
+
+
+/*
 run layernorm for inference
 >> input - the input tensor
 >> return - layer normalization output
 */
-XTensor LayerNorm::RunFast(XTensor& input)
+XTensor LayerNorm::RunL2Norm(XTensor& input)
 {
     XTensor& x = input;
     XTensor xn;
@@ -101,7 +120,7 @@ run layernorm-l1 for inference
 >> input - the input tensor
 >> return - layer normalization output
 */
-XTensor LayerNorm::RunL1Fast(XTensor& input)
+XTensor LayerNorm::RunL1Norm(XTensor& input)
 {
     XTensor& x = input;
     XTensor mean;
@@ -113,7 +132,7 @@ XTensor LayerNorm::RunL1Fast(XTensor& input)
     /* \sigma = (sum_i |(x_i - \mu)|)/m */
     variance = ReduceVariance(x, x.order - 1, mean, true);
 
-    return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+    return L1Normalize(x, x.order - 1, mean, variance, weight, bias);
 }
 
 } /* end of the nmt (NiuTrans.NMT) namespace */

@@ -36,6 +36,9 @@ namespace nmt
 class LayerNorm
 {
 public:
+    /* indicates whether use L1-Norm for normalization */
+    bool isL1Normed;
+
     /* indicates whether train the model */
     bool isTraining;
 
@@ -62,13 +65,16 @@ public:
     ~LayerNorm();
 
     /* initialize the model */
-    void InitModel(int myDevID, int hiddenSize);
+    void InitModel(int myDevID, int hiddenSize, bool myL1Normed);
 
     /* run layernorm for inference */
     XTensor RunFast(XTensor& input);
 
-    /* run layernorm-l1 for inference */
-    XTensor RunL1Fast(XTensor& input);
+    /* run with L2-Norm */
+    XTensor RunL2Norm(XTensor& input);
+
+    /* run with L1-Norm */
+    XTensor RunL1Norm(XTensor& input);
 };
 
 } /* end of the nmt (NiuTrans.NMT) namespace */
