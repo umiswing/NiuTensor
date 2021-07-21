@@ -39,20 +39,6 @@
 /* the nts (NiuTrans.Tensor) namespace */
 namespace nts{
 
-#ifndef WIN32
-void print_trace() {
-    char** strings;
-    size_t i, size;
-    enum Constexpr { MAX_SIZE = 1024 };
-    void* array[MAX_SIZE];
-    size = backtrace(array, MAX_SIZE);
-    strings = backtrace_symbols(array, size);
-    for (i = 0; i < size; i++)
-        printf("%s\n", strings[i]);
-    puts("");
-    free(strings);
-}
-#endif
 
 /* memory pool setting */
 int MAX_MEM_BLOCK_NUM = 1024;

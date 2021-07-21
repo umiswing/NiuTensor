@@ -154,7 +154,10 @@ XTensor Embedder::Make(XTensor& input, bool isDec, int nstep)
     /* then we make word embeddings */
     wordEmbedding = Gather(*w, input);
 
-    wordEmbedding = Linear(wordEmbedding, (float)sqrt((float)eSize), 0.0F, true);
+    if (isTraining)
+        wordEmbedding = Linear(wordEmbedding, sqrtf((float)eSize), 0.0F, true);
+    else
+        ScaleMe(wordEmbedding, sqrtf((float)eSize));
 
     /* we sum over the two embeddings */
     SumMe(wordEmbedding, posEmbedding);

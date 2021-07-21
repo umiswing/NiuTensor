@@ -56,6 +56,7 @@ AttDecoder::AttDecoder()
     vSize = -1;
     dropoutP = 0.0F;
     isTraining = false;
+    shareEncDecEmb = false;
 }
 
 /* de-constructor */
@@ -73,6 +74,8 @@ AttDecoder::~AttDecoder()
         delete decoderLayerNorm;
     if (useHistory)
         delete history;
+    if (!shareEncDecEmb)
+        delete embedder;
 }
 
 /*
@@ -89,6 +92,7 @@ void AttDecoder::InitModel(NMTConfig& config)
     finalNorm = config.model.decFinalNorm;
     useHistory = config.model.useDecHistory;
     dropoutP = config.model.dropout;
+    shareEncDecEmb = config.model.shareEncDecEmb;
 
     CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
     CheckNTErrors(vSize > 1, "set vocabulary size by \"-vsizetgt\"");
@@ -110,7 +114,10 @@ void AttDecoder::InitModel(NMTConfig& config)
         history = new LayerHistory;
 
     /* initialize the stacked layers */
-    embedder.InitModel(config, false);
+    if (!config.model.shareEncDecEmb) {
+        embedder = new Embedder();
+        embedder->InitModel(config, false);
+    }
     for (int i = 0; i < nlayer; i++) {
         selfAtts[i].InitModel(config, false, true);
         ffns[i].InitModel(config, false);
@@ -145,7 +152,7 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc, XTensor* mask,
 
     XTensor x;
 
-    x = embedder.Make(inputDec, true, nstep);
+    x = embedder->Make(inputDec, true, nstep);
 
     /* dropout */
     if (isTraining && dropoutP > 0)
@@ -250,7 +257,7 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
 {
     XTensor x;
 
-    x = embedder.Make(inputDec, true, nstep);
+    x = embedder->Make(inputDec, true, nstep);
 
     for (int i = 0; i < nlayer; i++) {
         XTensor xn;
@@ -308,7 +315,7 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
 
     XTensor x;
 
-    x = embedder.Make(inputDec, true, nstep);
+    x = embedder->Make(inputDec, true, nstep);
 
     if (useHistory)
         history->Add(x);

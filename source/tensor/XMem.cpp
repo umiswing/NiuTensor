@@ -544,7 +544,10 @@ void * XMem::AllocBuf(int myDevID, MTYPE mySize, int pitch)
         backOffset = offset > 0 ? pitch - offset : 0;
     }
 
-    CheckNTErrors(bufSize - bufUsed >= mySize, "Cannot allocate the memory. Please specify a larger buffer in XMem!");
+    if((bufSize - bufUsed < mySize)){
+        XPRINT1(0, stderr, "Cannot allocate the memory (%s). Please specify a larger buffer in XMem!", name);
+        exit(1);
+    }
 
     char * required = (char*)buf + bufUsed + backOffset;
     bufUsed += mySize + backOffset;

@@ -53,7 +53,3 @@ wbatch: batch大小 （源语最大词数）
 ```bash
 sed -r 's/(@@ )|(@@ ?$)//g' < res.txt > output.txt && perl multi-bleu.perl test.de < output.txt
 ```
-
-# 已知问题
-
-在RTX上解码结果与Titan V上不一致，导致精度降低0.2 BLEU。

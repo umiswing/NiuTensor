@@ -28,10 +28,13 @@
  /* end of the nmt (NiuTrans.NMT) namespace */
 namespace nmt
 {
-
+/* todo: refactor the type of embedder and its weight */
 class AttDecoder
 {
 public:
+    /* indicates whether share encoder and decoder embeddings */
+    bool shareEncDecEmb;
+
     /* indicates whether train the model */
     bool isTraining;
 
@@ -51,7 +54,7 @@ public:
     DTYPE dropoutP;
 
     /* embedding of word at each position */
-    Embedder embedder;
+    Embedder* embedder;
 
     /* FNN model of each layer */
     FFN* ffns;

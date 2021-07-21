@@ -607,7 +607,7 @@ void NMTModel::GetParams(TensorList& list)
     }
 
     if (!config->model.shareEncDecEmb) {
-        list.Add(decoder->embedder.w);
+        list.Add(decoder->embedder->w);
     }
 
     if (!config->model.shareDecInputOutputEmb) {
@@ -668,6 +668,12 @@ void NMTModel::LoadFromFile(FILE* file)
         size += params[i]->unitNum;
     }
 
+    /* share all embeddings */
+    if (config->model.shareEncDecEmb) {
+        decoder->embedder = &(encoder->embedder);
+        LOG("share encoder decoder embeddings");
+    }
+
     /* convert parameters to FP16 before reading files */
     if (config->common.useFP16) {
         LOG("running with fp16");
@@ -677,27 +683,19 @@ void NMTModel::LoadFromFile(FILE* file)
         }
 
         XTensor& encEmb = encoder->embedder.posEmbeddingBase;
-        XTensor& decEmb = decoder->embedder.posEmbeddingBase;
         encEmb = ConvertDataType(encEmb, X_FLOAT16);
-        decEmb = ConvertDataType(decEmb, X_FLOAT16);
+        if (!config->model.shareEncDecEmb) {
+            XTensor& decEmb = decoder->embedder->posEmbeddingBase;
+            decEmb = ConvertDataType(decEmb, X_FLOAT16);
+        }
     }
 
     for (int i = 0; i < params.Size(); i++)
         params[i]->BinaryRead(file);
 
-    /* share all embeddings */
-    if (config->model.shareEncDecEmb) {
-        decoder->embedder.w = encoder->embedder.w;
-        LOG("sharing encoder decoder embeddings");
-    }
-
-    /*encoder->embedder.w->Dump(stderr, "encoder->embedder.w", 10);
-    decoder->embedder.w->Dump(stderr, "decoder->embedder.w", 10);
-    exit(0);*/
-
     /* share embeddings with output weights */
     if (config->model.shareDecInputOutputEmb) {
-        outputLayer->w = Transpose(*decoder->embedder.w, 0, 1);
+        outputLayer->w = Transpose(*(decoder->embedder->w), 0, 1);
         LOG("sharing decoder embeddings with output weights");
     }
 

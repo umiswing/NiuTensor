@@ -74,38 +74,20 @@ namespace nts {
 #endif
 
 /* print call trace on linux */
-#ifndef WIN32
-#include <stdio.h>
-#include <execinfo.h>
-void print_trace();
-#endif // WIN32
 
 #define __FILENAME__ ( strrchr(__FILE__, DELIMITER) != NULL ? strrchr(__FILE__, DELIMITER)+1 : __FILE__ )
 
-#ifndef WIN32
 #define CheckNTErrors(x, msg) \
 { \
     if(!(x)) \
     { \
         fprintf(stderr, "[ERROR] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
-        print_trace();\
-        throw; \
+        exit(0); \
     } \
 } \
 
-#endif
 
-#ifdef WIN32
-#define CheckNTErrors(x, msg) \
-{ \
-    if(!(x)) \
-    { \
-        fprintf(stderr, "[ERROR] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
-        throw; \
-    } \
-} \
 
-#endif
 
 #define CheckNTErrorsV0(x) \
 { \
