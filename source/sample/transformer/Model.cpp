@@ -402,6 +402,31 @@ void NMTModel::MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
 }
 
 /*
+make the mask of the decoder
+>> paddingEnc - padding of the encoder input, (batchSize, srcLen)
+<< maksEncDec - mask of the decoder enc-dec attention, 
+   (nHead, batchSize, 1, srcLen) if nHead > 1,
+   (batchSize, 1, srcLen) else.
+*/
+XTensor NMTModel::MakeMTMaskDecInference(XTensor& paddingEnc)
+{
+    /* encoder-decoder mask that prevents the attention to padding dummy words */
+    XTensor maskEncDecTMP;
+
+    Unsqueeze(paddingEnc, maskEncDecTMP, paddingEnc.order - 1, 1);
+    if (config->model.encDecAttHeadNum > 1) {
+        XTensor maskEncDec;
+        Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.encDecAttHeadNum);
+        ScaleAndShiftMe(maskEncDec, 6e3F, -6e3F);
+        return maskEncDec;
+    }
+    else {
+        ScaleAndShiftMe(maskEncDecTMP, 6e3F, -6e3F);
+        return maskEncDecTMP;
+    }
+}
+
+/*
 todo: used a fixed parameter order
 collect all parameters
 >> list - the list that keeps the parameters

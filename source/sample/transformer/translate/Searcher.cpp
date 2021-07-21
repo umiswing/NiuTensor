@@ -832,21 +832,18 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     for (int i = 0; i < batchSize; i++)
         finishedFlags[i] = 0;
 
-    /* generate the sequence from left to right */
+    XTensor prob;
+    XTensor maskEncDec;
+    XTensor decoding;
+    XTensor indexCPU;
+    XTensor bestScore;
+
+    InitTensorOnCPU(&indexCPU, &inputDec);
+    InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
+
     for (int l = 0; l < lengthLimit; l++) {
-        XTensor prob;
-        XTensor maskDec;
-        XTensor maskEncDec;
-        XTensor paddingDec;
-        XTensor decoding;
-        XTensor indexCPU;
-        XTensor bestScore;
-
-        InitTensor(&paddingDec, inputDec.order, inputDec.dimSize, X_INT, padding.devID);
-        paddingDec.SetDataFixed(1);
-
         /* decoder mask */
-        model->MakeMTMaskDec(padding, paddingDec, maskDec, maskEncDec);
+        maskEncDec = model->MakeMTMaskDecInference(padding);
 
         /* make the decoding network */
         if (model->config->model.decPreLN)
@@ -859,11 +856,9 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
 
         /* get the most promising predictions */
         prob.Reshape(prob.dimSize[0], prob.dimSize[prob.order - 1]);
-        InitTensor2D(&bestScore, prob.dimSize[0], 1, prob.dataType, prob.devID);
         TopK(prob, bestScore, inputDec, -1, 1);
 
         /* save the predictions */
-        InitTensorOnCPU(&indexCPU, &inputDec);
         CopyValues(inputDec, indexCPU);
 
         for (int i = 0; i < batchSize; i++) {

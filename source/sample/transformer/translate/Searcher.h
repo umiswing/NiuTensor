@@ -131,6 +131,30 @@ public:
     XTensor MakeFirstMask(StateBundle* beam);
 };
 
+struct Timer 
+{
+    std::chrono::system_clock::time_point time;
+    std::chrono::duration<double> duration;
+
+    Timer() {
+        duration = std::chrono::system_clock::now() - std::chrono::system_clock::now();
+    }
+
+    void ResetTime() {
+        time = std::chrono::system_clock::now();
+    }
+
+    void Update() {
+        duration += (std::chrono::system_clock::now() - time);
+        ResetTime();
+
+    }
+
+    void Report(const string& prefix) {
+        LOG("Duration of %s: %f", prefix.c_str(), duration.count());
+    }
+};
+
 class GreedySearch
 {
 private:
@@ -153,6 +177,12 @@ private:
     float scalarMaxLength;
 
 public:
+    /* timer for the encoder */
+    Timer encoderTimer;
+
+    /* timer for the decoder */
+    Timer decoderTimer;
+
     /* constructor */
     GreedySearch();
 

@@ -66,7 +66,7 @@ void Translator::Init(NMTConfig& myConfig, NMTModel& myModel)
         ((BeamSearch*)seacher)->Init(myConfig);
     }
     else if (config->translation.beamSize == 1) {
-        LOG("Translating with greedy search (batchSize= %d sents/ %d tokens, maxLenAlpha=%.2f)", 
+        LOG("translating with greedy search (batchSize= %d sents/ %d tokens, maxLenAlpha=%.2f)", 
             config->common.sBatchSize, config->common.wBatchSize, config->translation.maxLenAlpha);
         seacher = new GreedySearch();
         ((GreedySearch*)seacher)->Init(myConfig);
@@ -148,8 +148,6 @@ bool Translator::Translate()
     while (!batchLoader.IsEmpty()) {
         batchLoader.GetBatchSimple(&inputs, &info);
         fprintf(stderr, "%d/%d\n", batchLoader.bufIdx, batchLoader.buf->Size());
-        batchEnc.FlushToDevice(config->common.devID);
-        paddingEnc.FlushToDevice(config->common.devID);
         TranslateBatch(batchEnc, paddingEnc, indices);
     }
 

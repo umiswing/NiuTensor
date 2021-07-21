@@ -96,6 +96,9 @@ public:
     void MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
                        XTensor& maskDec, XTensor& maskEncDec);
 
+    /* make the mask of the decoder for inference */
+    XTensor MakeMTMaskDecInference(XTensor& paddingEnc);
+
     /* get parameter matrices */
     void GetParams(TensorList& list);
 
