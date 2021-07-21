@@ -157,10 +157,6 @@ void NMTModel::ShowModelConfig()
         LOG("decoder pre-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
     else
         LOG("decoder post-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
-    if (config->model.useBigAtt)
-        LOG("use big qkv weights");
-    else
-        LOG("use splitting qkv weights");
     if (config->model.maxRelativeLength > 0)
         LOG("rpr length: %d", config->model.maxRelativeLength);
     LOG("encoder embedding dim: %d", config->model.encEmbDim);
