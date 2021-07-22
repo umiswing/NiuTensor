@@ -78,8 +78,8 @@ def get_model_configs(model_config, model):
         'encoder.layers.0.final_layer_norm.gamma' in model.keys(),
         'decoder.layers.0.final_layer_norm.gamma' in model.keys(),
         'encoder.layers.0.self_attn.in_proj_weight' in model.keys(),
-        'encoder.layer_norm.weight' in model.keys(),
-        'decoder.layer_norm.weight' in model.keys(),
+        'encoder.layer_norm.weight' in model.keys() or 'encoder.layer_norm.gamma' in model.keys(),
+        'decoder.layer_norm.weight' in model.keys() or 'decoder.layer_norm.gamma' in model.keys(),
         model_config.encoder_normalize_before,
         model_config.decoder_normalize_before,
         'encoder.history' in model.keys(), # place-holder for the useEncHistory flag

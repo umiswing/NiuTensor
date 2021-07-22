@@ -129,7 +129,7 @@ void AttDecoder::InitModel(NMTConfig& config)
         enDeAttCache[i].enable = !isTraining;
     }
     if (finalNorm)
-        decoderLayerNorm->InitModel(devID, embDim, false);
+        decoderLayerNorm->InitModel(devID, embDim, config.model.decoderL1Norm);
     if (useHistory)
         history->InitModel(config);
 }

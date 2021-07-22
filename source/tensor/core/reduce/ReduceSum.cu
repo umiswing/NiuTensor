@@ -177,7 +177,7 @@ __global__
 void KernelReduceSum(__half * input, __half * output, 
                      int stride, int strideNum, int reducedStrideNum, 
                      int blockSize, int blockNum, 
-                     __half * shift, __half power, bool isExp)
+                     __half * shift, float power, bool isExp)
 {
     int idx = threadIdx.x * blockDim.y + threadIdx.y;
     unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -378,7 +378,7 @@ template <unsigned int goodSize> __global__
 void KernelReduceSumFast(__half * input, __half * output, 
                          int stride, int strideNum, int reducedStrideNum, 
                          int blockSize, int blockNum,
-                         __half * shift, __half power, bool isExp)
+                         __half * shift, float power, bool isExp)
 {
     unsigned int tid = threadIdx.y;
     unsigned int j = blockIdx.y * (blockDim.y * 2) + threadIdx.y;
@@ -456,7 +456,7 @@ void KernelReduceSumFast(__half * input, __half * output,
             value = sqrt(value);
             value2 = sqrt(value2);
         }
-        else if (powerf == (DTYPE)-1.0) {
+        else if(powerf == (DTYPE)-1.0){
             value = abs(value);
             value2 = abs(value2);
         }
@@ -888,7 +888,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
                     if (cudaGridSize[0] == 1)
                         oData = (__half*)output->data;
                     KernelReduceSum <<<blocks, threads>>> (iData, oData, stride, strideNum, blocks.y, 
-                                                           blockSize, blockNum, spft16, powerft16p, isExp);
+                                                           blockSize, blockNum, spft16, power, isExp);
                 }
                 else if (strideNum < 128) {
                     GDevs.GetCudaThread2D(devID, MAX(strideNum / 2 + 1, 64), stride * blockNum, MAX_INT, cudaGridSize, cudaBlockSize);
@@ -897,7 +897,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
                         oData = (__half*)output->data;
                     CheckNTErrors((cudaBlockSize[0] >= 64), "Incorrect thread number when calling the cuda kernel!");
                     KernelReduceSumFast<64> <<<blocks, threads>>> (iData, oData, stride, strideNum, blocks.y, 
-                                                                   blockSize, blockNum, spft16, powerft16p, isExp);
+                                                                   blockSize, blockNum, spft16, power, isExp);
                 }
                 else if (strideNum < 256) {
                     GDevs.GetCudaThread2D(devID, MAX(strideNum / 2 + 1, 128), stride * blockNum, MAX_INT, cudaGridSize, cudaBlockSize);
@@ -906,7 +906,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
                         oData = (__half*)output->data;
                     CheckNTErrors((cudaBlockSize[0] >= 128), "Incorrect thread number when calling the cuda kernel!");
                     KernelReduceSumFast<128> <<<blocks, threads>>> (iData, oData, stride, strideNum, blocks.y, 
-                                                                    blockSize, blockNum, spft16, powerft16p, isExp);
+                                                                    blockSize, blockNum, spft16, power, isExp);
                 }
                 else if (strideNum < 512) {
                     GDevs.GetCudaThread2D(devID, MAX(strideNum / 2 + 1, 256), stride * blockNum, MAX_INT, cudaGridSize, cudaBlockSize);
@@ -915,7 +915,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
                         oData = (__half*)output->data;
                     CheckNTErrors((cudaBlockSize[0] >= 256), "Incorrect thread number when calling the cuda kernel!");
                     KernelReduceSumFast<256> <<<blocks, threads>>> (iData, oData, stride, strideNum, blocks.y, 
-                                                                    blockSize, blockNum, spft16, powerft16p, isExp);
+                                                                    blockSize, blockNum, spft16, power, isExp);
                 }
                 else {
                     GDevs.GetCudaThread2D(devID, MAX(strideNum / 2 + 1, 512), stride * blockNum, MAX_INT, cudaGridSize, cudaBlockSize);
@@ -924,7 +924,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
                         oData = (__half*)output->data;
                     CheckNTErrors((cudaBlockSize[0] >= 512), "Incorrect thread number when calling the cuda kernel!");
                     KernelReduceSumFast<512> <<<blocks, threads>>> (iData, oData, stride, strideNum, blocks.y, 
-                                                                    blockSize, blockNum, spft16, powerft16p, isExp);
+                                                                    blockSize, blockNum, spft16, power, isExp);
                 }
             }
             else {
@@ -934,7 +934,6 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
             strideNum = cudaGridSize[0];
             blockSize = cudaGridSize[0];
             sp = NULL;
-            power = (DTYPE)1.0;
             isExp = false;
 
             iter++;

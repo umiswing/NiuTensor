@@ -46,7 +46,7 @@ void _ReduceVariance(const XTensor * input, XTensor * output, int dim, const XTe
     }
     else {
         _ReduceSum(input, output, dim, mean, -1.0F);
-        _ScaleAndShiftMe(output, scale * (DTYPE)1 / num, 0);
+        _ScaleAndShiftMe(output, scale / float(num), 0);
     }
 }
 
