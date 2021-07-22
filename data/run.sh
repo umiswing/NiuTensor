@@ -4,7 +4,6 @@ num_processes=8
 rm -rf res.txt output.txt
 
 # Pre-process
-echo "Normalizing & Tokenizing..."
 total=`awk 'END{print NR}' $1`
 lines=`expr $total / $num_processes + 1`
 split -l $lines $1 -d -a 1 $1.nts.gpu.
@@ -15,9 +14,8 @@ for ((i=0;i<$num_processes;i++)); do
 done
 wait
 for ((i=0;i<$num_processes;i++))do echo $1.nts.gpu.norm.$i;done | xargs -i cat {} >> $1.nts.gpu.norm
-perl ./tools/tokenizer.perl -l en -threads 8 -no-escape -lines 20000 < $1.nts.gpu.norm > $1.nts.gpu.norm.tok
+perl ./tools/tokenizer.perl -q -l en -threads 8 -no-escape -lines 20000 < $1.nts.gpu.norm > $1.nts.gpu.norm.tok
 
-echo "Applying BPE"
 ./tools/fastbpe applybpe $1.nts.gpu.bpe $1.nts.gpu.norm.tok en-de.code
 
 # Translate
@@ -34,7 +32,7 @@ split -l $lines $2.nts.gpu.tok -d -a 1 $2.nts.gpu.tok.
 # Run detokenizing in parallel
 for ((i=0;i<$num_processes;i++)); do
 {
-    perl ./tools/detokenizer.perl -l de -a < $2.nts.gpu.tok.$i > $2.nts.gpu.$i
+    perl ./tools/detokenizer.perl -q -l de -a < $2.nts.gpu.tok.$i > $2.nts.gpu.$i
 } &
 done
 wait

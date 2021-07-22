@@ -41,10 +41,6 @@ if ($HELP) {
 	exit;
 }
 
-if ($language !~ /^(cs|en|fr|it|fi)$/) {
-  print STDERR "Warning: No built-in rules for language $language.\n"
-}
-
 if ($PENN && $language ne "en") {
   print STDERR "Error: -penn option only supported for English text.\n";
   exit;
