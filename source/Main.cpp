@@ -23,8 +23,6 @@
 #include "tensor/core/CHeader.h"
 #include "tensor/function/Softmax.h"
 #include "./sample/transformer/NMT.h"
-#include "tensor/test/Test.h"
-#include "sample/transformer/translate/Searcher.h"
 
 using namespace nts;
 using namespace nmt;
