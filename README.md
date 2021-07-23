@@ -40,5 +40,5 @@ sh run.sh CPU throughput < wmt20.test.en > res.txt
 # 评估翻译
 
 ```bash
-sed -r 's/(@@ )|(@@ ?$)//g' < res.txt > output.txt && sacrebleu -i output.txt -t wmt20 -l en-de
+sacrebleu -i res.txt -t wmt20 -l en-de
 ```
