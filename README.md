@@ -51,5 +51,5 @@ wbatch: batch大小 （源语最大词数）
 # 评估翻译
 
 ```bash
-sed -r 's/(@@ )|(@@ ?$)//g' < res.txt > output.txt && perl multi-bleu.perl test.de < output.txt
+sed -r 's/(@@ )|(@@ ?$)//g' < res.txt > output.txt && sacrebleu -i output.txt -t wmt20 -l en-de
 ```

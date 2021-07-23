@@ -16,3 +16,5 @@ replace.py
 data/res.windows
 *.zip
 data/test.1
+data/model/model.fp16
+data/model/model.fp32

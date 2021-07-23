@@ -1,43 +1,52 @@
+#!/bin/sh
 set -e
 num_processes=8
 
-rm -rf res.txt output.txt
+rm -rf nts.tmp*
+
+HARDWARE=$1
+TASK=$2
 
 # Pre-process
-total=`awk 'END{print NR}' $1`
+cat <&0 > nts.tmp.raw
+total=`awk 'END{print NR}' nts.tmp.raw`
 lines=`expr $total / $num_processes + 1`
-split -l $lines $1 -d -a 1 $1.nts.gpu.
+split -l $lines nts.tmp.raw -d -a 1 nts.tmp.raw.
 for ((i=0;i<$num_processes;i++)); do
 {
-    perl ./tools/normalize-punctuation.perl -l en < $1.nts.gpu.$i > $1.nts.gpu.norm.$i
+    perl ./moses/normalize-punctuation.perl -l en < nts.tmp.raw.$i > nts.tmp.norm.$i
 } &
 done
 wait
-for ((i=0;i<$num_processes;i++))do echo $1.nts.gpu.norm.$i;done | xargs -i cat {} >> $1.nts.gpu.norm
-perl ./tools/tokenizer.perl -q -l en -threads 8 -no-escape -lines 20000 < $1.nts.gpu.norm > $1.nts.gpu.norm.tok
+for ((i=0;i<$num_processes;i++))do echo nts.tmp.norm.$i;done | xargs -i cat {} >> nts.tmp.norm
+perl ./moses/tokenizer.perl -q -l en -threads 8 -no-escape -lines 20000 < nts.tmp.norm > nts.tmp.tok
 
-./tools/fastbpe applybpe $1.nts.gpu.bpe $1.nts.gpu.norm.tok en-de.code
+# Apply BPE
+./moses/fastbpe applybpe nts.tmp.bpe nts.tmp.tok ./model/bpe.code
 
 # Translate
-../bin/NiuTensor -dev 7 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en < $1.nts.gpu.bpe > $2.nts.gpu.atat
+if [ "$HARDWARE" == "GPU" ]; then
+    ./bin/NiuTensor -dev 7 -fp16 1 -model ./model/model.fp16 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe > nts.tmp.atat
+else
+    ./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe > nts.tmp.atat
+fi
 
 # Remove BPE
-sed -r 's/(@@ )|(@@ ?$)//g' < $2.nts.gpu.atat > $2.nts.gpu.tok
+sed -r 's/(@@ )|(@@ ?$)//g' < nts.tmp.atat > nts.tmp
 
 # Split ouput file
-total=`awk 'END{print NR}' $2.nts.gpu.tok`
+total=`awk 'END{print NR}' nts.tmp`
 lines=`expr $total / $num_processes + 1`
-split -l $lines $2.nts.gpu.tok -d -a 1 $2.nts.gpu.tok.
+split -l $lines nts.tmp -d -a 1 nts.tmp.
 
 # Run detokenizing in parallel
 for ((i=0;i<$num_processes;i++)); do
 {
-    perl ./tools/detokenizer.perl -q -l de -a < $2.nts.gpu.tok.$i > $2.nts.gpu.$i
+    perl ./moses/detokenizer.perl -q -l de -a < nts.tmp.$i > nts.tmp.output.$i
 } &
 done
 wait
 
-# Combine all results
-for ((i=0;i<$num_processes;i++))do echo $2.nts.gpu.$i;done | xargs -i cat {} >> $2
+for ((i=0;i<$num_processes;i++))do echo nts.tmp.output.$i;done | xargs -i cat {}
 
-rm -rf $1.nts.gpu* $2.nts.gpu*
+rm -rf nts.tmp*
