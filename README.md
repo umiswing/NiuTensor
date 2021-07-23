@@ -16,37 +16,26 @@ Windows上会生成NiuTensor.sln，打开后右键解决方案中的NiuTensor，
 
 # 翻译
 
+第一次运行需要：
+
+1. 把bin目录拷贝到data目录下，保证bin目录、moses目录和model目录都在data目录内
+
+2. 修改fastbpe权限: chmod+x data/moses/fastbpe
+
 ## GPU
 
 ```bash
 cd data
-../bin/NiuTensor -nmt -dev 0 -fp16 1 -model ../data/model.fp16 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en < test.txt > output.txt
+sh run.sh GPU throughput < wmt20.test.en > res.txt
 ```
+注意：在run.sh中修改设备号
 
 ## CPU
 
 ```bash
 cd data
-../bin/NiuTensor -nmt -dev -1 -model ../data/model.fp32 -srcvocab ../data/vocab.en -tgtvocab ../data/vocab.en < test.txt > output.txt
+sh run.sh CPU throughput < wmt20.test.en > res.txt
 ```
-
-参数说明：
-
-dev: 设备号，>=0为显卡，-1为CPU
-
-fp16: 使用半精度，注意不能忽略后面的1
-
-model: 模型文件路径
-
-srcvocab: 源语词表
-
-tgtvocab：目标语词表
-
-input：输入文件路径
-
-output：输出文件路径
-
-wbatch: batch大小 （源语最大词数）
 
 # 评估翻译
 
