@@ -8,12 +8,10 @@ build/
 xxx/
 bin/
 .vs/
-data/model.fp32
-data/model.fp16
-data/res.txt
+data/model.*
 data/output.txt
 replace.py
-data/res.windows
+data/res.*
 *.zip
 data/test.1
 data/model/model.fp16

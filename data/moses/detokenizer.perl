@@ -92,6 +92,7 @@ sub detokenize {
 	chomp($text);
 	$text = " $text ";
   $text =~ s/ \@\-\@ /-/g;
+  $text =~ s/(@@ )|(@@ ?$)//g;
   $text = &deescape($text);
 
 	my $word;

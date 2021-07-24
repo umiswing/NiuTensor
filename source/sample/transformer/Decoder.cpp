@@ -65,7 +65,8 @@ AttDecoder::~AttDecoder()
     delete[] selfAttCache;
     delete[] enDeAttCache;
     delete[] selfAtts;
-    delete[] ffns;
+    if (ffns != NULL)
+        delete[] ffns;
     delete[] selfAttLayerNorms;
     delete[] ffnLayerNorms;
     delete[] enDeAtts;
@@ -98,7 +99,8 @@ void AttDecoder::InitModel(NMTConfig& config)
     CheckNTErrors(vSize > 1, "set vocabulary size by \"-vsizetgt\"");
 
     selfAtts = new Attention[nlayer];
-    ffns = new FFN[nlayer];
+    if(config.model.decFFNHiddenDim > 0)
+        ffns = new FFN[nlayer];
     selfAttLayerNorms = new LayerNorm[nlayer];
     enDeAtts = new Attention[nlayer];
     enDeAttLayerNorms = new LayerNorm[nlayer];
@@ -120,7 +122,8 @@ void AttDecoder::InitModel(NMTConfig& config)
     }
     for (int i = 0; i < nlayer; i++) {
         selfAtts[i].InitModel(config, false, true);
-        ffns[i].InitModel(config, false);
+        if (ffns != NULL)
+            ffns[i].InitModel(config, false);
         selfAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
         ffnLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
         enDeAtts[i].InitModel(config, false, false);
@@ -286,7 +289,8 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         xn = ffnLayerNorms[i].RunFast(x);
 
         /* ffn */
-        xn = ffns[i].Make(xn);
+        if (ffns != NULL)
+            xn = ffns[i].Make(xn);
 
         /* residual connection */
         SumMe(x, xn);
@@ -347,7 +351,8 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         xn = enDeAttLayerNorms[i].RunFast(x);
 
         /* ffn */
-        x = ffns[i].Make(xn);
+        if (ffns != NULL)
+            x = ffns[i].Make(xn);
 
         /* residual connection */
         SumMe(x, xn);

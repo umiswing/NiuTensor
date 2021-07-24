@@ -97,7 +97,7 @@ def get_model_configs(model_config, model):
         model_config.decoder_layers,
         model_config.decoder_attention_heads,
         model_config.decoder_attention_heads,
-        model_config.decoder_ffn_embed_dim,
+        model_config.decoder_ffn_embed_dim if 'decoder.layers.0.fc1.weight' in model.keys() else -1,
         
         model_config.max_relative_length,
         model_config.max_source_positions,

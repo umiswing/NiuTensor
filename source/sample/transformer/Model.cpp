@@ -504,10 +504,12 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->enDeAttLayerNorms[i].weight);
                 list.Add(&decoder->enDeAttLayerNorms[i].bias);
             }
-            list.Add(&decoder->ffns[i].w1);
-            list.Add(&decoder->ffns[i].b1);
-            list.Add(&decoder->ffns[i].w2);
-            list.Add(&decoder->ffns[i].b2);
+            if (decoder->ffns != NULL) {
+                list.Add(&decoder->ffns[i].w1);
+                list.Add(&decoder->ffns[i].b1);
+                list.Add(&decoder->ffns[i].w2);
+                list.Add(&decoder->ffns[i].b2);
+            }
             list.Add(&decoder->ffnLayerNorms[i].weight);
             list.Add(&decoder->ffnLayerNorms[i].bias);
         }
@@ -584,10 +586,12 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->enDeAttLayerNorms[i].weight);
                 list.Add(&decoder->enDeAttLayerNorms[i].bias);
             }
-            list.Add(&decoder->ffns[i].w1);
-            list.Add(&decoder->ffns[i].b1);
-            list.Add(&decoder->ffns[i].w2);
-            list.Add(&decoder->ffns[i].b2);
+            if (decoder->ffns != NULL) {
+                list.Add(&decoder->ffns[i].w1);
+                list.Add(&decoder->ffns[i].b1);
+                list.Add(&decoder->ffns[i].w2);
+                list.Add(&decoder->ffns[i].b2);
+            }
             list.Add(&decoder->ffnLayerNorms[i].weight);
             list.Add(&decoder->ffnLayerNorms[i].bias);
         }
