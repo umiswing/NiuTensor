@@ -22,13 +22,14 @@ Windows上会生成NiuTensor.sln，打开后右键解决方案中的NiuTensor，
 
 2. 修改fastbpe权限: chmod+x data/moses/fastbpe
 
+3. 安装parallel工具：sudo yum install -y parallel
+
 ## GPU
 
 ```bash
 cd data
 sh run.sh GPU throughput < wmt20.test.en > res.txt
 ```
-注意：在run.sh中修改设备号
 
 ## CPU
 

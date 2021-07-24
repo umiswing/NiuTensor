@@ -15,7 +15,20 @@ cat | parallel --pipe -L 5000 -N1 --keep-order "perl ./moses/normalize-punctuati
 if [ "$HARDWARE" == "GPU" ]; then
     ./bin/NiuTensor -dev 7 -fp16 1 -model ./model/model.fp16 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe | parallel --pipe -L 5000 -N1 --keep-order "sed -r 's/(@@ )|(@@ ?$)//g' | perl ./moses/detokenizer.perl -q -l de"
 else
-    ./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe | parallel --pipe -L 5000 -N1 --keep-order "sed -r 's/(@@ )|(@@ ?$)//g' | perl ./moses/detokenizer.perl -q -l de"
+    total=`awk 'END{print NR}' nts.tmp.bpe`
+    lines=`expr $total / $num_processes + 1`
+    num=`expr $total / $lines`
+    if [ "$num_processes" -gt "$num" ]; then
+        num_processes=$num
+    fi
+    split -l $lines nts.tmp.bpe -d -a 1 nts.tmp.bpe.
+    for ((i=0;i<$num_processes;i++)); do
+    {
+        ./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe.$i | parallel --pipe -L 5000 -N1 --keep-order "sed -r 's/(@@ )|(@@ ?$)//g' | perl ./moses/detokenizer.perl -q -l de" > nts.tmp.res.$i
+    } &
+    done
+    wait
+    for ((i=0;i<$num_processes;i++))do echo nts.tmp.res.$i;done | xargs -i cat {}
 fi
 
 rm -rf nts.tmp*
