@@ -15,7 +15,7 @@ cat | parallel --pipe -L 4000 --keep-order "mosestokenizer -N -U en -c ./fast-mo
 
 # Translate
 if [ "$HARDWARE" == "GPU" ]; then
-    ./bin/NiuTensor -dev 7 -fp16 1 -model ./model/model.fp16 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe | parallel --pipe -L 4000 --keep-order "perl ./moses/detokenizer.perl -q -l de"
+    ./bin/NiuTensor -dev 7 -fp16 1 -model ./model/model.fp16 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt -sbatch 3072 -wbatch 64000 < nts.tmp.bpe | parallel --pipe -L 4000 --keep-order "perl ./moses/detokenizer.perl -q -l de"
     # ./bin/NiuTensor -dev 7 -fp16 1 -model ./model/model.fp16 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt < nts.tmp.bpe | parallel --pipe -L 4000 --keep-order "mosestokenizer -D de -c ./fast-mosestokenizer-master/share"
 else
     
@@ -23,4 +23,4 @@ else
     <nts.tmp.bpe parallel --pipe -L $lines -N1 --keep-order "./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt | perl ./moses/detokenizer.perl -q -l de"
 fi
 
-# rm -rf nts.tmp*
+rm -rf nts.tmp*
