@@ -4,7 +4,6 @@ set -e
 NUM_THREAD=18
 HARDWARE=$1
 TASK=$2
-OMP_NUM_THREADS=2
 
 # Pre-process
 # cat | parallel --pipe -L 4000 -N1 --keep-order "perl ./moses/normalize-punctuation.perl -l en | perl ./moses/tokenizer.perl -q -l en -no-escape " > nts.tmp.tok 
@@ -21,7 +20,7 @@ if [ "$HARDWARE" == "GPU" ]; then
 else
     total=`awk 'END{print NR}' nts.tmp.bpe`
     lines=`expr $total / $NUM_THREAD + 1`
-    <nts.tmp.bpe parallel --pipe -L $lines -N1 --keep-order "./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt | perl ./moses/detokenizer.perl -q -l de"
+    <nts.tmp.bpe parallel --pipe -L $lines -N1 --keep-order "OMP_NUM_THREADS=2 ./bin/NiuTensor -dev -1 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt | perl ./moses/detokenizer.perl -q -l de"
 fi
 
 rm -rf nts.tmp*
