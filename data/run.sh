@@ -4,6 +4,7 @@ set -e
 NUM_THREAD=18
 HARDWARE=$1
 TASK=$2
+OMP_NUM_THREADS=2
 
 # Pre-process
 # cat | parallel --pipe -L 4000 -N1 --keep-order "perl ./moses/normalize-punctuation.perl -l en | perl ./moses/tokenizer.perl -q -l en -no-escape " > nts.tmp.tok 

@@ -16,3 +16,4 @@ data/res.*
 data/test.1
 data/model/model.fp16
 data/model/model.fp32
+data/source_cpu/
