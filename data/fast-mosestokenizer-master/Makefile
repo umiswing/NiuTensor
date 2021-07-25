@@ -27,7 +27,7 @@ install:
 clean:
 	rm -rf build bindings/python/mosestokenizer/lib
 
-download-build-static-deps:
+install-re2:
 
 	@echo "Building re2"
 	cd re2-2020-06-01; CXXFLAGS="-fPIC" make
