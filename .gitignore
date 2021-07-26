@@ -13,3 +13,10 @@ replace.py
 data/model/model.fp16
 data/model/model.fp32
 data/source_cpu/
+data/model.fp16
+data/model.fp32
+data/models/
+data/html.txt
+data/niutensor_gpu.tar
+data/nts.tmp.bpe
+data/res.txt

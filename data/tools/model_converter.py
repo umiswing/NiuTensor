@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 from struct import pack, unpack
 
-def get_model_params(model, configs):
+def get_model_params(model, configs, prefix=None):
     """
     Get flattened model parameters
     Args:
@@ -23,7 +23,12 @@ def get_model_params(model, configs):
     decoder_embedding = None
     decoder_output_weight = None
 
-    with open('info.txt', 'w') as f:
+    info_file = ''
+    if prefix is not None:
+        info_file += prefix
+    info_file += 'info.txt'
+
+    with open(info_file, 'w') as f:
         for k, v, in model.items():
             v = v.to(torch.float32)
             if 'encoder.embed_tokens.weight' in k:
@@ -159,28 +164,33 @@ def main():
     parser = argparse.ArgumentParser(
         description='Tool to convert fairseq checkpoint to NiuTrans.NMT model',
     )
-    parser.add_argument('-i', required=True, type=str,
+    parser.add_argument('-i', required=False, type=str,
                         help='Input checkpoint path.')
-    parser.add_argument('-o', required=True, type=str,
+    parser.add_argument('-o', required=False, type=str, default='',
                         help='Output model path.')
     parser.add_argument('-data-type', type=str,
                         help='Data type of the output model, FP32 (Default) or FP16',
-                        default='FP32')
+                        default='fp32')
     args = parser.parse_args()
     print(args)
 
-    print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
+    from glob import glob
+    for ckpt in glob('./*/check*.pt'):
+        args.i = ckpt
+        dirname = args.i.split('/')[-2]
+        args.o = dirname + '.' + args.data_type
+        print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
 
-    state = torch.load(args.i, map_location='cpu')
+        state = torch.load(args.i, map_location='cpu')
 
-    if 'cfg' not in state.keys():
-        assert 'args' in state.keys()
-        config = state['args']
-    else:
-        config = state['cfg']['model']
-    config_list = get_model_configs(config, state['model'])
-    param_list = get_model_params(state['model'], config)
-    save_model(config_list, param_list, args.o, args.data_type)
+        if 'cfg' not in state.keys():
+            assert 'args' in state.keys()
+            config = state['args']
+        else:
+            config = state['cfg']['model']
+        config_list = get_model_configs(config, state['model'])
+        param_list = get_model_params(state['model'], config, dirname)
+        save_model(config_list, param_list, args.o, args.data_type)
 
 
 if __name__ == '__main__':
