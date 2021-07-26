@@ -20,3 +20,4 @@ data/html.txt
 data/niutensor_gpu.tar
 data/nts.tmp.bpe
 data/res.txt
+*.fp16

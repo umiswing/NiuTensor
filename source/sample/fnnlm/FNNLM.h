@@ -20,7 +20,7 @@
  * This is a simple impelementation of the feed-forward network-baesd language
  * model (FNNLM). See more details about FNNLM in
  * "A Neural Probabilistic Language Model" by Bengio et al.
- * Journal of Machine Learning Research 3 (2003) 1137¨C1155
+ * Journal of Machine Learning Research 3 (2003) 1137¨C11
  *
  * $Created by: XIAO Tong (xiaotong@mail.neu.edu.cn) 2018-06-22
  * Today I was awarded as the most popular teacher in our college. 
