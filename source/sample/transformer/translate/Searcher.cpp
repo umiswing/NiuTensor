@@ -832,16 +832,15 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     for (int i = 0; i < batchSize; i++)
         finishedFlags[i] = 0;
 
-    XTensor prob;
-    XTensor maskEncDec;
-    XTensor decoding;
-    XTensor indexCPU;
-    XTensor bestScore;
-
-    InitTensorOnCPU(&indexCPU, &inputDec);
-    InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
-
     for (int l = 0; l < lengthLimit; l++) {
+
+        XTensor prob;
+        XTensor maskEncDec;
+        XTensor decoding;
+        XTensor indexCPU;
+        XTensor bestScore;
+
+        InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
@@ -858,6 +857,8 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         /* get the most promising predictions */
         prob.Reshape(prob.dimSize[0], prob.dimSize[prob.order - 1]);
         TopK(prob, bestScore, inputDec, -1, 1);
+
+        InitTensorOnCPU(&indexCPU, &inputDec);
 
         /* save the predictions */
         CopyValues(inputDec, indexCPU);
