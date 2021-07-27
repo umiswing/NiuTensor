@@ -409,11 +409,11 @@ XTensor NMTModel::MakeMTMaskDecInference(XTensor& paddingEnc)
     /* encoder-decoder mask that prevents the attention to padding dummy words */
     XTensor maskEncDecTMP;
 
-    paddingEnc.Dump(stderr, "paddingEnc two", 10);
+    paddingEnc.Dump(stderr, "paddingEnc two");
     maskEncDecTMP = Unsqueeze(paddingEnc, paddingEnc.order - 1, 1);
 
     
-    maskEncDecTMP.Dump(stderr, "maskEncDecTMP", 10);
+    maskEncDecTMP.Dump(stderr, "maskEncDecTMP");
     if (config->model.encDecAttHeadNum > 1) {
         XTensor maskEncDec;
         Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.encDecAttHeadNum);

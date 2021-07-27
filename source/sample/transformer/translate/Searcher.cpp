@@ -847,7 +847,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     floatW.Dump(stderr, "encoding", 10);
 
     floatW = ConvertDataType(padding, X_FLOAT);
-    floatW.Dump(stderr, "padding", 10);
+    floatW.Dump(stderr, "padding");
 
     for (int l = 0; l < lengthLimit; l++) {
         /* decoder mask */
@@ -855,7 +855,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
 
         
         floatW = ConvertDataType(maskEncDec, X_FLOAT);
-        floatW.Dump(stderr, "floatW", 10);
+        floatW.Dump(stderr, "floatW");
 
         /* make the decoding network */
         if (model->config->model.decPreLN)
