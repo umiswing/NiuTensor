@@ -841,6 +841,10 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     InitTensorOnCPU(&indexCPU, &inputDec);
     InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
+    XTensor floatW;
+    floatW = ConvertDataType(encoding, X_FLOAT);
+    floatW.Dump(stderr, "encoding", 10);
+
     for (int l = 0; l < lengthLimit; l++) {
 
         LOG("l: %d", l);
