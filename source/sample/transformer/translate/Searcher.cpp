@@ -845,15 +845,15 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
 
+        XTensor floatW;
+        floatW = ConvertDataType(maskEncDec, X_FLOAT);
+        floatW.Dump(stderr, "floatW", 10);
+
         /* make the decoding network */
         if (model->config->model.decPreLN)
             decoding = model->decoder->RunFastPreNorm(inputDec, encoding, &maskEncDec, l);
         else
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
-
-        XTensor floatW;
-        floatW = ConvertDataType(decoding, X_FLOAT);
-        floatW.Dump(stderr, "floatW", 10);
 
         /* generate the output probabilities */
         model->outputLayer->Make(decoding, prob, false);
