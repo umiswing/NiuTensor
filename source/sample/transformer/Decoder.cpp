@@ -260,6 +260,8 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
 {
     XTensor x;
 
+    inputDec.Dump(stderr, "inputDec");
+
     x = embedder->Make(inputDec, true, nstep);
 
     for (int i = 0; i < nlayer; i++) {

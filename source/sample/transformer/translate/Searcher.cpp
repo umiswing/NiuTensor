@@ -841,21 +841,9 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     InitTensorOnCPU(&indexCPU, &inputDec);
     InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
-    XTensor floatW;
-
-    floatW = ConvertDataType(encoding, X_FLOAT);
-    floatW.Dump(stderr, "encoding", 10);
-
-    floatW = ConvertDataType(padding, X_FLOAT);
-    floatW.Dump(stderr, "padding");
-
     for (int l = 0; l < lengthLimit; l++) {
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
-
-        
-        floatW = ConvertDataType(maskEncDec, X_FLOAT);
-        floatW.Dump(stderr, "floatW");
 
         /* make the decoding network */
         if (model->config->model.decPreLN)
