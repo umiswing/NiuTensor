@@ -151,6 +151,12 @@ XTensor Embedder::Make(XTensor& input, bool isDec, int nstep)
     embTMP = Gather(posEmbeddingBase, position);
     posEmbedding = Unsqueeze(embTMP, 0, input.GetDim(0));
 
+    if (isDec) {
+        XTensor floatW;
+        floatW = ConvertDataType(posEmbedding, X_FLOAT);
+        floatW.Dump(stderr, "posEmbedding", 10);
+    }
+
     /* then we make word embeddings */
     wordEmbedding = Gather(*w, input);
 
