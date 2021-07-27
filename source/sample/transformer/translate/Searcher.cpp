@@ -842,6 +842,9 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
     for (int l = 0; l < lengthLimit; l++) {
+
+        LOG("l: %d", l);
+
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
 
