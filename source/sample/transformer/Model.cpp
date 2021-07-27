@@ -668,6 +668,13 @@ void NMTModel::LoadFromFile(FILE* file)
         size += params[i]->unitNum;
     }
 
+    if (config->common.useFP16) {
+        LOG("running with fp16");
+    }
+    else {
+        LOG("running with fp32");
+    }
+
     /* share all embeddings */
     if (config->model.shareEncDecEmb) {
         decoder->embedder = &(encoder->embedder);
@@ -676,7 +683,6 @@ void NMTModel::LoadFromFile(FILE* file)
 
     /* convert parameters to FP16 before reading files */
     if (config->common.useFP16) {
-        LOG("running with fp16");
         for (int i = 0; i < params.Size(); i++) {
             XTensor* p = params[i];
             InitTensor(p, p->order, p->dimSize, X_FLOAT16, p->devID, p->enableGrad && X_ENABLE_GRAD);
@@ -696,7 +702,7 @@ void NMTModel::LoadFromFile(FILE* file)
     /* share embeddings with output weights */
     if (config->model.shareDecInputOutputEmb) {
         outputLayer->w = Transpose(*(decoder->embedder->w), 0, 1);
-        LOG("sharing decoder embeddings with output weights");
+        LOG("share decoder embeddings with output weights");
     }
 
     double elapsed = GetClockSec() - startT;

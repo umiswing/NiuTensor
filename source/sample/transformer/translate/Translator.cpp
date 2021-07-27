@@ -59,14 +59,14 @@ void Translator::Init(NMTConfig& myConfig, NMTModel& myModel)
     config = &myConfig;
 
     if (config->translation.beamSize > 1) {
-        LOG("Translating with beam search (beam=%d, batchSize= %d sents/ %d tokens, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
+        LOG("Translating with beam search (beam=%d, batchSize= %d sents | %d tokens, lenAlpha=%.2f, maxLenAlpha=%.2f) ", 
             config->translation.beamSize, config->common.sBatchSize, config->common.wBatchSize,
             config->translation.lenAlpha, config->translation.maxLenAlpha);
         seacher = new BeamSearch();
         ((BeamSearch*)seacher)->Init(myConfig);
     }
     else if (config->translation.beamSize == 1) {
-        LOG("translating with greedy search (batchSize= %d sents/ %d tokens, maxLenAlpha=%.2f)", 
+        LOG("translating with greedy search (batchSize= %d sents | %d tokens, maxLenAlpha=%.2f)", 
             config->common.sBatchSize, config->common.wBatchSize, config->translation.maxLenAlpha);
         seacher = new GreedySearch();
         ((GreedySearch*)seacher)->Init(myConfig);
