@@ -817,6 +817,10 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
 
+    XTensor floatW;
+    floatW = ConvertDataType(encoding, X_FLOAT);
+    floatW.Dump(stderr, "floatW", 10);
+
     /* max output-length = scalar * source-length */
     int lengthLimit = MIN(int(float(input.GetDim(-1)) * scalarMaxLength), maxLen);
 
