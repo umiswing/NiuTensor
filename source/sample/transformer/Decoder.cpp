@@ -262,7 +262,10 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
 
     x = embedder->Make(inputDec, true, nstep);
 
+    XTensor floatW;
+
     for (int i = 0; i < nlayer; i++) {
+        LOG("layer %d", i);
         XTensor xn;
 
         /* layer normalization with pre-norm for self-attn */
@@ -295,6 +298,10 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         /* residual connection */
         SumMe(x, xn);
     }
+
+    
+    floatW = ConvertDataType(x, X_FLOAT);
+    floatW.Dump(stderr, "decoding", 10);
 
     if (finalNorm)
         return decoderLayerNorm->RunFast(x);
