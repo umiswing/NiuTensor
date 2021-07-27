@@ -89,7 +89,7 @@ void print_trace();
     { \
         fprintf(stderr, "[ERROR on Linux] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
         print_trace();\
-        throw; \
+        exit(-1); \
     } \
 } \
 
@@ -101,7 +101,7 @@ void print_trace();
     if(!(x)) \
     { \
         fprintf(stderr, "[ERROR on Windows] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
-        throw; \
+        exit(-1); \
     } \
 } \
 
@@ -112,7 +112,7 @@ void print_trace();
     if(!(x)) \
     { \
         fprintf(stderr, "[ERROR] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__); \
-        throw; \
+        exit(-1); \
     } \
 } \
 
@@ -122,7 +122,7 @@ void print_trace();
     { \
         fprintf(stderr, "[ERROR on Linux] (%s line %d): %s\n", __FILENAME__, __LINE__, msg); \
         print_trace();\
-        throw; \
+        exit(-1); \
     } \
 } \
 
@@ -133,7 +133,7 @@ void print_trace();
 { \
     { \
         fprintf(stderr, "[ERROR on Windows] (%s line %d): %s\n", __FILENAME__, __LINE__, msg); \
-        throw; \
+        exit(-1); \
     } \
 } \
 
