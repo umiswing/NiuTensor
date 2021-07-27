@@ -851,6 +851,10 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         else
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
 
+        XTensor floatW;
+        floatW = ConvertDataType(decoding, X_FLOAT);
+        floatW.Dump(stderr, "decoding", 10);
+
         /* generate the output probabilities */
         model->outputLayer->Make(decoding, prob, false);
 
