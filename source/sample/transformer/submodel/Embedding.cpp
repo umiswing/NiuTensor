@@ -68,7 +68,7 @@ void Embedder::InitModel(NMTConfig& config, bool myIsEnc)
     vSize = isEnc ? config.model.srcVocabSize : config.model.tgtVocabSize;
 
     if (!shareEncDecEmb || isEnc) {
-        w = NewTensor2D(vSize, eSize, X_FLOAT, devID);
+        w = NewTensor2D(vSize, eSize, fp16 ? X_FLOAT16 : X_FLOAT, devID);
 
         maxLength = maxLength + 1 + 1;
         DTYPE v = 1.0F / (float)sqrt((float)eSize);
@@ -150,12 +150,6 @@ XTensor Embedder::Make(XTensor& input, bool isDec, int nstep)
     XTensor embTMP;
     embTMP = Gather(posEmbeddingBase, position);
     posEmbedding = Unsqueeze(embTMP, 0, input.GetDim(0));
-
-    if (isDec) {
-        XTensor floatW;
-        floatW = ConvertDataType(posEmbedding, X_FLOAT);
-        floatW.Dump(stderr, "posEmbedding", 10);
-    }
 
     /* then we make word embeddings */
     wordEmbedding = Gather(*w, input);

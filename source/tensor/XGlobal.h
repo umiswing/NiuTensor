@@ -74,20 +74,38 @@ namespace nts {
 #endif
 
 /* print call trace on linux */
+#ifndef WIN32
+#include <stdio.h>
+#include <execinfo.h>
+void print_trace();
+#endif // WIN32
 
 #define __FILENAME__ ( strrchr(__FILE__, DELIMITER) != NULL ? strrchr(__FILE__, DELIMITER)+1 : __FILE__ )
 
+#ifndef WIN32
 #define CheckNTErrors(x, msg) \
 { \
     if(!(x)) \
     { \
-        fprintf(stderr, "[ERROR] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
-        exit(0); \
+        fprintf(stderr, "[ERROR on Linux] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
+        print_trace();\
+        throw; \
     } \
 } \
 
+#endif
 
+#ifdef WIN32
+#define CheckNTErrors(x, msg) \
+{ \
+    if(!(x)) \
+    { \
+        fprintf(stderr, "[ERROR on Windows] calling '%s' (%s line %d): %s\n", #x, __FILENAME__, __LINE__, msg); \
+        throw; \
+    } \
+} \
 
+#endif
 
 #define CheckNTErrorsV0(x) \
 { \
@@ -98,13 +116,28 @@ namespace nts {
     } \
 } \
 
+#ifndef WIN32
 #define ShowNTErrors(msg) \
 { \
     { \
-        fprintf(stderr, "[ERROR] (%s line %d): %s\n", __FILENAME__, __LINE__, msg); \
+        fprintf(stderr, "[ERROR on Linux] (%s line %d): %s\n", __FILENAME__, __LINE__, msg); \
+        print_trace();\
         throw; \
     } \
 } \
+
+#endif
+
+#ifdef WIN32
+#define ShowNTErrors(msg) \
+{ \
+    { \
+        fprintf(stderr, "[ERROR on Windows] (%s line %d): %s\n", __FILENAME__, __LINE__, msg); \
+        throw; \
+    } \
+} \
+
+#endif
 
 #define MAX_FILE_NAME_LENGTH 1024 * 2
 #define MAX_LINE_LENGTH 1024 * 1024

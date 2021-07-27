@@ -816,7 +816,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         encoding = model->encoder->RunFastPreNorm(input, &maskEnc);
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
-
+        
     /* max output-length = scalar * source-length */
     int lengthLimit = MIN(int(float(input.GetDim(-1)) * scalarMaxLength), maxLen);
 
@@ -841,13 +841,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     InitTensorOnCPU(&indexCPU, &inputDec);
     InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
-    XTensor floatW;
-    floatW = ConvertDataType(encoding, X_FLOAT);
-    floatW.Dump(stderr, "encoding", 10);
-
     for (int l = 0; l < lengthLimit; l++) {
-
-        LOG("l: %d", l);
 
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
