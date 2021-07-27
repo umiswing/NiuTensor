@@ -64,7 +64,7 @@ void Embedder::InitModel(NMTConfig& config, bool myIsEnc)
     padIdx = config.model.pad;
     devID = config.common.devID;
     eSize = isEnc ? config.model.encEmbDim : config.model.decEmbDim;
-    maxLength = config.model.maxTgtLen;
+    maxLength = config.model.maxTgtLen; // TODO: reset the maxLength for src emb
     vSize = isEnc ? config.model.srcVocabSize : config.model.tgtVocabSize;
 
     if (!shareEncDecEmb || isEnc) {
