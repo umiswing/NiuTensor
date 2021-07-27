@@ -817,10 +817,6 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
 
-    XTensor floatW;
-    floatW = ConvertDataType(encoding, X_FLOAT);
-    floatW.Dump(stderr, "floatW", 10);
-
     /* max output-length = scalar * source-length */
     int lengthLimit = MIN(int(float(input.GetDim(-1)) * scalarMaxLength), maxLen);
 
@@ -854,6 +850,10 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
             decoding = model->decoder->RunFastPreNorm(inputDec, encoding, &maskEncDec, l);
         else
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
+
+        XTensor floatW;
+        floatW = ConvertDataType(decoding, X_FLOAT);
+        floatW.Dump(stderr, "floatW", 10);
 
         /* generate the output probabilities */
         model->outputLayer->Make(decoding, prob, false);
