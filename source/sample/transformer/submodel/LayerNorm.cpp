@@ -123,16 +123,32 @@ run layernorm-l1 for inference
 XTensor LayerNorm::RunL1Norm(XTensor& input)
 {
     XTensor& x = input;
+    XTensor xn;
     XTensor mean;
     XTensor variance;
+
+    TENSOR_DATA_TYPE dataType = input.dataType;
 
     /* \mu = (sum_i x_i)/m */
     mean = ReduceMean(x, x.order - 1);
 
-    /* \sigma = (sum_i |(x_i - \mu)|)/m */
+    if (dataType == X_FLOAT16) {
+        x = ConvertDataType(x, X_FLOAT);
+        mean = ConvertDataType(mean, X_FLOAT);
+    }
+
+    /* \sigma = (sum_i (x_i - \mu)^2)/m */
     variance = ReduceVariance(x, x.order - 1, mean, true);
 
-    return L1Normalize(x, x.order - 1, mean, variance, weight, bias);
+    if (dataType != x.dataType) {
+        x = ConvertDataType(x, dataType);
+        mean = ConvertDataType(mean, dataType);
+        variance = ConvertDataType(variance, dataType);
+    }
+
+    xn = Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+
+    return xn;
 }
 
 } /* end of the nmt (NiuTrans.NMT) namespace */
