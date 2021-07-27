@@ -90,6 +90,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     /* read model configurations */
     if (!config->training.isTraining) {
         modelFile = fopen(config->common.modelFN, "rb");
+        LOG("model file: %s", config->common.modelFN);
         CheckNTErrors(modelFile, "Failed to open the model file");
 
         fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
