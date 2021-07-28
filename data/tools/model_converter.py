@@ -26,7 +26,7 @@ def get_model_params(model, configs, prefix=None):
     info_file = ''
     if prefix is not None:
         info_file += prefix
-    info_file += 'info.txt'
+    info_file += '.info.txt'
 
     with open(info_file, 'w') as f:
         for k, v, in model.items():
@@ -188,9 +188,23 @@ def main():
             config = state['args']
         else:
             config = state['cfg']['model']
-        config_list = get_model_configs(config, state['model'])
-        param_list = get_model_params(state['model'], config, dirname)
-        save_model(config_list, param_list, args.o, args.data_type)
+        
+        cfg = vars(config)
+        with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
+            fo.write('*'*75)
+            fo.write('\n')
+            fo.write('Parameters & Shapes:\n')
+            for k,v in state['model'].items():
+                fo.write('{}:\t\t{}\n'.format(k,v.shape))
+            fo.write('*'*75)
+            fo.write('\n')
+            fo.write('Training settings:\n')
+            for k,v in cfg.items():
+                fo.write('{}:\t\t{}\n'.format(k,v))
+            
+        # config_list = get_model_configs(config, state['model'])
+        # param_list = get_model_params(state['model'], config, dirname)
+        # save_model(config_list, param_list, args.o, args.data_type)
 
 
 if __name__ == '__main__':
