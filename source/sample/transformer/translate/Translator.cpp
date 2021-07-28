@@ -148,6 +148,10 @@ bool Translator::Translate()
     while (!batchLoader.IsEmpty()) {
         batchLoader.GetBatchSimple(&inputs, &info);
         TranslateBatch(batchEnc, paddingEnc, indices);
+        if (batchLoader.appendEmptyLine)
+            fprintf(stderr, "%d/%d\n", batchLoader.bufIdx - 1, batchLoader.buf->Size() - 1);
+        else
+            fprintf(stderr, "%d/%d\n", batchLoader.bufIdx, batchLoader.buf->Size());
     }
 
     /* handle empty lines */
