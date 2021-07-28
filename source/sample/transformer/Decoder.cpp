@@ -268,7 +268,6 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         /* layer normalization with pre-norm for self-attn */
         xn = selfAttLayerNorms[i].RunFast(x);
 
-        /******************/
         /* self attention */
         xn = selfAtts[i].Make(xn, xn, xn, NULL, &selfAttCache[i], SELF_ATT);
 

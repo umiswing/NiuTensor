@@ -28,20 +28,18 @@ using namespace nts;
 using namespace nmt;
 
 void test() {
-    XTensor a, b, c, d;
-    InitTensor2D(&a, 2, 4, X_FLOAT, -1);
-
-    DTYPE sData[2][4] = { {0.0F, 1.0F, 2.0F, 3.0F},
-                          {4.0F, 5.0F, 6.0F, 7.0F} };
-    DTYPE meanData[4] = { 2.0F, 3.0F, 4.0F, 5.0F };
-    DTYPE answer[4] = { 2.0F, 2.0F, 2.0F, 2.0F };
-
-    a.SetData(sData, 8);
-    //a = ConvertDataType(a, X_FLOAT16);
-    b = ReduceMean(a, 0);
-    c = ReduceVariance(a, 0, b, true);
-    c = ConvertDataType(c, X_FLOAT);
-    c.Dump(stderr);
+    for (int i = 0; i < 200; i++) {
+        XTensor a, b, c, d;
+        InitTensor3D(&a, 31, 1, 512, X_FLOAT, 0);
+        a.SetDataRand();
+        a = ConvertDataType(a, X_FLOAT16);
+        InitTensor3D(&b, 31, 512, 1, X_FLOAT, 0);
+        b.SetDataRand();
+        b = ConvertDataType(b, X_FLOAT16);
+        c = BMMul(a, b);
+        c = ConvertDataType(c, X_FLOAT);
+        c.Dump(stderr, "c");
+    }
 }
 
 int main(int argc, const char ** argv)
@@ -49,6 +47,7 @@ int main(int argc, const char ** argv)
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
+    //test();
     NMTMain(argc, argv);
 
     return 0;

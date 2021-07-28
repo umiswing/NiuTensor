@@ -147,7 +147,6 @@ bool Translator::Translate()
 
     while (!batchLoader.IsEmpty()) {
         batchLoader.GetBatchSimple(&inputs, &info);
-        fprintf(stderr, "%d/%d\n", batchLoader.bufIdx, batchLoader.buf->Size());
         TranslateBatch(batchEnc, paddingEnc, indices);
     }
 
@@ -177,7 +176,8 @@ bool Translator::Translate()
 void Translator::DumpResToFile(const char* ofn)
 {
     ofstream f(ofn);
-    for (int i = 0; i < outputBuf->Size(); i++) {
+    int sentNum = batchLoader.appendEmptyLine ? outputBuf->Size() - 1 : outputBuf->Size();
+    for (int i = 0; i < sentNum; i++) {
         Sample* sample = (Sample*)outputBuf->Get(i);
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {
@@ -193,7 +193,8 @@ void Translator::DumpResToFile(const char* ofn)
 /* dump the translation results to stdout */
 void Translator::DumpResToStdout()
 {
-    for (int i = 0; i < outputBuf->Size(); i++) {
+    int sentNum = batchLoader.appendEmptyLine ? outputBuf->Size() - 1 : outputBuf->Size();
+    for (int i = 0; i < sentNum; i++) {
         Sample* sample = (Sample*)outputBuf->Get(i);
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {

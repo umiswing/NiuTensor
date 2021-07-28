@@ -80,8 +80,18 @@ bool TranslateDataset::LoadBatchToBuf()
         id++;
     }
 
+    /* hacky code to solve the issue with fp16 */
+    appendEmptyLine = false;
+    if (id > 0 && id % 2 != 0) {
+        line = "EMPTY";
+        Sample* sequence = LoadSample(line);
+        sequence->index = id++;
+        buf->Add(sequence);
+        appendEmptyLine = true;
+    }
+
     SortBySrcLengthDescending();
-    XPRINT1(0, stderr, "[INFO] loaded %d sentences\n", id);
+    XPRINT1(0, stderr, "[INFO] loaded %d sentences\n", appendEmptyLine ? id - 1 : id);
 
     return true;
 }
@@ -90,6 +100,7 @@ bool TranslateDataset::LoadBatchToBuf()
 TranslateDataset::TranslateDataset()
 {
     ifp = NULL;
+    appendEmptyLine = false;
 }
 
 /*

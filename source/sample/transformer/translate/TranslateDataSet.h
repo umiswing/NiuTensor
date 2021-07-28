@@ -36,6 +36,10 @@ namespace nmt {
 /* The translation batch manager for NMT. */
 class TranslateDataset : public DataSetBase {
 public:
+    /* whether append an empty line to the buffer */
+    bool appendEmptyLine;
+
+    /* the indices of empty lines */
     IntList emptyLines;
 
     /* the source vocabulary */
