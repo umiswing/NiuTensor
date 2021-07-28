@@ -23,4 +23,4 @@ else
     <nts.tmp.bpe parallel --pipe -L $SPLIT -N1 --keep-order "MKL_NUM_THREADS=1 OMP_NUM_THREADS=1 ./bin/NiuTensor -dev -1 -wbatch 5120 -model ./model/model.fp32 -srcvocab ./model/vocab.txt -tgtvocab ./model/vocab.txt | perl ./moses/detokenizer.perl -q -l de"
 fi
 
-# rm -rf nts.tmp*
+rm -rf nts.tmp*
