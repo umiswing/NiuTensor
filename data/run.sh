@@ -8,7 +8,7 @@ SPLIT=2000
 cat | parallel --pipe -L 4000 --keep-order "./nts-scripts/mosestokenizer -N -U en -c ./nts-scripts/nonbreaking_prefixes" > nts.tmp.tok 
 
 # Apply BPE
-./moses/fastbpe applybpe nts.tmp.bpe nts.tmp.tok ./model/bpe.code
+./nts-scripts/fastbpe applybpe nts.tmp.bpe nts.tmp.tok ./model/bpe.code
 
 # Translate
 if [ "$HARDWARE" == "GPU" ]; then
