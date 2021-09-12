@@ -34,6 +34,8 @@ Trainer::Trainer()
 {
     model = NULL;
     config = NULL;
+    adamBeta1T = 0.0F;
+    adamBeta2T = 0.0F;
 }
 
 /* de-constructor */
@@ -345,8 +347,8 @@ void Trainer::Update(const float lr)
         if (config->training.useAdam) {
             adamBeta1T *= config->training.adamBeta1;
             adamBeta2T *= config->training.adamBeta2;
-            DTYPE e = lr * (DTYPE)sqrt(1 - adamBeta2T) / (1 - adamBeta1T);
-            DTYPE d = config->training.adamDelta * (DTYPE)sqrt(1 - adamBeta2T);
+            float e = lr * sqrtf(1.0F - adamBeta2T) / (1.0F - adamBeta1T);
+            float d = config->training.adamDelta * sqrtf(1.0F - adamBeta2T);
 
             /* m = beta_1 * m + (1-beta_1) * grad */
             XTensor* m = (XTensor*)moments.Get(i);

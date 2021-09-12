@@ -32,51 +32,61 @@ namespace nmt
 void AttDecoder::SetTrainingFlag(bool myIsTraining)
 {
     isTraining = myIsTraining;
+
+    /* disable caching during training */
+    if (isTraining) {
+        for (int i = 0; i < nlayer; i++) {
+            selfAttCache[i].enable = false;
+            enDeAttCache[i].enable = false;
+        }
+    }
 }
 
 /* constructor */
 AttDecoder::AttDecoder()
 {
-    selfAtts = NULL;
-    ffns = NULL;
-    selfAttLayerNorms = NULL;
-    ffnLayerNorms = NULL;
-    enDeAtts = NULL;
-    enDeAttLayerNorms = NULL;
-    decoderLayerNorm = NULL;
-    selfAttCache = NULL;
-    enDeAttCache = NULL;
-    history = NULL;
-    preLN = true;
-    useHistory = false;
-    finalNorm = false;
     devID = -1;
+    vSize = -1;
     embDim = -1;
     nlayer = -1;
-    vSize = -1;
     dropoutP = 0.0F;
+    preLN = true;
+    finalNorm = false;
+    useHistory = false;
     isTraining = false;
     shareEncDecEmb = false;
+    ffns = NULL;
+    history = NULL;
+    embedder = NULL;
+    selfAtts = NULL;
+    enDeAtts = NULL;
+    selfAttCache = NULL;
+    enDeAttCache = NULL;
+    ffnLayerNorms = NULL;
+    decoderLayerNorm = NULL;
+    selfAttLayerNorms = NULL;
+    enDeAttLayerNorms = NULL;    
 }
 
 /* de-constructor */
 AttDecoder::~AttDecoder()
 {
+    delete[] selfAtts;
+    delete[] enDeAtts;
     delete[] selfAttCache;
     delete[] enDeAttCache;
-    delete[] selfAtts;
+    delete[] ffnLayerNorms;
+    delete[] enDeAttLayerNorms;
+    delete[] selfAttLayerNorms;
+
     if (ffns != NULL)
         delete[] ffns;
-    delete[] selfAttLayerNorms;
-    delete[] ffnLayerNorms;
-    delete[] enDeAtts;
-    delete[] enDeAttLayerNorms;
-    if (finalNorm)
-        delete decoderLayerNorm;
-    if (useHistory)
+    if (useHistory && history != NULL)
         delete history;
-    if (!shareEncDecEmb)
+    if (!shareEncDecEmb && embedder != NULL)
         delete embedder;
+    if (finalNorm && decoderLayerNorm != NULL)
+        delete decoderLayerNorm;
 }
 
 /*
@@ -85,56 +95,54 @@ initialize the model
 */
 void AttDecoder::InitModel(NMTConfig& config)
 {
+    SetTrainingFlag(isTraining);
     devID = config.common.devID;
-    nlayer = config.model.decLayerNum;
+    preLN = config.model.decPreLN;
+    dropoutP = config.model.dropout;
     embDim = config.model.decEmbDim;
     vSize = config.model.tgtVocabSize;
-    preLN = config.model.decPreLN;
+    nlayer = config.model.decLayerNum;
     finalNorm = config.model.decFinalNorm;
     useHistory = config.model.useDecHistory;
-    dropoutP = config.model.dropout;
     shareEncDecEmb = config.model.shareEncDecEmb;
 
+    CheckNTErrors(vSize > 1, "Set vocabulary size by \"-vsizetgt\"");
     CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
-    CheckNTErrors(vSize > 1, "set vocabulary size by \"-vsizetgt\"");
 
-    selfAtts = new Attention[nlayer];
-    if(config.model.decFFNHiddenDim > 0)
+    /* some Transformer variants remove the FFN modules */
+    if (config.model.decFFNHiddenDim > 0)
         ffns = new FFN[nlayer];
-    selfAttLayerNorms = new LayerNorm[nlayer];
+    selfAtts = new Attention[nlayer];
     enDeAtts = new Attention[nlayer];
-    enDeAttLayerNorms = new LayerNorm[nlayer];
-    ffnLayerNorms = new LayerNorm[nlayer];
-
     selfAttCache = new Cache[nlayer];
     enDeAttCache = new Cache[nlayer];
+    ffnLayerNorms = new LayerNorm[nlayer];
+    selfAttLayerNorms = new LayerNorm[nlayer];
+    enDeAttLayerNorms = new LayerNorm[nlayer];
 
-    if (finalNorm)
-        decoderLayerNorm = new LayerNorm;
-
-    if (useHistory)
-        history = new LayerHistory;
-
-    /* initialize the stacked layers */
     if (!config.model.shareEncDecEmb) {
         embedder = new Embedder();
         embedder->InitModel(config, false);
     }
+    if (useHistory) {
+        history = new LayerHistory;
+        history->InitModel(config);
+    }
+    if (finalNorm) {
+        decoderLayerNorm = new LayerNorm;
+        decoderLayerNorm->InitModel(devID, embDim, config.model.decoderL1Norm);
+    }
+
+    /* initialize the stacked layers */
     for (int i = 0; i < nlayer; i++) {
-        selfAtts[i].InitModel(config, false, true);
         if (ffns != NULL)
             ffns[i].InitModel(config, false);
-        selfAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
-        ffnLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
+        selfAtts[i].InitModel(config, false, true);
         enDeAtts[i].InitModel(config, false, false);
+        ffnLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
+        selfAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
         enDeAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
-        selfAttCache[i].enable = !isTraining;
-        enDeAttCache[i].enable = !isTraining;
     }
-    if (finalNorm)
-        decoderLayerNorm->InitModel(devID, embDim, config.model.decoderL1Norm);
-    if (useHistory)
-        history->InitModel(config);
 }
 
 /*
@@ -146,15 +154,14 @@ make the decoding network
 >> nstep - the current length of the decoder input
 << return - the output tensor of the decoder
 */
-XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc, XTensor* mask,
-                         XTensor* maskEncDec, int nstep)
+XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc, 
+                         XTensor* mask, XTensor* maskEncDec, int nstep)
 {
     /* clear the history */
     if (useHistory)
         history->ClearHistory();
 
     XTensor x;
-
     x = embedder->Make(inputDec, true, nstep);
 
     /* dropout */
@@ -170,14 +177,14 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc, XTensor* mask,
             x = history->Pop();
 
         XTensor att;
-        XTensor ende;
         XTensor ffn;
         XTensor res;
+        XTensor ende;
+        XTensor ffnBefore;
         XTensor selfAttnBefore;
         XTensor selfAttnAfter;
         XTensor endeAttnBefore;
         XTensor endeAttnAfter;
-        XTensor ffnBefore;
 
         /* layer normalization with pre-norm for self-attn */
         selfAttnBefore = LN(x, selfAttLayerNorms[i], preLN, true, false);
