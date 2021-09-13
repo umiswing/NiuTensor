@@ -160,28 +160,6 @@ bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
     return true;
 }
 
-/*
-the constructor of TrainDataSet
->> cfg - the configuration of NMT system
-*/
-void TrainDataSet::Init(NMTConfig& cfg)
-{
-    bufIdx = 0;
-    config = &cfg;
-    buf = new XList;
-
-    fp = fopen(config->training.trainFN, "rb");
-    CheckNTErrors(fp, "Failed to open the training file");
-
-    /* skip the meta information */
-    int meta_info[6];
-    fread(&(meta_info[0]), sizeof(int), 6, fp);
-
-    /* load the number of training samples */
-    fread(&trainingSize, sizeof(trainingSize), 1, fp);
-    CheckNTErrors(trainingSize > 0, "There is no training data");
-}
-
 /* group samples with similar length into buckets */
 void TrainDataSet::BuildBucket()
 {
@@ -255,7 +233,7 @@ void TrainDataSet::ReSetFilePointer()
 
     /* skip the meta information */
     int meta_info[6];
-    fread(&(meta_info[0]), sizeof(int), 6, fp);
+    fread(meta_info, sizeof(*meta_info), 6, fp);
     fread(&trainingSize, sizeof(trainingSize), 1, fp);
 }
 
@@ -274,11 +252,12 @@ bool TrainDataSet::End()
 /* load a sample from the training file */
 Sample* TrainDataSet::LoadSample()
 {
-    int srcLen = 0;
-    int tgtLen = 0;
+    int srcLen;
+    int tgtLen;
 
-    fread(&srcLen, sizeof(int), 1, fp);
-    fread(&tgtLen, sizeof(int), 1, fp);
+    fread(&srcLen, sizeof(srcLen), 1, fp);
+    fread(&tgtLen, sizeof(tgtLen), 1, fp);
+
     CheckNTErrors(srcLen > 0, "Invalid source sentence length");
     CheckNTErrors(tgtLen > 0, "Invalid target sentence length");
 
@@ -290,6 +269,27 @@ Sample* TrainDataSet::LoadSample()
     Sample* sample = new Sample(srcSent, tgtSent, 0);
     
     return sample;
+}
+
+/*
+the constructor of TrainDataSet
+>> cfg - the configuration of NMT system
+*/
+void TrainDataSet::Init(NMTConfig& cfg)
+{
+    bufIdx = 0;
+    config = &cfg;
+
+    fp = fopen(config->training.trainFN, "rb");
+    CheckNTErrors(fp, "Failed to open the training file");
+
+    /* skip the meta information */
+    int meta_info[6];
+    fread(meta_info, sizeof(*meta_info), 6, fp);
+
+    /* load the number of training samples */
+    fread(&trainingSize, sizeof(trainingSize), 1, fp);
+    CheckNTErrors(trainingSize > 0, "There is no training data");
 }
 
 /* de-constructor */

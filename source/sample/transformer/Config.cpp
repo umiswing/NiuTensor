@@ -129,12 +129,13 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("enclayer", &encLayerNum, 6);
     LoadInt("declayer", &decLayerNum, 6);
     LoadInt("maxrp", &maxRelativeLength, -1);
-    LoadInt("encffn", &encFFNHiddenDim, 2048);
-    LoadInt("decffn", &decFFNHiddenDim, 2048);
+    LoadInt("encffn", &encFFNHiddenDim, 1024);
+    LoadInt("decffn", &decFFNHiddenDim, 1024);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
     LoadInt("tgtvocabsize", &tgtVocabSize, -1);
-    LoadInt("encheads", &encSelfAttHeadNum, 8);
-    LoadInt("decheads", &decSelfAttHeadNum, 8);
+    LoadInt("encheads", &encSelfAttHeadNum, 4);
+    LoadInt("decheads", &decSelfAttHeadNum, 4);
+    LoadInt("decheads", &encDecAttHeadNum, 4);
 
     LoadFloat("dropout", &dropout, 0.3F);
     LoadFloat("ffndropout", &ffnDropout, 0.1F);

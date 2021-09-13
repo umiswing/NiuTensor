@@ -24,15 +24,15 @@ UNK = 3
 parser = argparse.ArgumentParser(description='Binarize the training data for NiuTrans.NMT')
 parser.add_argument('-src', help='Source language file', type=str, required=True, default='')
 parser.add_argument('-tgt', help='Target language file', type=str, required=True, default='')
-parser.add_argument('-maxsrc', help='The maximum source sentence length, default: 1024', type=int, default=1024)
-parser.add_argument('-maxtgt', help='The maximum target sentence length, default: 1024', type=int, default=1024)
-parser.add_argument('-src_vocab', help='Source language vocab file', type=str, default='')
-parser.add_argument('-tgt_vocab', help='Target language vocab file', type=str, default='')
+parser.add_argument('-maxsrc', help='The maximum source sentence length, default: 1024', type=int, default=200)
+parser.add_argument('-maxtgt', help='The maximum target sentence length, default: 1024', type=int, default=200)
+parser.add_argument('-sv', help='Source language vocab file', type=str, default='')
+parser.add_argument('-tv', help='Target language vocab file', type=str, default='')
 parser.add_argument('-output', help='Training file', type=str, required=True, default='')
 args = parser.parse_args()
 
-src_vocab = dict()
-tgt_vocab = dict()
+sv = dict()
+tv = dict()
 cut_num = 0
 
 def load_vocab(vocab, file):
@@ -51,12 +51,12 @@ def get_id(vocab, word, is_src=True):
     else:
         return UNK
 
-
-src_vocab_size = load_vocab(src_vocab, args.src_vocab)
-tgt_vocab_size = load_vocab(tgt_vocab, args.tgt_vocab)
-if (not isinstance(src_vocab_size, int)) or (src_vocab_size <= 0):
+# load the vocabularies
+sv_size = load_vocab(sv, args.sv)
+tv_size = load_vocab(tv, args.tv)
+if (not isinstance(sv_size, int)) or (sv_size <= 0):
     raise ValueError("Invalid source vocabulary size")
-if (not isinstance(tgt_vocab_size, int)) or (src_vocab_size <= 0):
+if (not isinstance(tv_size, int)) or (sv_size <= 0):
     raise ValueError("Invalid target vocabulary size")
 
 
@@ -66,18 +66,25 @@ with open(args.src, 'r', encoding='utf8') as fs:
         for ls in fs:
             ls = ls.split()
             lt = ft.readline().split()
+
+            # limit the source/target sequence length
             if len(ls) >= args.maxsrc:
                 cut_num += 1
                 ls = ls[:args.maxsrc - 1]
             if len(lt) >= args.maxtgt:
                 cut_num += 1
                 lt = lt[:args.maxtgt - 1]
-            src_sent = [get_id(src_vocab, w) for w in ls] + [EOS]
-            tgt_sent = [SOS] + [get_id(tgt_vocab, w, False) for w in lt]
+            
+            # append EOS to the begin of source sequence
+            src_sent = [get_id(sv, w) for w in ls] + [EOS]
+
+            # append SOS to the end of target sequence
+            tgt_sent = [SOS] + [get_id(tv, w, False) for w in lt]
 
             src_sentences.append(src_sent)
             tgt_sentences.append(tgt_sent)
 
+        # print information
         src_tokens = sum([len(s) - 1 for s in src_sentences])
         tgt_tokens = sum([len(t) - 1 for t in tgt_sentences])
         print("{}: {} sents, {} tokens, {:.2f} replaced by <UNK>".format(
@@ -87,7 +94,7 @@ with open(args.src, 'r', encoding='utf8') as fs:
 
         with open(args.output, 'wb') as fo:
             # seg 1: source and target vocabulary size
-            vocab_size = [src_vocab_size, tgt_vocab_size]
+            vocab_size = [sv_size, tv_size]
             vocab_size_pack = pack("i" * len(vocab_size), *vocab_size)
             fo.write(vocab_size_pack)
 
