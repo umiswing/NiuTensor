@@ -104,60 +104,67 @@ int NMTConfig::LoadFromFile(const char* configFN, char** args)
 void ModelConfig::Load(int argsNum, const char** args)
 {
     Create(argsNum, args);
+
+    LoadBool("bigatt", &useBigAtt, false);
+    LoadBool("encprenorm", &encPreLN, true);
+    LoadBool("decprenorm", &decPreLN, true);
     LoadBool("encl1norm", &encoderL1Norm, false);
     LoadBool("decl1norm", &decoderL1Norm, false);
-    LoadBool("bigatt", &useBigAtt, false);
     LoadBool("decoderonly", &decoderOnly, false);
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);
-    LoadInt("srcvocabsize", &srcVocabSize, -1);
-    LoadInt("maxsrc", &maxSrcLen, 200);
-    LoadInt("encheads", &encSelfAttHeadNum, -1);
-    LoadInt("encemb", &encEmbDim, -1);
-    LoadInt("encffn", &encFFNHiddenDim, -1);
-    LoadInt("enclayer", &encLayerNum, -1);
-    LoadBool("encprenorm", &encPreLN, false);
-    LoadInt("tgtvocabsize", &tgtVocabSize, -1);
-    LoadInt("maxtgt", &maxTgtLen, -1);
-    LoadInt("decheads", &decSelfAttHeadNum, -1);
-    LoadInt("decemb", &decEmbDim, -1);
-    LoadInt("decffn", &decFFNHiddenDim, -1);
-    LoadInt("declayer", &decLayerNum, -1);
-    LoadBool("decprenorm", &decPreLN, false);
-    LoadInt("maxrp", &maxRelativeLength, -1);
-    LoadInt("pad", &pad, -1);
-    LoadInt("unk", &unk, -1);
-    LoadInt("sos", &sos, -1);
-    LoadInt("eos", &eos, -1);
     LoadBool("encfinalnorm", &encFinalNorm, true);
     LoadBool("decfinalnorm", &decFinalNorm, true);
     LoadBool("shareallemb", &shareEncDecEmb, false);
     LoadBool("sharedec", &shareDecInputOutputEmb, false);
-    LoadFloat("dropout", &dropout, 0.0F);
-    LoadFloat("ffnropout", &ffnDropout, 0.0F);
-    LoadFloat("attdropout", &attDropout, 0.0F);
+
+    LoadInt("pad", &pad, -1);
+    LoadInt("sos", &sos, -1);
+    LoadInt("eos", &eos, -1);
+    LoadInt("unk", &unk, -1);
+    LoadInt("encemb", &encEmbDim, 512);
+    LoadInt("decemb", &decEmbDim, 512);
+    LoadInt("maxsrc", &maxSrcLen, 200);
+    LoadInt("maxtgt", &maxTgtLen, 200);
+    LoadInt("enclayer", &encLayerNum, 6);
+    LoadInt("declayer", &decLayerNum, 6);
+    LoadInt("maxrp", &maxRelativeLength, -1);
+    LoadInt("encffn", &encFFNHiddenDim, 2048);
+    LoadInt("decffn", &decFFNHiddenDim, 2048);
+    LoadInt("srcvocabsize", &srcVocabSize, -1);
+    LoadInt("tgtvocabsize", &tgtVocabSize, -1);
+    LoadInt("encheads", &encSelfAttHeadNum, 8);
+    LoadInt("decheads", &decSelfAttHeadNum, 8);
+
+    LoadFloat("dropout", &dropout, 0.3F);
+    LoadFloat("ffndropout", &ffnDropout, 0.1F);
+    LoadFloat("attdropout", &attDropout, 0.1F);
 }
 
 /* load training configuration from the command */
 void TrainingConfig::Load(int argsNum, const char **args)
 {
     Create(argsNum, args);
+
     LoadString("train", trainFN, "");
     LoadString("valid", validFN, "");
-    isTraining = (strcmp(trainFN, "") == 0) ? false : true;
-    LoadFloat("lrate", &lrate, 0.0015F);
-    LoadFloat("lrbias", &lrbias, 0);
+
+    LoadBool("adam", &useAdam, true);
+
     LoadInt("nepoch", &nepoch, 50);
     LoadInt("nstep", &nstep, 100000);
-    LoadInt("updatefreq", &updateFreq, 1);
     LoadInt("savefreq", &saveFreq, 1);
-    LoadInt("ncheckpoint", &ncheckpoint, 10);
     LoadInt("nwarmup", &nwarmup, 8000);
-    LoadBool("adam", &useAdam, true);
+    LoadInt("updatefreq", &updateFreq, 1);
+    LoadInt("ncheckpoint", &ncheckpoint, 10);
+    
+    LoadFloat("lrbias", &lrbias, 0);
+    LoadFloat("lrate", &lrate, 0.0015F);
     LoadFloat("adambeta1", &adamBeta1, 0.9F);
     LoadFloat("adambeta2", &adamBeta2, 0.98F);
     LoadFloat("adamdelta", &adamDelta, 1e-9F);
     LoadFloat("labelsmoothing", &labelSmoothingP, 0.1F);
+    isTraining = (strcmp(trainFN, "") == 0) ? false : true;
 }
 
 /* load training configuration from the command */
@@ -166,11 +173,9 @@ void TranslationConfig::Load(int argsNum, const char** args)
     Create(argsNum, args);
     LoadString("input", inputFN, "");
     LoadString("output", outputFN, "");
-    LoadInt("maxlen", &maxLen, 200);
     LoadInt("beam", &beamSize, 1);
+    LoadInt("maxlen", &maxLen, 200);
     LoadFloat("lenalpha", &lenAlpha, 0.F);
-
-    /* smaller value may leads to worse translations but higher speed */
     LoadFloat("maxlenalpha", &maxLenAlpha, 1.25F);
 }
 
@@ -183,12 +188,11 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadString("tgtvocab", tgtVocabFN, "");
     LoadInt("seed", &seed, 1);
     LoadInt("dev", &devID, -1);
-    LoadInt("seed", &seed, 1);
-    LoadInt("loginterval", &logInterval, 100);
-    LoadInt("wbatch", &wBatchSize, 40960);
-    LoadInt("sbatch", &sBatchSize, 1024);
+    LoadInt("sbatch", &sBatchSize, 512);
+    LoadInt("wbatch", &wBatchSize, 4096);
     LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, -1);
+    LoadInt("loginterval", &logInterval, 100);
     LoadBool("fp16", &useFP16, false);
 }
 

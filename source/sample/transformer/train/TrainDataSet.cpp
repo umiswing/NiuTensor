@@ -50,15 +50,11 @@ bool TrainDataSet::LoadBatchToBuf()
         Sample* sample = LoadSample();
         sample->index = sampleNum++;
         buf->Add(sample);
+        if (feof(fp) && config->training.isTraining)
+            ReSetFilePointer();
     }
 
-    /* reset the file pointer to the begin */
-    if (feof(fp) && config->training.isTraining) {
-        rewind(fp);
-        fread(&trainingSize, sizeof(trainingSize), 1, fp);
-    }
-
-    /* group samples in the buffer into buckets */
+    /* group samples into buckets */
     SortByTgtLengthAscending();
     SortBySrcLengthAscending();
 
@@ -128,7 +124,7 @@ bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
                 labelVaues[curTgt - 1] = sample->tgtSeq->Get(j);
             batchDecValues[curTgt++] = sample->tgtSeq->Get(j);
         }
-        labelVaues[curTgt - 1] = 2;
+        labelVaues[curTgt - 1] = config->model.eos;
         while (curSrc < maxSrcLen * (i + 1))
             paddingEncValues[curSrc++] = 0;
         while (curTgt < maxTgtLen * (i + 1))
@@ -177,6 +173,11 @@ void TrainDataSet::Init(NMTConfig& cfg)
     fp = fopen(config->training.trainFN, "rb");
     CheckNTErrors(fp, "Failed to open the training file");
 
+    /* skip the meta information */
+    int meta_info[6];
+    fread(&(meta_info[0]), sizeof(int), 6, fp);
+
+    /* load the number of training samples */
     fread(&trainingSize, sizeof(trainingSize), 1, fp);
     CheckNTErrors(trainingSize > 0, "There is no training data");
 }
@@ -247,6 +248,17 @@ inline int TrainDataSet::DynamicBatching()
     return sent;
 }
 
+/* reset the file pointer to the begin */
+void TrainDataSet::ReSetFilePointer()
+{
+    rewind(fp);
+
+    /* skip the meta information */
+    int meta_info[6];
+    fread(&(meta_info[0]), sizeof(int), 6, fp);
+    fread(&trainingSize, sizeof(trainingSize), 1, fp);
+}
+
 /* start the process */
 bool TrainDataSet::Start()
 {
@@ -265,8 +277,7 @@ Sample* TrainDataSet::LoadSample()
     int srcLen = 0;
     int tgtLen = 0;
 
-    size_t n = fread(&srcLen, sizeof(int), 1, fp);
-
+    fread(&srcLen, sizeof(int), 1, fp);
     fread(&tgtLen, sizeof(int), 1, fp);
     CheckNTErrors(srcLen > 0, "Invalid source sentence length");
     CheckNTErrors(tgtLen > 0, "Invalid target sentence length");

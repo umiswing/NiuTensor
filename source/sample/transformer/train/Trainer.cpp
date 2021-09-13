@@ -71,46 +71,36 @@ train the model
 */
 void Trainer::Run()
 {
-    //ToDo: split the training process into a loop of training steps referring `source\train\TTrain.cpp`.
+    double startT = GetClockSec();
 
-    /* disable cache during training */
-    for (int i = 0; i < model->decoder->nlayer; i++) {
-        model->decoder->selfAttCache[i].enable = false;
-        model->decoder->enDeAttCache[i].enable = false;
-    }
     int step = 0;
-    int wordCount = 0;
-    int wordCountTotal = 0;
-    int batchCountTotal = 0;
-    bool isEnd = false;
-    float loss = 0;
-    float lr = 0;
-    int nStepCheck = 0;
-    int nCheckpoint = 0;
+    int epoch = 0;
     int nSkipped = 0;
     int gradStep = 0;
     int validStep = 0;
-    int epoch = 0;
-
+    int wordCount = 0;
+    int nStepCheck = 0;
+    int nCheckpoint = 0;
+    int wordCountTotal = 0;
+    int batchCountTotal = 0;
     int devID = model->devID;
+    float lr = 0.0F;
+    float loss = 0.0F;
+    bool isEnd = false;
 
+    XNet net;
     PrepareModel();
-
-    double startT = GetClockSec();
-    
     batchLoader.Init(*config);
 
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
 
+        loss = 0.0F;
         wordCount = 0;
-        loss = 0;
 
-        while (step++ < config->training.nstep)
-        {
-            XNet net;
+        while (step++ < config->training.nstep) {
             net.Clear();
 
-            /* batch of sequences (on the encoder and decoder sides) */
+            /* batch of sequences */
             XTensor batchEnc;
             XTensor batchDec;
 
@@ -121,6 +111,7 @@ void Trainer::Run()
             XTensor paddingEnc;
             XTensor paddingDec;
 
+            /* the inputs and gold labels */
             TensorList inputs;
             TensorList golds;
 
@@ -130,21 +121,23 @@ void Trainer::Run()
             golds.Add(&paddingDec);
             golds.Add(&label);
 
+            /* load a mini-batch */
             batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
+            /* flush the batch to a device */
             batchEnc.FlushToDevice(model->devID);
             paddingEnc.FlushToDevice(model->devID);
             batchDec.FlushToDevice(model->devID);
             paddingDec.FlushToDevice(model->devID);
             label.FlushToDevice(model->devID);
 
-            CheckNTErrors(batchEnc.order == 2, "wrong tensor order of the sequence batch");
+            CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
 
             /* output probabilities */
             XTensor output;
 
             /* make the network */
-            model->MakeMT(batchEnc, batchDec, output, paddingEnc, paddingDec);
+            output = model->MakeMT(batchEnc, batchDec, paddingEnc, paddingDec);
 
             /* get loss and probabilities */
             XTensor labelOnehot;
@@ -276,7 +269,7 @@ void Trainer::Validate()
         batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
         /* make the network */
-        model->MakeMT(batchEnc, batchDec, output, paddingEnc, paddingDec);
+        output = model->MakeMT(batchEnc, batchDec, paddingEnc, paddingDec);
 
         int bSize = output.GetDim(0);
         int length = output.GetDim(1);

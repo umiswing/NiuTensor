@@ -33,7 +33,7 @@ namespace nmt
 {
 
 /* output layer */
-class Output
+class OutputLayer
 {
 public:
     /* indicates whether share decoder embeddings and output weights */
@@ -59,16 +59,16 @@ public:
     void SetTrainingFlag(bool myIsTraining);
 
     /* constructor */
-    Output();
+    OutputLayer();
 
     /* de-constructor */
-    ~Output();
+    ~OutputLayer();
 
     /* initialize the model */
     void InitModel(NMTConfig& config);
 
-    /* make the network (redefined output tensor) */
-    void Make(XTensor& input, XTensor& output, bool normalized);
+    /* make the network */
+    XTensor Make(XTensor& input, bool normalized);
 };
 
 } /* end of the nmt (NiuTrans.NMT) namespace */

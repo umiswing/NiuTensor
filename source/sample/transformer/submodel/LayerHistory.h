@@ -101,7 +101,7 @@ public:
     ~LayerHistory();
 
     /* initialize the model */
-    void InitModel(NMTConfig& config);
+    void InitModel(NMTConfig& config, bool isEnc);
 
     /* add the layer output to the history */
     void Add(XTensor& tensor);

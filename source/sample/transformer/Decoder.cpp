@@ -120,13 +120,13 @@ void AttDecoder::InitModel(NMTConfig& config)
     selfAttLayerNorms = new LayerNorm[nlayer];
     enDeAttLayerNorms = new LayerNorm[nlayer];
 
+    if (useHistory) {
+        history = new LayerHistory;
+        history->InitModel(config, false);
+    }
     if (!config.model.shareEncDecEmb) {
         embedder = new Embedder();
         embedder->InitModel(config, false);
-    }
-    if (useHistory) {
-        history = new LayerHistory;
-        history->InitModel(config);
     }
     if (finalNorm) {
         decoderLayerNorm = new LayerNorm;

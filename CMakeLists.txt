@@ -1,8 +1,5 @@
-# The cmake configuration for NiuTrans.NMT
-# Known issues: unable to build with cuda>10.1, softmax error (batch=1, linux cuda)
-
 # cmake minimum version
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.6)
 
 # Project's name
 project(NiuTensor)

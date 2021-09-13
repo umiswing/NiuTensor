@@ -853,7 +853,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
 
         /* generate the output probabilities */
-        model->outputLayer->Make(decoding, prob, false);
+        prob = model->outputLayer->Make(decoding, false);
 
         /* get the most promising predictions */
         prob.Reshape(prob.dimSize[0], prob.dimSize[prob.order - 1]);

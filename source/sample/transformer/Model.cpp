@@ -35,7 +35,7 @@ NMTModel::NMTModel()
     config = NULL;
     encoder = new AttEncoder();
     decoder = new AttDecoder();
-    outputLayer = new Output();
+    outputLayer = new OutputLayer();
 }
 
 /* de-constructor */
@@ -112,12 +112,16 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         config->model.maxSrcLen = MIN(maxSrcLen, config->model.maxSrcLen);
     }
     else {
-        /* read the source and target vocab size */
+        /* read the source & target vocab size and special tokens from the training file */
         FILE* trainF = fopen(config->training.trainFN, "rb");
         CheckNTErrors(trainF, "Failed to open the training file");
 
         fread(&(config->model.srcVocabSize), sizeof(int), 1, trainF);
         fread(&(config->model.tgtVocabSize), sizeof(int), 1, trainF);
+        fread(&(config->model.pad), sizeof(int), 1, trainF);
+        fread(&(config->model.sos), sizeof(int), 1, trainF);
+        fread(&(config->model.eos), sizeof(int), 1, trainF);
+        fread(&(config->model.unk), sizeof(int), 1, trainF);
         CheckNTErrors(config->model.srcVocabSize > 0, "Invalid source vocabulary size");
         CheckNTErrors(config->model.tgtVocabSize > 0, "Invalid target vocabulary size");
         fclose(trainF);
@@ -193,7 +197,7 @@ make the decoding network
 << return - decoding result, (batchSize, tgtLen, hiddenDim)
 */
 XTensor NMTModel::MakeDecoder(XTensor& inputDec, XTensor& outputEnc,
-                XTensor* mask, XTensor& maskEncDec)
+                              XTensor* mask, XTensor& maskEncDec)
 {
     return decoder->Make(inputDec, outputEnc, mask, &maskEncDec,
                          inputDec.GetDim(1));
@@ -202,10 +206,10 @@ XTensor NMTModel::MakeDecoder(XTensor& inputDec, XTensor& outputEnc,
 /*
 make the network for language modeling (with the output softmax layer)
 >> input - input tensor
->> output - output tensor (distribution)
 >> padding - padding of the sequences
+<< output - output tensor (distribution)
 */
-void NMTModel::MakeLM(XTensor& input, XTensor& output, XTensor& padding)
+XTensor NMTModel::MakeLM(XTensor& input, XTensor& padding)
 {
     int len = padding.GetDim(padding.order - 1);
     int* dims = new int[padding.order + 2];
@@ -228,19 +232,19 @@ void NMTModel::MakeLM(XTensor& input, XTensor& output, XTensor& padding)
     XTensor encoding;
 
     encoding = MakeEncoder(input, &mask);
-    outputLayer->Make(encoding, output, true);
+    return outputLayer->Make(encoding, true);
 }
 
 /*
 make the network for machine translation (with the output softmax layer)
 >> inputEnc - input tensor of the encoder, (batchSize, srcLen)
 >> inputDec - input tensor of the decoder, (batchSize, tgtLen)
->> output - output tensor (distribution), (batchSize, tgtLen, hiddenDim)
 >> paddingEnc - padding of the sequences (on the encoder side), (batchSize, srcLen)
 >> paddingDec - padding of the sequences (on the decoder side), (batchSize, tgtLen)
+<< output - output tensor (distribution), (batchSize, tgtLen, hiddenDim)
 */
-void NMTModel::MakeMT(XTensor& inputEnc, XTensor& inputDec, XTensor& output,
-                      XTensor& paddingEnc, XTensor& paddingDec)
+XTensor NMTModel::MakeMT(XTensor& inputEnc, XTensor& inputDec,
+                         XTensor& paddingEnc, XTensor& paddingDec)
 {
     XTensor encoding;
     XTensor decoding;
@@ -259,7 +263,7 @@ void NMTModel::MakeMT(XTensor& inputEnc, XTensor& inputDec, XTensor& output,
 
     decoding = MakeDecoder(inputDec, encoding, &maskDec, maskEncDec);
 
-    outputLayer->Make(decoding, output, true);
+    return outputLayer->Make(decoding, true);
 }
 
 /*
@@ -273,8 +277,8 @@ make the mask for training MT models
 >> maksEncDec - mask of the decoder enc-dec attention
 */
 void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
-                       XTensor& paddingEnc, XTensor& paddingDec,
-                       XTensor& maskEnc, XTensor& maskDec, XTensor& maskEncDec)
+                          XTensor& paddingEnc, XTensor& paddingDec,
+                          XTensor& maskEnc, XTensor& maskDec, XTensor& maskEncDec)
 {
     int len = inputDec.GetDim(inputDec.order - 1);
     int* dims = new int[inputDec.order + 2];
@@ -756,7 +760,7 @@ bool NMTModel::RunSimple(XList* inputs, XList* outputs, XList* golds, XList* los
     XNet net;
 
     /* make the network */
-    MakeMT(*batchEnc, *batchDec, *output, *paddingEnc, *paddingDec);
+    *output = MakeMT(*batchEnc, *batchDec, *paddingEnc, *paddingDec);
 
     /* get loss and probabilities */
     XTensor labelOnehot;

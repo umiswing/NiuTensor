@@ -61,22 +61,23 @@ LayerHistory::~LayerHistory()
 /*
 initialize the model
 >> config - configurations of the model
+>> isEnc - indicates whether it is in the encoder
 */
-void LayerHistory::InitModel(NMTConfig& config)
+void LayerHistory::InitModel(NMTConfig& config, bool isEnc)
 {
     devID = config.common.devID;
-    d = config.model.encEmbDim;
-    nlayer = config.model.encLayerNum;
+    d = isEnc ? config.model.encEmbDim : config.model.decEmbDim;
+    nlayer = isEnc ? config.model.encLayerNum : config.model.decLayerNum;
 
-    /*  the triangle weight matrices for dlcl 
+    /*  the triangle weight matrices for all layers
         layer 0: [1, 0, ..., 0]               
         layer 1: [0.5, 0.5, ..., 0]           
         layer 2: [0.33, 0.33, 0.33, ..., 0]   */
-    weights = new XTensor[nlayer + 1];
+    weights = new XTensor[nlayer + 1LLU];
     for (int i = 0; i < nlayer + 1; i++) {
         InitTensor1D(&(weights[i]), i + 1, X_FLOAT, devID);
         if (isTraining) {
-            float* data = new float[i + 1];
+            float* data = new float[i + 1LLU];
             for (int j = 0; j < i + 1; j++) {
                 data[j] = 1.0F / float(i + 1);
             }
@@ -89,7 +90,8 @@ void LayerHistory::InitModel(NMTConfig& config)
 
     /* initialize the layer normalization of each layer */
     for (int i = 0; i < nlayer; i++) {
-        layerNorms[i].InitModel(config.common.devID, config.model.encEmbDim, config.model.encoderL1Norm);
+        layerNorms[i].InitModel(devID, d, 
+        isEnc ? config.model.encoderL1Norm : config.model.decoderL1Norm);
     }
 }
 

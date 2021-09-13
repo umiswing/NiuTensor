@@ -27,6 +27,7 @@
 /* the nmt (NiuTrans.NMT) namespace */
 namespace nmt
 {
+
 /* set the training flag */
 void AttEncoder::SetTrainingFlag(bool myIsTraining)
 {
@@ -74,47 +75,47 @@ initialize the model
 void AttEncoder::InitModel(NMTConfig& config)
 {
     devID = config.common.devID;
-    nlayer = config.model.encLayerNum;
-    embDim = config.model.encEmbDim;
-    vSize = config.model.srcVocabSize;
     preLN = config.model.encPreLN;
+    dropoutP = config.model.dropout;
+    embDim = config.model.encEmbDim;
+    nlayer = config.model.encLayerNum;
+    vSize = config.model.srcVocabSize;
     finalNorm = config.model.encFinalNorm;
     useHistory = config.model.useEncHistory;
-    dropoutP = config.model.dropout;
-
-    CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
+    
     CheckNTErrors(vSize > 1, "Set vocabulary size by \"-vsize\"");
+    CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
 
     ffns = new FFN[nlayer];
     selfAtts = new Attention[nlayer];
     attLayerNorms = new LayerNorm[nlayer];
     fnnLayerNorms = new LayerNorm[nlayer];
 
-    if (finalNorm)
-        encoderLayerNorm = new LayerNorm;
-
-    if (useHistory)
+    if (useHistory) {
         history = new LayerHistory;
+        history->InitModel(config, true);
+    }
+
+    if (finalNorm) {
+        encoderLayerNorm = new LayerNorm;
+        encoderLayerNorm->InitModel(devID, embDim, config.model.encoderL1Norm);
+    }
 
     /* initialize the stacked layers */
     embedder.InitModel(config);
     for (int i = 0; i < nlayer; i++) {
-        selfAtts[i].InitModel(config, true, true);
         ffns[i].InitModel(config, true);
+        selfAtts[i].InitModel(config, true, true);
         attLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
         fnnLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
     }
-    if (finalNorm)
-        encoderLayerNorm->InitModel(devID, embDim, config.model.encoderL1Norm);
-    if (useHistory)
-        history->InitModel(config);
 }
 
 /*
 make the encoding network
 >> input - the input tensor of the encoder
 >> mask - the mask that indicate each position is valid
->> maskEncDec - no use
+>> maskEncDec - a place-holder, not used
 << return - the output tensor of the encoder
 */
 XTensor AttEncoder::Make(XTensor& input, XTensor* mask, XTensor& maskEncDec)

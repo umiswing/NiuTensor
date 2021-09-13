@@ -217,7 +217,7 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     CheckNTErrors(decoding.order >= 2, "The tensor must be of order 2 or larger!");
 
     /* generate the output probabilities */
-    m->outputLayer->Make(decoding, output, true);
+    output = m->outputLayer->Make(decoding, true);
 }
 
 /*

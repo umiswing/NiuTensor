@@ -62,6 +62,9 @@ private:
 
 public:
 
+    /* reset the file pointer to the begin */
+    void ReSetFilePointer();
+
     /* start the process */
     bool Start();
 

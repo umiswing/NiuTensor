@@ -28,13 +28,13 @@ namespace nmt
 {
 
 /* set the training flag */
-void Output::SetTrainingFlag(bool myIsTraining)
+void OutputLayer::SetTrainingFlag(bool myIsTraining)
 {
     isTraining = myIsTraining;
 }
 
 /* constructor */
-Output::Output()
+OutputLayer::OutputLayer()
 {
     devID = -1;
     vSize = -1;
@@ -44,7 +44,7 @@ Output::Output()
 }
 
 /* de-constructor */
-Output::~Output()
+OutputLayer::~OutputLayer()
 {
 }
 
@@ -52,7 +52,7 @@ Output::~Output()
 initialize the model
 >> config - configurations of the model
 */
-void Output::InitModel(NMTConfig& config)
+void OutputLayer::InitModel(NMTConfig& config)
 {
     devID = config.common.devID;
     hSize = config.model.decEmbDim;
@@ -69,26 +69,24 @@ void Output::InitModel(NMTConfig& config)
 }
 
 /*
-make the network (redefined output tensor)
->> input - input tensor
->> output - output tensor
+make the network
+>> input - the input tensor, (batch, srcLen, hiddenDim)
 >> normalized - whether ignore the log-softmax
+<< output - the output tensor, (batch, tgtLen, hiddenDim)
 */
-void Output::Make(XTensor& input, XTensor& output, bool normalized)
+XTensor OutputLayer::Make(XTensor& input, bool normalized)
 {
-    XTensor& x = input;
+    XTensor output;
 
-    output = MMul(x, X_NOTRANS, w, X_NOTRANS);
+    output = MMul(input, X_NOTRANS, w, X_NOTRANS);
 
     /* use softmax for training */
-    if (isTraining) {
-        output = Softmax(output, -1);
-        return;
-    }
+    if (isTraining)
+        return Softmax(output, -1);
 
     /* normalize the output for beam search */
     if (normalized) {
-        auto dataType = output.dataType;
+        TENSOR_DATA_TYPE dataType = output.dataType;
         if (dataType == X_FLOAT16)
             output = ConvertDataType(output, X_FLOAT);
 
@@ -97,6 +95,7 @@ void Output::Make(XTensor& input, XTensor& output, bool normalized)
         if (output.dataType != dataType)
             output = ConvertDataType(output, dataType);
     }
+    return output;
 }
 
 } /* end of the nmt (NiuTrans.NMT) namespace */

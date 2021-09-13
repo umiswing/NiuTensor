@@ -52,7 +52,7 @@ public:
     AttDecoder* decoder;
 
     /* output layer */
-    Output* outputLayer;
+    OutputLayer* outputLayer;
 
 public:
     /* constructor */
@@ -78,11 +78,11 @@ public:
                         XTensor& MaskEncDec);
 
     /* make the network for language modeling (with the output softmax layer) */
-    void MakeLM(XTensor& input, XTensor& output, XTensor& padding);
+    XTensor MakeLM(XTensor& input, XTensor& padding);
 
     /* make the network for machine translation (with the output softmax layer) */
-    void MakeMT(XTensor& inputEnc, XTensor& inputDec, XTensor& output,
-                XTensor& paddingEnc, XTensor& paddingDec);
+    XTensor MakeMT(XTensor& inputEnc, XTensor& inputDec,
+                   XTensor& paddingEnc, XTensor& paddingDec);
 
     /* make the mask for training MT models */
     void MakeMTMask(XTensor& inputEnc, XTensor& inputDec,

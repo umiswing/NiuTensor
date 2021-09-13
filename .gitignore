@@ -22,3 +22,11 @@ data/nts.tmp.bpe
 data/res.txt
 *.fp16
 data/test.txt
+iwslt14.tokenized.de-en/
+tools/train.data
+tools/valid.data
+tools/train.de
+tools/train.en
+tools/valid.de
+tools/valid.en
+tools/vocab.en
