@@ -210,7 +210,7 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask)
 /* 
 run encoding for inference with pre-norm
 >> input - the input tensor of the encoder
->> mask - the mask that indicate each position is valid
+>> mask - the input mask on self-attention
 << return - the output tensor of the encoder
 */
 XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)

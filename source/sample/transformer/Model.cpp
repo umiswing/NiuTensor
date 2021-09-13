@@ -47,7 +47,7 @@ NMTModel::~NMTModel()
 }
 
 /* return a list to keep the configurations (interger) */
-vector<int*> NMTModel::GetConfigList()
+vector<int*> NMTModel::GetIntConfigs()
 {
     vector<int*> intConfig = {
         &(config->model.encEmbDim),
@@ -83,7 +83,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     devID = config->common.devID;
 
     /* configurations for the model */
-    vector<int*> intConfig = GetConfigList();
+    vector<int*> intConfig = GetIntConfigs();
 
     FILE* modelFile = NULL;
 
@@ -625,7 +625,7 @@ void NMTModel::DumpToFile(const char* fn)
     FILE* modelFile = fopen(fn, "wb");
     CheckNTErrors(modelFile, "Cannot open the model file");
 
-    vector<int*> intConfig = GetConfigList();
+    vector<int*> intConfig = GetIntConfigs();
 
     /* save the configurations */
     fwrite(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);

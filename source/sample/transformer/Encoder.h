@@ -94,7 +94,8 @@ public:
     /* dynamic layer history */
     LayerHistory* history;
 
-    /* the location of layer normalization */
+    /* if true, put layer normalization inside the residual blocks, 
+       else put it between the residual blocks */
     bool preLN;
 
     /* add LN to the encoder output or not */

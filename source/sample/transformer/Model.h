@@ -62,7 +62,7 @@ public:
     ~NMTModel();
 
     /* get configurations */
-    vector<int*> GetConfigList();
+    vector<int*> GetIntConfigs();
 
     /* initialize the model */
     void InitModel(NMTConfig& config);
