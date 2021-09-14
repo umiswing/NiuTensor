@@ -40,18 +40,21 @@ const int unusedOPs[] {
     /* reduce operators */
     REDUCE_REDUCESUMALL, FUNC_SOFTMAX
 };
+IntList unusedOPsList(&(unusedOPs[0]), sizeof(unusedOPs) / sizeof(unusedOPs[0]));
 
 /* if the operation exists in the list below,
    we mark the output as `reserved`, so the data array will be reserved */
 const int usedOPs[]{
     FUNC_SIGMOID, FUNC_SOFTMAX, FUNC_LOGSOFTMAX
 };
+IntList usedOPsList(&(usedOPs[0]), sizeof(usedOPs) / sizeof(usedOPs[0]));
 
 /* if the operation exists in the list below,
    we mark the first input node as `unused` for backward*/
 const int unusedFirstOPs[]{
     MATH_MULTIPLY_INPLACE, MATH_MULTIPLYDIM_INPLACE
 };
+IntList unusedFirstOPsList(&(unusedFirstOPs[0]), sizeof(unusedFirstOPs) / sizeof(unusedFirstOPs[0]));
 
 int XLink::paramSize = PARAM_UNTI_SIZE;
 
@@ -384,12 +387,9 @@ void XLink::MakeLink(const TensorList * list, XTensor * h, int id)
         if(t == NULL)
             continue;
         income.AddTail(t);
-        if (t->reserved != 1) {
-            for (int idx = 0; idx < sizeof(unusedOPs) / sizeof(unusedOPs[0]); idx++) {
+        if (unusedOPsList.Contains(id) && t->reserved != 1) {
                 /* t's data will be released when calling the de-constructor */
-                if(unusedOPs[idx] == id)
                     t->reserved = -1;
-            }
             
         }
         else {
@@ -399,18 +399,12 @@ void XLink::MakeLink(const TensorList * list, XTensor * h, int id)
     }
     
     /* in these cases we only mark partial nodes as unused */
-    if (list->GetItem(0)->reserved != 1) {
-        for (int idx = 0; idx < sizeof(unusedFirstOPs) / sizeof(unusedFirstOPs[0]); idx++) {
-            if(unusedFirstOPs[idx] == id)
+    if (unusedFirstOPsList.Contains(id) && list->GetItem(0)->reserved != 1)
                 list->GetItem(0)->reserved = -1;
-        }
-    }
 
-    for (int idx = 0; idx < sizeof(usedOPs) / sizeof(usedOPs[0]); idx++) {
-        if (usedOPs[idx] == id)
+    if (usedOPsList.Contains(id))
             h->reserved = 1;
-    }
-    if (h->reserved != 1)
+    else if (h->reserved != 1)
         h->reserved = -1;
 
     /* backward */

@@ -35,7 +35,7 @@ template<class T>
 __device__
 T UnaryCudaCeil(T x)
 {
-    return (T)ceil((double)x);
+    return (T)ceil((float)x);
 }
 
 template<class T>
@@ -56,7 +56,7 @@ template<class T>
 __device__
 T UnaryCudaFloor(T x)
 {
-    return (T)floor((double)x);
+    return (T)floor((float)x);
 }
 
 template<class T>

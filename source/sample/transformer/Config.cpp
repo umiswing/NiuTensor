@@ -126,7 +126,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("decemb", &decEmbDim, 512);
     LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("maxtgt", &maxTgtLen, 200);
-    LoadInt("enclayer", &encLayerNum, 1);
+    LoadInt("enclayer", &encLayerNum, 6);
     LoadInt("declayer", &decLayerNum, 1);
     LoadInt("maxrp", &maxRelativeLength, -1);
     LoadInt("encffn", &encFFNHiddenDim, 1024);
@@ -193,7 +193,7 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadInt("wbatch", &wBatchSize, 4096);
     LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, wBatchSize);
-    LoadInt("loginterval", &logInterval, 1);
+    LoadInt("loginterval", &logInterval, 100);
     LoadBool("fp16", &useFP16, false);
 }
 

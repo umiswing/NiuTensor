@@ -105,11 +105,15 @@ void XShapeGrad::GradConvertDataType(XTensor* node, bool isEfficient)
     if (!isEfficient || a->isGrad) {
         XNoder::MakeGrad(a);
 
-        XTensor* tmp = NewTensor(a);
+        if (a->mem != NULL)
+            a->mem->LockBuf();
+        XTensor* tmp = NewTensorBufV2(a, a->devID, a->mem);
         _ConvertDataType(node->grad, tmp);
         _SumMe(a->grad, tmp);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (a->mem != NULL)
+            a->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
@@ -141,11 +145,15 @@ void XShapeGrad::GradCopyIndexed(XTensor * node, bool isEfficient)
     if (!isEfficient || input->isGrad) {
         XNoder::MakeGrad(input);
 
-        XTensor * tmp = NewTensor(input);
+        if (input->mem != NULL)
+            input->mem->LockBuf();
+        XTensor * tmp = NewTensorBufV2(input, input->devID, input->mem);
         _SpreadForCopyIndexed(tmp, node->grad, dim, srcIndex, tgtIndex, copyNum);
         _SumMe(input->grad, tmp);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (input->mem != NULL)
+            input->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
@@ -173,12 +181,16 @@ void XShapeGrad::GradGather(XTensor * node, bool isEfficient)
     if (!isEfficient || input->isGrad) {
         XNoder::MakeGrad(input);
 
-        XTensor * tmp = NewTensor(input);
+        if (input->mem != NULL)
+            input->mem->LockBuf();
+        XTensor * tmp = NewTensorBufV2(input, input->devID, input->mem);
         tmp->SetZeroAll();
         _SpreadForGather(tmp, node->grad, index);
         _SumMe(input->grad, tmp);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (input->mem != NULL)
+            input->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
@@ -200,7 +212,9 @@ void XShapeGrad::GradDropoutWithIndex(XTensor * node, bool isEfficient)
     if (!isEfficient || input->isGrad) {
         XNoder::MakeGrad(input);
 
-        XTensor * tmp = NewTensor(input);
+        if (input->mem != NULL)
+            input->mem->LockBuf();
+        XTensor * tmp = NewTensorBufV2(input, input->devID, input->mem);
         _CopyValues(node->grad, tmp);
 
         tmp->Reshape(tmp->unitNum);
@@ -211,7 +225,9 @@ void XShapeGrad::GradDropoutWithIndex(XTensor * node, bool isEfficient)
         tmp->Reshape(input->order, input->dimSize);
         _SumMe(input->grad, tmp);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (input->mem != NULL)
+            input->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
@@ -456,12 +472,16 @@ void XShapeGrad::GradSplit(XTensor * node, bool isEfficient)
         /* if the tensor is used somewhere else, we need another SUM
            for gradient accumulation */
         else {
-            XTensor * inputGradTMP = NewTensor(input);
+            if (input->mem != NULL)
+                input->mem->LockBuf();
+            XTensor * inputGradTMP = NewTensorBufV2(input, input->devID, input->mem);
 
             _Merge(node->grad, inputGradTMP, whereToSplit + 1, 0);
             _Sum(input->grad, inputGradTMP, input->grad);
 
-            DelTensor(inputGradTMP);
+            DelTensorBuf(inputGradTMP);
+            if (input->mem != NULL)
+                input->mem->UnlockBuf();
         }
     }
 
@@ -543,12 +563,16 @@ void XShapeGrad::GradSplitListPost(XTensor * node, bool isEfficient)
            somewhere else, we need another SUM for gradient
            accumulation */
         else {
-            XTensor * nodeGradTMP = NewTensor(node);
+            if (node->mem != NULL)
+                node->mem->LockBuf();
+            XTensor * nodeGradTMP = NewTensorBufV2(node, node->devID, node->mem);
 
             _Merge(&splits, nodeGradTMP, whereToSplit + 1);
             _Sum(node->grad, nodeGradTMP, node->grad);
 
-            DelTensor(nodeGradTMP);
+            DelTensorBuf(nodeGradTMP);
+            if (node->mem != NULL)
+                node->mem->UnlockBuf();
         }
     }
 
@@ -584,11 +608,15 @@ void XShapeGrad::GradTranspose(XTensor * node, bool isEfficient)
         CheckNTErrors(input->order > i && i >= 0, "index of dimension is out of scope!");
         CheckNTErrors(input->order > j && j >= 0, "index of dimension is out of scope!");
 
-        XTensor * tmp = NewTensor(input);
+        if (input->mem != NULL)
+            input->mem->LockBuf();
+        XTensor * tmp = NewTensorBufV2(input, input->devID, input->mem);
         _Transpose(output->grad, tmp, i, j);
         _Sum(input->grad, tmp, input->grad);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (input->mem != NULL)
+            input->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
@@ -622,12 +650,16 @@ void XShapeGrad::GradUnsqueeze(XTensor * node, bool isEfficient)
     if (!isEfficient || input->isGrad) {
         XNoder::MakeGrad(input);
 
-        XTensor * tmp = NewTensor(input);
+        if (input->mem != NULL)
+            input->mem->LockBuf();
+        XTensor * tmp = NewTensorBufV2(input->grad, input->devID, input->mem);
 
         _ReduceSum(output->grad, tmp, dim);
         _Sum(input->grad, tmp, input->grad);
 
-        DelTensor(tmp);
+        DelTensorBuf(tmp);
+        if (input->mem != NULL)
+            input->mem->UnlockBuf();
     }
 
     node->visitMark = NODE_FINISHED;
