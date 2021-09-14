@@ -50,9 +50,9 @@ bool TrainDataSet::LoadBatchToBuf()
         Sample* sample = LoadSample();
         sample->index = sampleNum++;
         buf->Add(sample);
-        if (feof(fp) && config->training.isTraining)
-            ReSetFilePointer();
+        ReSetFilePointer();
     }
+    LOG("loaded %d samples", sampleNum);
 
     /* group samples into buckets */
     SortByTgtLengthAscending();
@@ -229,6 +229,10 @@ inline int TrainDataSet::DynamicBatching()
 /* reset the file pointer to the begin */
 void TrainDataSet::ReSetFilePointer()
 {
+    if (fid < (trainingSize - 1) || !config->training.isTraining)
+        return;
+
+    fid = 0;
     rewind(fp);
 
     /* skip the meta information */
@@ -261,6 +265,7 @@ Sample* TrainDataSet::LoadSample()
     CheckNTErrors(srcLen > 0, "Invalid source sentence length");
     CheckNTErrors(tgtLen > 0, "Invalid target sentence length");
 
+    fid++;
     IntList* srcSent = new IntList(srcLen);
     IntList* tgtSent = new IntList(tgtLen);
     srcSent->ReadFromFile(fp, srcLen);
@@ -277,6 +282,7 @@ the constructor of TrainDataSet
 */
 void TrainDataSet::Init(NMTConfig& cfg)
 {
+    fid = 0;
     bufIdx = 0;
     config = &cfg;
 
@@ -290,6 +296,9 @@ void TrainDataSet::Init(NMTConfig& cfg)
     /* load the number of training samples */
     fread(&trainingSize, sizeof(trainingSize), 1, fp);
     CheckNTErrors(trainingSize > 0, "There is no training data");
+
+    /* reset the buffer size if needed */
+    config->common.bufSize = MIN(config->common.bufSize, trainingSize);
 }
 
 /* de-constructor */

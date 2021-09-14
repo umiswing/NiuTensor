@@ -43,6 +43,9 @@ private:
     /* the pointer to file stream */
     FILE* fp;
 
+    /* index of the current file pointer */
+    int fid;
+
 private:
 
     /* sort buckets by their keys */
