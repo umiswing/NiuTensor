@@ -58,6 +58,7 @@ initialize the model
 */
 void Embedder::InitModel(NMTConfig& config, bool myIsEnc)
 {
+    SetTrainingFlag(config.training.isTraining);
     fp16 = config.common.useFP16;
     isEnc = myIsEnc;
     shareEncDecEmb = config.model.shareEncDecEmb;

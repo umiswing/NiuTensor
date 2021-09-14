@@ -60,6 +60,7 @@ initialize the model
 */
 void Attention::InitModel(NMTConfig& config, bool isEnc, bool isSelfAtt)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     useRPR = (config.model.maxRelativeLength > 0);
 

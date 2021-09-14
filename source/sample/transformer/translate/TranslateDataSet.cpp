@@ -177,8 +177,9 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 /*
 constructor
 >> myConfig - configuration of the NMT system
+>> notUsed - as it is
 */
-void TranslateDataset::Init(NMTConfig& myConfig)
+void TranslateDataset::Init(NMTConfig& myConfig, bool notUsed)
 {
     config = &myConfig;
 

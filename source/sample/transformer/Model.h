@@ -111,6 +111,9 @@ public:
     /* get the number of parameters */
     uint64_t GetParamNum();
 
+    /* set the training flag */
+    void SetTrainingFlag(bool isTraining);
+
 public:
 
     /* clone the model (overloaded method of XModel) */

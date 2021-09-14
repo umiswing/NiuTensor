@@ -32,6 +32,23 @@ namespace nmt
 void AttEncoder::SetTrainingFlag(bool myIsTraining)
 {
     isTraining = myIsTraining;
+
+    /* initialize the stacked layers */
+    embedder.SetTrainingFlag(myIsTraining);
+    for (int i = 0; i < nlayer; i++) {
+        if (ffns != NULL)
+            ffns[i].SetTrainingFlag(myIsTraining);
+        if (selfAtts != NULL)
+            selfAtts[i].SetTrainingFlag(myIsTraining);
+        if (attLayerNorms != NULL)
+            attLayerNorms[i].SetTrainingFlag(myIsTraining);
+        if (fnnLayerNorms != NULL)
+            fnnLayerNorms[i].SetTrainingFlag(myIsTraining);
+    }
+    if (history != NULL)
+        history->SetTrainingFlag(myIsTraining);
+    if (encoderLayerNorm != NULL)
+        encoderLayerNorm->SetTrainingFlag(myIsTraining);
 }
 
 /* constructor */
@@ -74,6 +91,7 @@ initialize the model
 */
 void AttEncoder::InitModel(NMTConfig& config)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     preLN = config.model.encPreLN;
     dropoutP = config.model.dropout;
@@ -98,7 +116,7 @@ void AttEncoder::InitModel(NMTConfig& config)
 
     if (finalNorm) {
         encoderLayerNorm = new LayerNorm;
-        encoderLayerNorm->InitModel(devID, embDim, config.model.encoderL1Norm);
+        encoderLayerNorm->InitModel(config, devID, embDim, config.model.encoderL1Norm);
     }
 
     /* initialize the stacked layers */
@@ -106,8 +124,8 @@ void AttEncoder::InitModel(NMTConfig& config)
     for (int i = 0; i < nlayer; i++) {
         ffns[i].InitModel(config, true);
         selfAtts[i].InitModel(config, true, true);
-        attLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
-        fnnLayerNorms[i].InitModel(devID, embDim, config.model.encoderL1Norm);
+        attLayerNorms[i].InitModel(config, devID, embDim, config.model.encoderL1Norm);
+        fnnLayerNorms[i].InitModel(config, devID, embDim, config.model.encoderL1Norm);
     }
 }
 

@@ -126,8 +126,8 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("decemb", &decEmbDim, 512);
     LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("maxtgt", &maxTgtLen, 200);
-    LoadInt("enclayer", &encLayerNum, 6);
-    LoadInt("declayer", &decLayerNum, 6);
+    LoadInt("enclayer", &encLayerNum, 1);
+    LoadInt("declayer", &decLayerNum, 1);
     LoadInt("maxrp", &maxRelativeLength, -1);
     LoadInt("encffn", &encFFNHiddenDim, 1024);
     LoadInt("decffn", &decFFNHiddenDim, 1024);
@@ -154,7 +154,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
 
     LoadInt("nepoch", &nepoch, 50);
     LoadInt("nstep", &nstep, 100000);
-    LoadInt("savefreq", &saveFreq, 1);
+    LoadInt("savefreq", &saveFreq, 1000);
     LoadInt("nwarmup", &nwarmup, 8000);
     LoadInt("updatefreq", &updateFreq, 1);
     LoadInt("ncheckpoint", &ncheckpoint, 10);
@@ -192,8 +192,8 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadInt("sbatch", &sBatchSize, 512);
     LoadInt("wbatch", &wBatchSize, 4096);
     LoadInt("bufsize", &bufSize, 2000000);
-    LoadInt("bucketsize", &bucketSize, -1);
-    LoadInt("loginterval", &logInterval, 100);
+    LoadInt("bucketsize", &bucketSize, wBatchSize);
+    LoadInt("loginterval", &logInterval, 1);
     LoadBool("fp16", &useFP16, false);
 }
 

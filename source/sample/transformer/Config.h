@@ -67,7 +67,7 @@ public:
     /* update parameters every N steps */
     int updateFreq;
 
-    /* save a checkpoint every N epochs */
+    /* save a checkpoint every N steps */
     int saveFreq;
 
     /* the number of checkpoints to keep */

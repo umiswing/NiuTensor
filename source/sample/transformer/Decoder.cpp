@@ -36,10 +36,33 @@ void AttDecoder::SetTrainingFlag(bool myIsTraining)
     /* disable caching during training */
     if (isTraining) {
         for (int i = 0; i < nlayer; i++) {
-            selfAttCache[i].enable = false;
-            enDeAttCache[i].enable = false;
+            if (selfAttCache != NULL)
+                selfAttCache[i].enable = false;
+            if (enDeAttCache != NULL)
+                enDeAttCache[i].enable = false;
         }
     }
+
+    for (int i = 0; i < nlayer; i++) {
+        if (ffns != NULL)
+            ffns[i].SetTrainingFlag(myIsTraining);
+        if (selfAtts != NULL)
+            selfAtts[i].SetTrainingFlag(myIsTraining);
+        if (enDeAtts != NULL)
+            enDeAtts[i].SetTrainingFlag(myIsTraining);
+        if (ffnLayerNorms != NULL)
+            ffnLayerNorms[i].SetTrainingFlag(myIsTraining);
+        if (selfAttLayerNorms != NULL)
+            selfAttLayerNorms[i].SetTrainingFlag(myIsTraining);
+        if (enDeAttLayerNorms != NULL)
+            enDeAttLayerNorms[i].SetTrainingFlag(myIsTraining);
+    }
+    if (embedder != NULL)
+        embedder->SetTrainingFlag(myIsTraining);
+    if (history != NULL)
+        history->SetTrainingFlag(myIsTraining);
+    if (decoderLayerNorm != NULL)
+        decoderLayerNorm->SetTrainingFlag(myIsTraining);
 }
 
 /* constructor */
@@ -95,7 +118,7 @@ initialize the model
 */
 void AttDecoder::InitModel(NMTConfig& config)
 {
-    SetTrainingFlag(isTraining);
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     preLN = config.model.decPreLN;
     dropoutP = config.model.dropout;
@@ -109,7 +132,7 @@ void AttDecoder::InitModel(NMTConfig& config)
     CheckNTErrors(vSize > 1, "Set vocabulary size by \"-vsizetgt\"");
     CheckNTErrors(nlayer >= 1, "We have one encoding layer at least!");
 
-    /* some Transformer variants remove the FFN modules */
+    /* remove the FFN modules in some Transformer variants */
     if (config.model.decFFNHiddenDim > 0)
         ffns = new FFN[nlayer];
     selfAtts = new Attention[nlayer];
@@ -130,7 +153,7 @@ void AttDecoder::InitModel(NMTConfig& config)
     }
     if (finalNorm) {
         decoderLayerNorm = new LayerNorm;
-        decoderLayerNorm->InitModel(devID, embDim, config.model.decoderL1Norm);
+        decoderLayerNorm->InitModel(config, devID, embDim, config.model.decoderL1Norm);
     }
 
     /* initialize the stacked layers */
@@ -139,9 +162,9 @@ void AttDecoder::InitModel(NMTConfig& config)
             ffns[i].InitModel(config, false);
         selfAtts[i].InitModel(config, false, true);
         enDeAtts[i].InitModel(config, false, false);
-        ffnLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
-        selfAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
-        enDeAttLayerNorms[i].InitModel(devID, embDim, config.model.decoderL1Norm);
+        ffnLayerNorms[i].InitModel(config, devID, embDim, config.model.decoderL1Norm);
+        selfAttLayerNorms[i].InitModel(config, devID, embDim, config.model.decoderL1Norm);
+        enDeAttLayerNorms[i].InitModel(config, devID, embDim, config.model.decoderL1Norm);
     }
 }
 

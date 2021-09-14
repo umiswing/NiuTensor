@@ -46,7 +46,7 @@ bool TrainDataSet::LoadBatchToBuf()
     ClearBuf();
     int sampleNum = 0;
 
-    while (sampleNum < config->common.bufSize) {
+    while (sampleNum < MIN(trainingSize, config->common.bufSize)) {
         Sample* sample = LoadSample();
         sample->index = sampleNum++;
         buf->Add(sample);
@@ -71,7 +71,7 @@ load a mini-batch to a device
 */
 bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
 {
-    if (bufIdx == 0 || bufIdx == buf->Size())
+    if (bufIdx == buf->Size())
         LoadBatchToBuf();
 
     wc = 0;
@@ -279,15 +279,19 @@ Sample* TrainDataSet::LoadSample()
 /*
 the constructor of TrainDataSet
 >> cfg - the configuration of NMT system
+>> isTrainDataset - indicates whether it is used for training
 */
-void TrainDataSet::Init(NMTConfig& cfg)
+void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
 {
     fid = 0;
     bufIdx = 0;
     config = &cfg;
 
-    fp = fopen(config->training.trainFN, "rb");
-    CheckNTErrors(fp, "Failed to open the training file");
+    if (isTrainDataset)
+        fp = fopen(config->training.trainFN, "rb");
+    else
+        fp = fopen(config->training.validFN, "rb");
+    CheckNTErrors(fp, "Failed to open the training/validation file");
 
     /* skip the meta information */
     int meta_info[6];
@@ -295,10 +299,9 @@ void TrainDataSet::Init(NMTConfig& cfg)
 
     /* load the number of training samples */
     fread(&trainingSize, sizeof(trainingSize), 1, fp);
-    CheckNTErrors(trainingSize > 0, "There is no training data");
+    CheckNTErrors(trainingSize > 0, "There is no training/validation data");
 
-    /* reset the buffer size if needed */
-    config->common.bufSize = MIN(config->common.bufSize, trainingSize);
+    LoadBatchToBuf();
 }
 
 /* de-constructor */

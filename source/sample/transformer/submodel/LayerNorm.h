@@ -65,7 +65,7 @@ public:
     ~LayerNorm();
 
     /* initialize the model */
-    void InitModel(int myDevID, int hiddenSize, bool myL1Normed);
+    void InitModel(NMTConfig& config, int myDevID, int hiddenSize, bool myL1Normed);
 
     /* run layernorm for inference */
     XTensor RunFast(XTensor& input);

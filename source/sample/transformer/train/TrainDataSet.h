@@ -75,7 +75,7 @@ public:
     bool End();
 
     /* initialization function */
-    void Init(NMTConfig& config) override;
+    void Init(NMTConfig& config, bool isTrainDataset) override;
 
     /* load the samples into tensors from the buffer */
     bool GetBatchSimple(XList* inputs, XList* golds) override;

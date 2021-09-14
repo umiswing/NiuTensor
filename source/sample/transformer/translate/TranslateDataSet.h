@@ -56,7 +56,7 @@ public:
     bool IsEmpty();
 
     /* initialization function */
-    void Init(NMTConfig& myConfig) override;
+    void Init(NMTConfig& myConfig, bool notUsed) override;
 
     /* load a sample from the buffer */
     Sample* LoadSample() override;

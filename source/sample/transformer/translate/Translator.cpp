@@ -129,7 +129,7 @@ void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList&
 /* the translation function */
 bool Translator::Translate()
 {
-    batchLoader.Init(*config);
+    batchLoader.Init(*config, false);
 
     /* inputs */
     XTensor batchEnc;

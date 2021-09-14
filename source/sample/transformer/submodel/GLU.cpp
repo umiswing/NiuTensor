@@ -54,6 +54,7 @@ initialize the model
 */
 void GLU::InitModel(NMTConfig& config, bool isEnc)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
 
     float minmax = 0;

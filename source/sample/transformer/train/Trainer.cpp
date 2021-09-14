@@ -84,14 +84,15 @@ void Trainer::Run()
     int wordCountTotal = 0;
     int batchCountTotal = 0;
     int devID = model->devID;
-    float lr = 0.0F;
+    float lr = config->training.lrate;
     float loss = 0.0F;
     bool isEnd = false;
 
-    XNet net;
     PrepareModel();
-    batchLoader.Init(*config);
+    model->SetTrainingFlag(true);
+    batchLoader.Init(*config, true);
 
+    XNet net;
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
 
         loss = 0.0F;
@@ -124,12 +125,12 @@ void Trainer::Run()
             /* load a mini-batch */
             batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
-            /* flush the batch to a device */
-            batchEnc.FlushToDevice(model->devID);
-            paddingEnc.FlushToDevice(model->devID);
-            batchDec.FlushToDevice(model->devID);
-            paddingDec.FlushToDevice(model->devID);
-            label.FlushToDevice(model->devID);
+            /* flush the batch to the target device */
+            batchEnc.SetDevice(model->devID);
+            paddingEnc.SetDevice(model->devID);
+            batchDec.SetDevice(model->devID);
+            paddingDec.SetDevice(model->devID);
+            label.SetDevice(model->devID);
 
             CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
 
@@ -233,30 +234,24 @@ void Trainer::Validate()
     int sentCount = 0;
     float loss = 0;
 
-    /* data files */
-    batchLoader.Init(*config);
+    model->SetTrainingFlag(false);
+    batchLoader.Init(*config, false);
 
     int curIdx = 0;
     while (curIdx < batchLoader.buf->count)
     {
-        /* batch of input sequences */
+        /* batch of sequences */
         XTensor batchEnc;
         XTensor batchDec;
 
-        /* label */
+        /* labels */
         XTensor label;
 
         /* padding */
         XTensor paddingEnc;
         XTensor paddingDec;
 
-        /* output probabilities */
-        XTensor output;
-
-        /* prediction probabilities */
-        XTensor labelOnehot;
-        XTensor lossTensor;
-
+        /* the inputs and gold labels */
         TensorList inputs;
         TensorList golds;
 
@@ -266,15 +261,29 @@ void Trainer::Validate()
         golds.Add(&paddingDec);
         golds.Add(&label);
 
+        /* load a mini-batch */
         batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
+
+        /* flush the batch to the target device */
+        batchEnc.FlushToDevice(model->devID);
+        paddingEnc.FlushToDevice(model->devID);
+        batchDec.FlushToDevice(model->devID);
+        paddingDec.FlushToDevice(model->devID);
+        label.FlushToDevice(model->devID);
+
+        CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
+
+        /* output probabilities */
+        XTensor output;
 
         /* make the network */
         output = model->MakeMT(batchEnc, batchDec, paddingEnc, paddingDec);
 
-        int bSize = output.GetDim(0);
-        int length = output.GetDim(1);
+        /* get loss and probabilities */
+        XTensor labelOnehot;
+        XTensor lossTensor;
 
-        labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, 0);
+        labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, config->training.labelSmoothingP);
 
         lossTensor = CrossEntropy(output, labelOnehot, paddingDec);
 
@@ -283,7 +292,7 @@ void Trainer::Validate()
         loss += lossBatch;
 
         wordCount += batchLoader.wc;
-        sentCount += bSize;
+        sentCount += batchLoader.sc;
 
         if (model->encoder->useHistory)
             model->encoder->history->ClearHistory(/*reset=*/false);

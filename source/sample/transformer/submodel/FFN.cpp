@@ -58,6 +58,7 @@ initialize the model
 */
 void FFN::InitModel(NMTConfig& config, bool isEnc)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     dropoutP = config.model.ffnDropout;
     inSize = isEnc ? config.model.encEmbDim : config.model.decEmbDim;

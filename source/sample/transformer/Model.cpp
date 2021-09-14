@@ -727,6 +727,14 @@ uint64_t NMTModel::GetParamNum()
     return totalNum;
 }
 
+/* set the training flags in all sub-models */
+void NMTModel::SetTrainingFlag(bool isTraining)
+{
+    encoder->SetTrainingFlag(isTraining);
+    decoder->SetTrainingFlag(isTraining);
+    outputLayer->SetTrainingFlag(isTraining);
+}
+
 XModel* NMTModel::Clone(int devID)
 {
     NMTModel* newModel = new NMTModel();

@@ -54,6 +54,7 @@ initialize the model
 */
 void OutputLayer::InitModel(NMTConfig& config)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     hSize = config.model.decEmbDim;
     vSize = config.model.tgtVocabSize;

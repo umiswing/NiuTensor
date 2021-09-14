@@ -105,7 +105,7 @@ public:
 
     /* initialization function */
     virtual
-    void Init(NMTConfig& myConfig) = 0;
+    void Init(NMTConfig& myConfig, bool isTraining) = 0;
 
     /* load a sample from the file stream  */
     virtual

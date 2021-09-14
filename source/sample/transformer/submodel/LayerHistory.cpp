@@ -65,6 +65,7 @@ initialize the model
 */
 void LayerHistory::InitModel(NMTConfig& config, bool isEnc)
 {
+    SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     d = isEnc ? config.model.encEmbDim : config.model.decEmbDim;
     nlayer = isEnc ? config.model.encLayerNum : config.model.decLayerNum;
@@ -90,7 +91,7 @@ void LayerHistory::InitModel(NMTConfig& config, bool isEnc)
 
     /* initialize the layer normalization of each layer */
     for (int i = 0; i < nlayer; i++) {
-        layerNorms[i].InitModel(devID, d, 
+        layerNorms[i].InitModel(config, devID, d,
         isEnc ? config.model.encoderL1Norm : config.model.decoderL1Norm);
     }
 }

@@ -44,16 +44,18 @@ LayerNorm::~LayerNorm()
 
 /*
 initialize the model
+>> config - configuration of the model
 >> myDevID - the device id
 >> hiddenSize - the hidden size of layer normalization
 >> myL1Normed - whether use L1-Norm
 */
-void LayerNorm::InitModel(int myDevID, int hiddenSize, bool myL1Normed)
+void LayerNorm::InitModel(NMTConfig& config, int myDevID, int hiddenSize, bool myL1Normed)
 {
-    devID = myDevID;
-
-    isL1Normed = myL1Normed;
+    SetTrainingFlag(config.training.isTraining);
     d = hiddenSize;
+    devID = myDevID;
+    isL1Normed = myL1Normed;
+    
 
     InitTensor1D(&weight, d, X_FLOAT, devID);
     InitTensor1D(&bias, d, X_FLOAT, devID);
@@ -90,27 +92,43 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
     XTensor xn;
     XTensor mean;
     XTensor variance;
+    XTensor standard;
+    XTensor meanFilled;
+    XTensor standardFilled;
 
     TENSOR_DATA_TYPE dataType = input.dataType;
+
+    if (dataType == X_FLOAT16) {
+        /* reduce functions can only run with FP32 */
+        x = ConvertDataType(input, X_FLOAT);
+    }
 
     /* \mu = (sum_i x_i)/m */
     mean = ReduceMean(x, x.order - 1);
 
-    if (dataType == X_FLOAT16) {
-        x = ConvertDataType(x, X_FLOAT);
-        mean = ConvertDataType(mean, X_FLOAT);
-    }
-
     /* \sigma = (sum_i (x_i - \mu)^2)/m */
     variance = ReduceVariance(x, x.order - 1, mean, false);
 
-    if (dataType != x.dataType) {
+    /* standard = sqrt(variance) */
+    standard = Power(variance, 0.5F);
+
+    /* unsqueeze mean and standard deviation to fit them into
+       the same shape of x */
+    meanFilled = Unsqueeze(mean, x.order - 1, x.GetDim(-1));
+    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1));
+
+    /* x' = (x - \mu)/standard */
+    xn = (x - meanFilled) / standardFilled;
+
+    if (dataType != mean.dataType) {
         x = ConvertDataType(x, dataType);
-        mean = ConvertDataType(mean, dataType);
-        variance = ConvertDataType(variance, dataType);
+        xn = ConvertDataType(xn, dataType);
     }
 
-    xn = Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+    /* result = x' * w + b   */
+    xn = xn * weight;
+
+    xn = Sum(xn, bias, /*inplace=*/true);
 
     return xn;
 }
