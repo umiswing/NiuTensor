@@ -30,3 +30,5 @@ tools/train.en
 tools/valid.de
 tools/valid.en
 tools/vocab.en
+tools/checker.py
+tools/data/
