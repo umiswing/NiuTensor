@@ -52,7 +52,7 @@ public:
     int hSize;
 
     /* transformation matrix */
-    XTensor w;
+    XTensor* w;
 
 public:
     /* set the training flag */

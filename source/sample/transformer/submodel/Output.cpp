@@ -46,6 +46,8 @@ OutputLayer::OutputLayer()
 /* de-constructor */
 OutputLayer::~OutputLayer()
 {
+    if (!shareDecInputOutputEmb)
+        DelTensor(w);
 }
 
 /*
@@ -61,11 +63,15 @@ void OutputLayer::InitModel(NMTConfig& config)
     shareDecInputOutputEmb = config.model.shareDecInputOutputEmb;
 
     if (!shareDecInputOutputEmb) {
-        InitTensor2D(&w, hSize, vSize, X_FLOAT, devID);
+        if (isTraining)
+            w = NewTensor2D(vSize, hSize, X_FLOAT, devID);
+        else
+            w = NewTensor2D(hSize, vSize, X_FLOAT, devID);
 
         DTYPE v = 1.0F / (float)sqrt((float)hSize);
-        if (isTraining)
-            w.SetDataRandn(0, v);
+        if (isTraining) {
+            w->SetDataRandn(0, v);
+        }
     }
 }
 
@@ -79,10 +85,17 @@ XTensor OutputLayer::Make(XTensor& input, bool normalized)
 {
     XTensor output;
 
-    output = MMul(input, X_NOTRANS, w, X_NOTRANS);
+    if (!w->enableGrad) {
+        /* inference */
+        output = MMul(input, X_NOTRANS, *w, X_NOTRANS);
+    }
+    else {
+        /* training */
+        output = MMul(input, X_NOTRANS, *w, X_TRANS);
+    }
 
     /* use softmax for training */
-    if (w.enableGrad)
+    if (w->enableGrad)
         return Softmax(output, -1);
 
     /* normalize the output for beam search */

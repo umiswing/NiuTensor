@@ -130,6 +130,19 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     encoder->InitModel(*config);
     decoder->InitModel(*config);
     outputLayer->InitModel(*config);
+
+    /* share encoder&decoder embeddings */
+    if (config->model.shareEncDecEmb) {
+        decoder->embedder = &(encoder->embedder);
+        LOG("share encoder decoder embeddings");
+    }
+
+    /* share embeddings with output weights */
+    if (config->model.shareDecInputOutputEmb) {
+        outputLayer->w = decoder->embedder->w;
+        LOG("share decoder embeddings with output weights");
+    }
+
     ShowModelConfig();
 
     /* load parameters */
@@ -615,7 +628,7 @@ void NMTModel::GetParams(TensorList& list)
     }
 
     if (!config->model.shareDecInputOutputEmb) {
-        list.Add(&outputLayer->w);
+        list.Add(outputLayer->w);
     }
 }
 
@@ -679,12 +692,6 @@ void NMTModel::LoadFromFile(FILE* file)
         LOG("running with fp32");
     }
 
-    /* share all embeddings */
-    if (config->model.shareEncDecEmb) {
-        decoder->embedder = &(encoder->embedder);
-        LOG("share encoder decoder embeddings");
-    }
-
     /* convert parameters to FP16 before reading files */
     if (config->common.useFP16) {
         for (int i = 0; i < params.Size(); i++) {
@@ -702,12 +709,6 @@ void NMTModel::LoadFromFile(FILE* file)
 
     for (int i = 0; i < params.Size(); i++)
         params[i]->BinaryRead(file);
-
-    /* share embeddings with output weights */
-    if (config->model.shareDecInputOutputEmb) {
-        outputLayer->w = Transpose(*(decoder->embedder->w), 0, 1);
-        LOG("share decoder embeddings with output weights");
-    }
 
     double elapsed = GetClockSec() - startT;
     LOG("model loaded (took %.1fs)", elapsed);

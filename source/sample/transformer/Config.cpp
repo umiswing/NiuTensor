@@ -115,7 +115,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("dechistory", &useDecHistory, false);
     LoadBool("encfinalnorm", &encFinalNorm, true);
     LoadBool("decfinalnorm", &decFinalNorm, true);
-    LoadBool("shareallemb", &shareEncDecEmb, false);
+    LoadBool("shareallemb", &shareEncDecEmb, true);
     LoadBool("sharedec", &shareDecInputOutputEmb, false);
 
     LoadInt("pad", &pad, -1);
