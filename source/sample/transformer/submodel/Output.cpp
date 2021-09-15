@@ -82,7 +82,7 @@ XTensor OutputLayer::Make(XTensor& input, bool normalized)
     output = MMul(input, X_NOTRANS, w, X_NOTRANS);
 
     /* use softmax for training */
-    if (isTraining)
+    if (w.enableGrad)
         return Softmax(output, -1);
 
     /* normalize the output for beam search */

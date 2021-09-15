@@ -115,9 +115,10 @@ DataSetBase::DataSetBase()
 /* de-constructor */
 DataSetBase::~DataSetBase()
 {
-    ClearBuf();
-    if (buf != NULL)
+    if (buf != NULL) {
+        ClearBuf();
         delete buf;
+    }
 }
 
 /* constructor */

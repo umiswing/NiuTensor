@@ -154,9 +154,9 @@ void TrainingConfig::Load(int argsNum, const char **args)
 
     LoadInt("nepoch", &nepoch, 50);
     LoadInt("nstep", &nstep, 100000);
-    LoadInt("savefreq", &saveFreq, 1000);
+    LoadInt("savefreq", &saveFreq, 10000);
     LoadInt("nwarmup", &nwarmup, 8000);
-    LoadInt("updatefreq", &updateFreq, 1);
+    LoadInt("updatefreq", &updateFreq, 8);
     LoadInt("ncheckpoint", &ncheckpoint, 10);
     
     LoadFloat("lrbias", &lrbias, 0);
@@ -189,7 +189,7 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadString("tgtvocab", tgtVocabFN, "");
     LoadInt("seed", &seed, 1);
     LoadInt("dev", &devID, -1);
-    LoadInt("sbatch", &sBatchSize, 512);
+    LoadInt("sbatch", &sBatchSize, 16);
     LoadInt("wbatch", &wBatchSize, 4096);
     LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, wBatchSize);

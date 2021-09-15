@@ -1624,16 +1624,16 @@ MTYPE XMemManager::GetAvailableGPUMemory(int devID)
 void XMemManager::GetBufferSize(MTYPE freeMem, MTYPE * myBufSize)
 {
     *myBufSize = 0;
-    if (freeMem >= MILLION * 128ULL){
-        *myBufSize = MILLION * 32ULL;
-        if (freeMem >= MILLION * 256ULL){
-            *myBufSize = MILLION * 64ULL;
-            if (freeMem >= MILLION * 512ULL){
-                *myBufSize = MILLION * 128ULL;
+    if (freeMem >= MILLION * 128ULL) {
+        *myBufSize = MILLION * 64ULL;
+        if (freeMem >= MILLION * 256ULL) {
+            *myBufSize = MILLION * 128ULL;
+            if (freeMem >= MILLION * 512ULL) {
+                *myBufSize = MILLION * 256ULL;
                 if (freeMem >= MILLION * 1024ULL) {
-                    *myBufSize = MILLION * 128ULL;
+                    *myBufSize = MILLION * 512ULL;
                     if (freeMem >= MILLION * 2048ULL)
-                        *myBufSize = MILLION * 128ULL;
+                        *myBufSize = MILLION * 1024ULL;
                 }
             }
         }

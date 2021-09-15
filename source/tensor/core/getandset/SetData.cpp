@@ -57,13 +57,17 @@ Also known as Glorot initialization.
 void _SetDataXavierNormal(XTensor * tensor, DTYPE gain)
 {
     CheckNTErrors(tensor->dataType == X_FLOAT, "the tensor must be in X_FLOAT!");
-    CheckNTErrors(tensor->order >= 2, "the tensor dimension must be no less than 2!");
+    CheckNTErrors(tensor->order >= 1, "the tensor dimension must be no less than 1!");
 
     int fanIn = 1;
     int fanOut = 1;
 
     int order = tensor->order;
-    if (order == 2) {
+    if (order == 1) {
+        fanIn = 1;
+        fanOut = tensor->dimSize[0];
+    }
+    else if (order == 2) {
         fanIn = tensor->dimSize[1];
         fanOut = tensor->dimSize[0];
     }
@@ -78,7 +82,7 @@ void _SetDataXavierNormal(XTensor * tensor, DTYPE gain)
     }
 
     DTYPE std = gain * (float)sqrt(2.0 / (float)(fanIn + fanOut));
-    
+
     tensor->SetDataRandn(0, std);
 }
 /*

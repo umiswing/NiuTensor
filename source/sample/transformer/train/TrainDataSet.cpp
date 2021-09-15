@@ -44,21 +44,22 @@ bool TrainDataSet::LoadBatchToBuf()
     /* reset the buffer and index */
     bufIdx = 0;
     ClearBuf();
-    int sampleNum = 0;
+    int n = 0;
 
-    while (sampleNum < MIN(trainingSize, config->common.bufSize)) {
+    while (n < MIN(sampleNum, config->common.bufSize)) {
         Sample* sample = LoadSample();
-        sample->index = sampleNum++;
         buf->Add(sample);
         ReSetFilePointer();
+        n++;
     }
-    LOG("loaded %d samples", sampleNum);
+    LOG("loaded %d samples", n);
 
     /* group samples into buckets */
     SortByTgtLengthAscending();
     SortBySrcLengthAscending();
 
-    if (config->training.isTraining)
+    /* build buckets for training */
+    if (isTraining)
         BuildBucket();
 
     return true;
@@ -75,7 +76,8 @@ bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
         LoadBatchToBuf();
 
     wc = 0;
-    sc = DynamicBatching();
+    sc = isTraining ? DynamicBatching() : config->common.sBatchSize;
+    sc = MIN(sc, buf->Size() - bufIdx);
 
     /* get the maximum sentence length in a mini-batch */
     int maxSrcLen = MaxSrcLen(bufIdx, bufIdx + sc);
@@ -229,7 +231,7 @@ inline int TrainDataSet::DynamicBatching()
 /* reset the file pointer to the begin */
 void TrainDataSet::ReSetFilePointer()
 {
-    if (fid < (trainingSize - 1) || !config->training.isTraining)
+    if (fid < (sampleNum - 1) || !isTraining)
         return;
 
     fid = 0;
@@ -238,7 +240,7 @@ void TrainDataSet::ReSetFilePointer()
     /* skip the meta information */
     int meta_info[6];
     fread(meta_info, sizeof(*meta_info), 6, fp);
-    fread(&trainingSize, sizeof(trainingSize), 1, fp);
+    fread(&sampleNum, sizeof(sampleNum), 1, fp);
 }
 
 /* start the process */
@@ -286,8 +288,9 @@ void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
     fid = 0;
     bufIdx = 0;
     config = &cfg;
+    isTraining = isTrainDataset;
 
-    if (isTrainDataset)
+    if (isTraining)
         fp = fopen(config->training.trainFN, "rb");
     else
         fp = fopen(config->training.validFN, "rb");
@@ -298,8 +301,8 @@ void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
     fread(meta_info, sizeof(*meta_info), 6, fp);
 
     /* load the number of training samples */
-    fread(&trainingSize, sizeof(trainingSize), 1, fp);
-    CheckNTErrors(trainingSize > 0, "There is no training/validation data");
+    fread(&sampleNum, sizeof(sampleNum), 1, fp);
+    CheckNTErrors(sampleNum > 0, "There is no training/validation data");
 
     LoadBatchToBuf();
 }
@@ -307,8 +310,6 @@ void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
 /* de-constructor */
 TrainDataSet::~TrainDataSet()
 {
-    ClearBuf();
-    delete buf;
     fclose(fp);
 }
 

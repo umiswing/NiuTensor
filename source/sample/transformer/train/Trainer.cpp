@@ -84,21 +84,23 @@ void Trainer::Run()
     int wordCountTotal = 0;
     int batchCountTotal = 0;
     int devID = model->devID;
-    float lr = config->training.lrate;
+    float lr = 0.0F;
     float loss = 0.0F;
     bool isEnd = false;
 
     PrepareModel();
     model->SetTrainingFlag(true);
-    batchLoader.Init(*config, true);
+    trainBatchLoader.Init(*config, true);
 
-    XNet net;
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
 
         loss = 0.0F;
         wordCount = 0;
+        int sentCount = 0;
 
-        while (step++ < config->training.nstep) {
+        while (true) {
+
+            XNet net;
             net.Clear();
 
             /* batch of sequences */
@@ -112,7 +114,7 @@ void Trainer::Run()
             XTensor paddingEnc;
             XTensor paddingDec;
 
-            /* the inputs and gold labels */
+            /* the inputs and golden labels */
             TensorList inputs;
             TensorList golds;
 
@@ -123,7 +125,7 @@ void Trainer::Run()
             golds.Add(&label);
 
             /* load a mini-batch */
-            batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
+            trainBatchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
             /* flush the batch to the target device */
             batchEnc.SetDevice(model->devID);
@@ -150,7 +152,7 @@ void Trainer::Run()
 
             float lossBatch = ReduceSumAllValue(lossTensor);
 
-            DTYPE lossLocal = lossBatch / batchLoader.wc;
+            DTYPE lossLocal = lossBatch / trainBatchLoader.wc;
             bool doUpdate = (!IsNAN(lossLocal) && !IsINF(lossLocal) && lossLocal < 1e3F);
 
             if (doUpdate) {
@@ -165,14 +167,15 @@ void Trainer::Run()
 
                 gradStep += 1;
                 loss += lossBatch;
-                wordCount += batchLoader.wc;
-                wordCountTotal += batchLoader.wc;
-                batchCountTotal += batchLoader.sc;
+                sentCount += trainBatchLoader.sc;
+                wordCount += trainBatchLoader.wc;
+                wordCountTotal += trainBatchLoader.wc;
+                batchCountTotal += trainBatchLoader.sc;
 
                 /* update the parameters */
                 if (gradStep == config->training.updateFreq) {
 
-                    lr = LRScheduler.MakeLRTransformer(lr, step, config->training.nwarmup);
+                    lr = LRScheduler.MakeLRTransformer(config->training.lrate, step, config->training.nwarmup);
 
                     /* model update */
                     Update(lr);
@@ -184,10 +187,23 @@ void Trainer::Run()
             else
                 nSkipped++;
 
+            /* end of the maximum step */
+            if (++step >= config->training.nstep) {
+                isEnd = true;
+                break;
+            }
+
+            /* end of an epoch */
+            if (sentCount == trainBatchLoader.sampleNum) {
+                LOG("end of epoch %d", epoch);
+                break;
+            }
+
+            /* logging */
             if (step % config->common.logInterval == 0) {
                 double elapsed = GetClockSec() - startT;
                 LOG("elapsed=%.1fs, step=%d, epoch=%d, "
-                    "total word=%d, total batch=%d, loss=%.3f, ppl=%.3f, lr=%.2e", 
+                    "total word=%d, total sent=%d, loss=%.3f, ppl=%.3f, lr=%.6e", 
                     elapsed, step, epoch, wordCountTotal, batchCountTotal,
                     loss / wordCount / log(2.0), exp(loss / wordCount), lr);
                 
@@ -195,6 +211,7 @@ void Trainer::Run()
                     XPRINT(0, stderr, " (no update)");
             }
 
+            /* save the internal checkpoint */
             if (config->training.saveFreq > 0 && ++nStepCheck >= config->training.saveFreq) {
                 MakeCheckpoint("step", step);
                 nStepCheck = 0;
@@ -202,20 +219,21 @@ void Trainer::Run()
             }
         }
 
+        /* end of training */
+        if (isEnd)
+            break;
+
+        /* save the checkpoint every epoch */
         MakeCheckpoint("epoch", epoch);
     }
 
+    /* final logging */
     double elapsed = GetClockSec() - startT;
-
     epoch = MIN(epoch, config->training.nepoch);
-
-    LOG("lr=%.2e, elapsed=%.1fs, step=%d, epoch=%d, word=%d, loss=%.3f, ppl=%.3f",
-        lr, elapsed, step, epoch, wordCountTotal, loss / wordCount / log(2.0), exp(loss / wordCount));
-
     LOG("training finished (took %.1fs, step=%d, skipped=%d and epoch=%d)", elapsed, step, nSkipped, epoch);
 
+    /* save the final model */
     LOG("saving the final model");
-
     model->DumpToFile(config->common.modelFN);
 }
 
@@ -235,11 +253,10 @@ void Trainer::Validate()
     float loss = 0;
 
     model->SetTrainingFlag(false);
-    batchLoader.Init(*config, false);
+    validBatchLoader.Init(*config, false);
 
     int curIdx = 0;
-    while (curIdx < batchLoader.buf->count)
-    {
+    while (sentCount < validBatchLoader.sampleNum) {
         /* batch of sequences */
         XTensor batchEnc;
         XTensor batchDec;
@@ -251,7 +268,7 @@ void Trainer::Validate()
         XTensor paddingEnc;
         XTensor paddingDec;
 
-        /* the inputs and gold labels */
+        /* the inputs and golden labels */
         TensorList inputs;
         TensorList golds;
 
@@ -262,7 +279,7 @@ void Trainer::Validate()
         golds.Add(&label);
 
         /* load a mini-batch */
-        batchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
+        validBatchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
         /* flush the batch to the target device */
         batchEnc.FlushToDevice(model->devID);
@@ -270,8 +287,6 @@ void Trainer::Validate()
         batchDec.FlushToDevice(model->devID);
         paddingDec.FlushToDevice(model->devID);
         label.FlushToDevice(model->devID);
-
-        CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
 
         /* output probabilities */
         XTensor output;
@@ -283,7 +298,7 @@ void Trainer::Validate()
         XTensor labelOnehot;
         XTensor lossTensor;
 
-        labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, config->training.labelSmoothingP);
+        labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, 0.0F);
 
         lossTensor = CrossEntropy(output, labelOnehot, paddingDec);
 
@@ -291,8 +306,8 @@ void Trainer::Validate()
 
         loss += lossBatch;
 
-        wordCount += batchLoader.wc;
-        sentCount += batchLoader.sc;
+        wordCount += validBatchLoader.wc;
+        sentCount += validBatchLoader.sc;
 
         if (model->encoder->useHistory)
             model->encoder->history->ClearHistory(/*reset=*/false);

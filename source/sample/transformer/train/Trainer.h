@@ -51,8 +51,11 @@ public:
     /* list of the 2nd order moment of the parameters */
     TensorList moments2nd;
 
-    /* used for loading batches */
-    TrainDataSet batchLoader;
+    /* used for loading batches for training */
+    TrainDataSet trainBatchLoader;
+
+    /* used for loading batches for validation */
+    TrainDataSet validBatchLoader;
 
     /* the learning rate scheduler */
     XLearningRate LRScheduler;

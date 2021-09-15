@@ -870,9 +870,8 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         }
 
         int finishedSentNum = 0;
-        for (int i = 0; i < batchSize; i++) {
+        for (int i = 0; i < batchSize; i++)
             finishedSentNum += finishedFlags[i];
-        }
         if (finishedSentNum == batchSize) {
             l = lengthLimit;
             break;

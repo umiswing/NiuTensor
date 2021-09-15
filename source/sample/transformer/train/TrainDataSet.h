@@ -36,9 +36,8 @@ namespace nmt {
 struct TrainDataSet : public DataSetBase
 {
 private:
-
-    /* training set size */
-    int trainingSize;
+    /* indicates whether it is used for training or validation */
+    bool isTraining;
 
     /* the pointer to file stream */
     FILE* fp;
@@ -64,6 +63,9 @@ private:
     bool LoadBatchToBuf() override;
 
 public:
+
+    /* number of samples in the dataset */
+    int sampleNum;
 
     /* reset the file pointer to the begin */
     void ReSetFilePointer();

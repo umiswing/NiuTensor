@@ -48,17 +48,17 @@ XLearningRate::~XLearningRate()
 */
 float XLearningRate::MakeLRTransformer(const float lrate, const int nstep, const int nwarmup)
 {
-    float lr = 0;
+    float lr = 0.0F;
     float warmupEndLR = lrate;
-    float warmupInitLR = 1e-7F;
+    float warmupInitLR = 1e-7;
     float lrStep = (warmupEndLR - warmupInitLR) / nwarmup;
-    float decayFactor = warmupEndLR * (float)pow(float(nwarmup), 0.5F);
+    float decayFactor = warmupEndLR * pow(float(nwarmup), 0.5F);
 
     /* learning rate, scheduled by inverse square root */
     if (nstep < nwarmup)
         lr = warmupInitLR + nstep * lrStep;
     else
-        lr = decayFactor * (float)pow((float)nstep, -0.5F);
+        lr = decayFactor * pow((float)nstep, -0.5F);
 
     return lr;
 }
