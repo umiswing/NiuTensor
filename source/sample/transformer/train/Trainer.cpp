@@ -80,7 +80,6 @@ void Trainer::Run()
     int validStep = 0;
     int wordCount = 0;
     int nStepCheck = 0;
-    int nCheckpoint = 0;
     int wordCountTotal = 0;
     int batchCountTotal = 0;
     int devID = model->devID;
@@ -175,7 +174,13 @@ void Trainer::Run()
                 /* update the parameters */
                 if (gradStep == config->training.updateFreq) {
 
-                    lr = LRScheduler.MakeLRTransformer(config->training.lrate, step, config->training.nwarmup);
+                    lr = LRScheduler.MakeLRTransformer(config->training.lrate, step, 
+                         config->training.nwarmup, config->training.warmupInitLR);
+
+                    if (lr <= config->training.minLR) {
+                        isEnd = true;
+                        break;
+                    }
 
                     /* model update */
                     Update(lr);
@@ -215,7 +220,6 @@ void Trainer::Run()
             if (config->training.saveFreq > 0 && ++nStepCheck >= config->training.saveFreq) {
                 MakeCheckpoint("step", step);
                 nStepCheck = 0;
-                nCheckpoint++;
             }
         }
 
@@ -224,7 +228,8 @@ void Trainer::Run()
             break;
 
         /* save the checkpoint every epoch */
-        MakeCheckpoint("epoch", epoch);
+        int checkpointID = epoch % config->training.ncheckpoint;
+        MakeCheckpoint("epoch", checkpointID);
     }
 
     /* final logging */
@@ -383,6 +388,10 @@ void Trainer::Update(const float lr)
             _Power(v, v2, 0.5F);
             _ScaleAndShiftMe(v2, 1.0F, d);
             _Div(m, v2, v2);
+
+            /* weight = (1 - lr * weight_decay) * weight */
+            float scale = 1 - lr * config->training.weightDecay;
+            _ScaleMe(para, scale);
 
             /* the delta rule */
             _Sum(para, v2, para, -e);

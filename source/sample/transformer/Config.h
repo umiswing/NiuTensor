@@ -52,8 +52,17 @@ public:
     /* train the model or not */
     bool isTraining;
 
+    /* incremental train the model or not */
+    bool incremental;
+
     /* learning rate */
     float lrate;
+
+    /* the initial learning rate for warm-up */
+    float warmupInitLR;
+
+    /* the minimum learning rate for training */
+    float minLR;
 
     /* the parameter that controls the maximum learning rate in training */
     float lrbias;
@@ -80,6 +89,9 @@ public:
     float adamBeta1;
     float adamBeta2;
     float adamDelta;
+
+    /* the weight decay factor */
+    float weightDecay;
 
     /* step number of warm-up for training */
     int nwarmup;

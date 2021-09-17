@@ -135,7 +135,7 @@ void XTrainer::Run(XConfig * config, DataDistributeBase * dataDistributor,
 
                 /* learning rate scheduling */
                 if (nwarmup > 0)
-                    optimizer->SetLearningRate(LRScheduler.MakeLRTransformer(lrate, step + 1, nwarmup));
+                    optimizer->SetLearningRate(LRScheduler.MakeLRTransformer(lrate, step + 1, nwarmup, 1e-7F));
 
                 /* one step of udpate */
                 ok = leader.Run(config, dataDistributor, optimizer);

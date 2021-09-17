@@ -86,12 +86,12 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     vector<int*> intConfig = GetIntConfigs();
 
     FILE* modelFile = NULL;
+    modelFile = fopen(config->common.modelFN, "rb");
 
     /* read model configurations */
     if (!config->training.isTraining) {
-        modelFile = fopen(config->common.modelFN, "rb");
-        CheckNTErrors(modelFile, "Failed to open the model file");
 
+        CheckNTErrors(modelFile, "Failed to open the model file");
         fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.decoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.useBigAtt), sizeof(bool), 1, modelFile);
@@ -112,6 +112,10 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         config->model.maxSrcLen = MIN(maxSrcLen, config->model.maxSrcLen);
     }
     else {
+
+        /* currently we do not support training with FP16 */
+        config->common.useFP16 = false;
+
         /* read the source & target vocab size and special tokens from the training file */
         FILE* trainF = fopen(config->training.trainFN, "rb");
         CheckNTErrors(trainF, "Failed to open the training file");
@@ -125,6 +129,11 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         CheckNTErrors(config->model.srcVocabSize > 0, "Invalid source vocabulary size");
         CheckNTErrors(config->model.tgtVocabSize > 0, "Invalid target vocabulary size");
         fclose(trainF);
+    }
+
+    /* start incremental training from a checkpoint */
+    if (modelFile) {
+        config->training.incremental = true;
     }
 
     encoder->InitModel(*config);
@@ -145,8 +154,8 @@ void NMTModel::InitModel(NMTConfig& myConfig)
 
     ShowModelConfig();
 
-    /* load parameters */
-    if (!config->training.isTraining)
+    /* load parameters for translation or incremental training */
+    if (strcmp(config->translation.inputFN, "") != 0 || config->training.incremental)
         LoadFromFile(modelFile);
 
     if (config->training.isTraining) {
@@ -704,6 +713,13 @@ void NMTModel::LoadFromFile(FILE* file)
         if (!config->model.shareEncDecEmb) {
             XTensor& decEmb = decoder->embedder->posEmbeddingBase;
             decEmb = ConvertDataType(decEmb, X_FLOAT16);
+        }
+    }
+
+    if (!config->training.isTraining) {
+        /* share embeddings with output weights */
+        if (config->model.shareDecInputOutputEmb) {
+            *outputLayer->w = Transpose(*(decoder->embedder->w), 0, 1);
         }
     }
 

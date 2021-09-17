@@ -111,7 +111,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("encl1norm", &encoderL1Norm, false);
     LoadBool("decl1norm", &decoderL1Norm, false);
     LoadBool("decoderonly", &decoderOnly, false);
-    LoadBool("enchistory", &useEncHistory, false);
+    LoadBool("enchistory", &useEncHistory, true);
     LoadBool("dechistory", &useDecHistory, false);
     LoadBool("encfinalnorm", &encFinalNorm, true);
     LoadBool("decfinalnorm", &decFinalNorm, true);
@@ -128,7 +128,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("maxtgt", &maxTgtLen, 200);
     LoadInt("enclayer", &encLayerNum, 6);
     LoadInt("declayer", &decLayerNum, 1);
-    LoadInt("maxrp", &maxRelativeLength, -1);
+    LoadInt("maxrp", &maxRelativeLength, 8);
     LoadInt("encffn", &encFFNHiddenDim, 1024);
     LoadInt("decffn", &decFFNHiddenDim, 1024);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
@@ -156,16 +156,20 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadInt("nstep", &nstep, 100000);
     LoadInt("savefreq", &saveFreq, 10000);
     LoadInt("nwarmup", &nwarmup, 8000);
-    LoadInt("updatefreq", &updateFreq, 8);
+    LoadInt("updatefreq", &updateFreq, 4);
     LoadInt("ncheckpoint", &ncheckpoint, 10);
     
     LoadFloat("lrbias", &lrbias, 0);
     LoadFloat("lrate", &lrate, 0.0015F);
+    LoadFloat("minlr", &minLR, 1e-9F);
+    LoadFloat("warmupinitlr", &warmupInitLR, 1e-7F);
     LoadFloat("adambeta1", &adamBeta1, 0.9F);
     LoadFloat("adambeta2", &adamBeta2, 0.98F);
     LoadFloat("adamdelta", &adamDelta, 1e-9F);
     LoadFloat("labelsmoothing", &labelSmoothingP, 0.1F);
+    LoadFloat("weightdecay", &weightDecay, 1e-4F);
     isTraining = (strcmp(trainFN, "") == 0) ? false : true;
+    incremental = false;
 }
 
 /* load training configuration from the command */
@@ -184,7 +188,7 @@ void TranslationConfig::Load(int argsNum, const char** args)
 void CommonConfig::Load(int argsNum, const char** args)
 {
     Create(argsNum, args);
-    LoadString("model", modelFN, "");
+    LoadString("model", modelFN, "model.bin");
     LoadString("srcvocab", srcVocabFN, "");
     LoadString("tgtvocab", tgtVocabFN, "");
     LoadInt("seed", &seed, 1);

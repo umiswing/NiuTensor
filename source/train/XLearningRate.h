@@ -43,7 +43,7 @@ public:
     ~XLearningRate();
 
     /* a Transformer-style scheduler */
-    float MakeLRTransformer(const float lrate, const int nstep, const int nwarmup);
+    float MakeLRTransformer(const float lrate, const int nstep, const int nwarmup, const float warmupInitLR);
 };
 
 }

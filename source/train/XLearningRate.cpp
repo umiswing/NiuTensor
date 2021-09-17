@@ -46,11 +46,10 @@ XLearningRate::~XLearningRate()
 >> nstep - the update step number 
 >> nwarmup - the warmup step number 
 */
-float XLearningRate::MakeLRTransformer(const float lrate, const int nstep, const int nwarmup)
+float XLearningRate::MakeLRTransformer(const float lrate, const int nstep, const int nwarmup, const float warmupInitLR)
 {
     float lr = 0.0F;
     float warmupEndLR = lrate;
-    float warmupInitLR = 1e-7;
     float lrStep = (warmupEndLR - warmupInitLR) / nwarmup;
     float decayFactor = warmupEndLR * pow(float(nwarmup), 0.5F);
 

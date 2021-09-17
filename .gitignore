@@ -32,3 +32,5 @@ tools/valid.en
 tools/vocab.en
 tools/checker.py
 tools/data/
+*.txt
+tools/test

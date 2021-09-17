@@ -74,11 +74,11 @@ void LayerHistory::InitModel(NMTConfig& config, bool isEnc)
         layer 0: [1, 0, ..., 0]               
         layer 1: [0.5, 0.5, ..., 0]           
         layer 2: [0.33, 0.33, 0.33, ..., 0]   */
-    weights = new XTensor[nlayer + 1LLU];
+    weights = new XTensor[nlayer + 1];
     for (int i = 0; i < nlayer + 1; i++) {
         InitTensor1D(&(weights[i]), i + 1, X_FLOAT, devID);
         if (isTraining) {
-            float* data = new float[i + 1LLU];
+            float* data = new float[i + 1];
             for (int j = 0; j < i + 1; j++) {
                 data[j] = 1.0F / float(i + 1);
             }

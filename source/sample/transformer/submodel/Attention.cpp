@@ -385,14 +385,8 @@ XTensor Attention::RPDotProduct(XTensor& x, XTensor& y, XTensor& z, const bool i
     int mergeDimsX[] = { headNum * batchSize, lenQ, x.GetDim(3) };
     int mergeDimsY[] = { headNum * batchSize, lenKV, y.GetDim(3) };
     
-    if (isTraining) {
-        x = Reshape(x, 3, mergeDimsX);
-        y = Reshape(y, 3, mergeDimsY);
-    }
-    else {
-        x.Reshape(3, mergeDimsX);
-        y.Reshape(3, mergeDimsY);
-    }
+    x = Reshape(x, 3, mergeDimsX);
+    y = Reshape(y, 3, mergeDimsY);
 
     if (isKey) {
         y = Transpose(y, 1, 2);
@@ -403,10 +397,7 @@ XTensor Attention::RPDotProduct(XTensor& x, XTensor& y, XTensor& z, const bool i
 
     int newDims[]{ headNum, batchSize, context.GetDim(1), context.GetDim(2) };
 
-    if (isTraining)
-        context = Reshape(context, 4, newDims);
-    else
-        context.Reshape(4, newDims);
+    context = Reshape(context, 4, newDims);
 
     XTensor xTrans;
     xTrans = Transpose(x, 0, 1);
@@ -419,10 +410,7 @@ XTensor Attention::RPDotProduct(XTensor& x, XTensor& y, XTensor& z, const bool i
 
     int splitDims[] = { headNum, batchSize, lenQ, lastDim };
 
-    if (isTraining)
-        relativeTrans = Reshape(relativeTrans, 4, splitDims);
-    else
-        relativeTrans.Reshape(4, splitDims);
+    relativeTrans = Reshape(relativeTrans, 4, splitDims);
 
     return Sum(context, relativeTrans);
 }
