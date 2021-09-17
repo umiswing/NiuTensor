@@ -135,10 +135,7 @@ XTensor LayerHistory::Pop()
         dimSize[i + 1] = stack.dimSize[i];
     dimSize[0] = int(list.Size());
     dimSize[1] /= dimSize[0];
-    if(isTraining)
         stack = Reshape(stack, stack.order + 1, dimSize);
-    else
-        stack.Reshape(stack.order + 1, dimSize);
 
     XTensor res;
     res = MultiplyDim(stack, weights[list.Size() - 1], 0);
@@ -150,9 +147,9 @@ XTensor LayerHistory::Pop()
 void LayerHistory::ClearHistory(bool reset)
 {
     if(history != NULL)
-        delete history;
+    delete history;
     if(reset)
-        history = new History;
+    history = new History;
     else
         history = NULL;
     count = 0;
@@ -167,13 +164,13 @@ History::History()
 /* delete the history */
 History::~History()
 {
-    for (int i = 0; i < MAX_LAYER_NUM; i++) {
+    /*for (int i = 0; i < MAX_LAYER_NUM; i++) {
         list[i].DestroyData();
         XLink::ClearOutgoing(&list[i]);
         XLink::ClearIncoming(&list[i]);
         if (list[i].grad != NULL)
             delete list[i].grad;
-    }
+    }*/
 }
 
 /* append a layer to the history */
