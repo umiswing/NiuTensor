@@ -87,7 +87,8 @@ XTensor OutputLayer::Make(XTensor& input, bool normalized)
 
     if (!w->enableGrad) {
         /* inference */
-        output = MMul(input, X_NOTRANS, *w, X_NOTRANS);
+        auto transposeFlag = (input.GetDim(-1) == w->GetDim(0)) ? X_NOTRANS : X_TRANS;
+        output = MMul(input, X_NOTRANS, *w, transposeFlag);
     }
     else {
         /* training */

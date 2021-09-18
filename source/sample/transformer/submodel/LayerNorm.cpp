@@ -55,7 +55,6 @@ void LayerNorm::InitModel(NMTConfig& config, int myDevID, int hiddenSize, bool m
     d = hiddenSize;
     devID = myDevID;
     isL1Normed = myL1Normed;
-    
 
     InitTensor1D(&weight, d, X_FLOAT, devID);
     InitTensor1D(&bias, d, X_FLOAT, devID);

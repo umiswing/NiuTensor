@@ -288,11 +288,19 @@ run decoding for inference with pre-norm
 */
 XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTensor* maskEncDec, int nstep)
 {
+    /* clear the history */
+    if (useHistory)
+        history->ClearHistory();
+
     XTensor x;
 
     x = embedder->Make(inputDec, true, nstep);
 
     for (int i = 0; i < nlayer; i++) {
+
+        if (useHistory)
+            x = history->Pop();
+
         XTensor xn;
 
         /* layer normalization with pre-norm for self-attn */
@@ -323,7 +331,13 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
 
         /* residual connection */
         SumMe(x, xn);
+
+        if (useHistory)
+            history->Add(x);
     }
+
+    if (useHistory)
+        x = history->Pop();
 
     if (finalNorm)
         return decoderLayerNorm->RunFast(x);

@@ -92,6 +92,9 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     if (modelFile) {
 
         CheckNTErrors(modelFile, "Failed to open the model file");
+
+        LOG("loading configurations from the model file...");
+
         fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.decoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.useBigAtt), sizeof(bool), 1, modelFile);
@@ -120,6 +123,8 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         /* read the source & target vocab size and special tokens from the training file */
         FILE* trainF = fopen(config->training.trainFN, "rb");
         CheckNTErrors(trainF, "Failed to open the training file");
+
+        LOG("loading configurations of the training data...");
 
         fread(&(config->model.srcVocabSize), sizeof(int), 1, trainF);
         fread(&(config->model.tgtVocabSize), sizeof(int), 1, trainF);
@@ -156,7 +161,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     ShowModelConfig();
 
     /* load parameters for translation or incremental training */
-    if (strcmp(config->translation.inputFN, "") != 0 || config->training.incremental)
+    if (config->training.incremental || (!config->training.isTraining))
         LoadFromFile(modelFile);
 
     if (config->training.isTraining) {
@@ -166,7 +171,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
             AddParam(params[i]);
     }
 
-    if (modelFile != NULL)
+    if (modelFile)
         fclose(modelFile);
 }
 
@@ -687,6 +692,8 @@ void NMTModel::LoadFromFile(FILE* file)
 {
     double startT = GetClockSec();
 
+    LOG("loading parameters from the model file...");
+
     TensorList params;
     GetParams(params);
 
@@ -714,13 +721,6 @@ void NMTModel::LoadFromFile(FILE* file)
         if (!config->model.shareEncDecEmb) {
             XTensor& decEmb = decoder->embedder->posEmbeddingBase;
             decEmb = ConvertDataType(decEmb, X_FLOAT16);
-        }
-    }
-
-    if (!config->training.isTraining) {
-        /* share embeddings with output weights */
-        if (config->model.shareDecInputOutputEmb) {
-            *outputLayer->w = Transpose(*(decoder->embedder->w), 0, 1);
         }
     }
 
