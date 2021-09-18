@@ -160,9 +160,9 @@ void Trainer::Run()
                 net.Backward(lossTensor);
 
                 if (model->encoder->useHistory)
-                    model->encoder->history->ClearHistory(false);
+                    model->encoder->history->ClearHistory();
                 if (model->decoder->useHistory)
-                    model->decoder->history->ClearHistory(false);
+                    model->decoder->history->ClearHistory();
 
                 gradStep += 1;
                 loss += lossBatch;
@@ -315,9 +315,9 @@ void Trainer::Validate()
         sentCount += validBatchLoader.sc;
 
         if (model->encoder->useHistory)
-            model->encoder->history->ClearHistory(/*reset=*/false);
+            model->encoder->history->ClearHistory();
         if (model->decoder->useHistory)
-            model->decoder->history->ClearHistory(/*reset=*/false);
+            model->decoder->history->ClearHistory();
     }
 
     double elapsed = GetClockSec() - startT;
@@ -388,10 +388,6 @@ void Trainer::Update(const float lr)
             _Power(v, v2, 0.5F);
             _ScaleAndShiftMe(v2, 1.0F, d);
             _Div(m, v2, v2);
-
-            /* weight = (1 - lr * weight_decay) * weight */
-            float scale = 1 - lr * config->training.weightDecay;
-            _ScaleMe(para, scale);
 
             /* the delta rule */
             _Sum(para, v2, para, -e);

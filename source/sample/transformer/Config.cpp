@@ -122,15 +122,15 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("sos", &sos, -1);
     LoadInt("eos", &eos, -1);
     LoadInt("unk", &unk, -1);
-    LoadInt("encemb", &encEmbDim, 512);
-    LoadInt("decemb", &decEmbDim, 512);
+    LoadInt("encemb", &encEmbDim, 16);
+    LoadInt("decemb", &decEmbDim, 16);
     LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("maxtgt", &maxTgtLen, 200);
     LoadInt("enclayer", &encLayerNum, 6);
-    LoadInt("declayer", &decLayerNum, 6);
+    LoadInt("declayer", &decLayerNum, 1);
     LoadInt("maxrp", &maxRelativeLength, 8);
-    LoadInt("encffn", &encFFNHiddenDim, 1024);
-    LoadInt("decffn", &decFFNHiddenDim, 1024);
+    LoadInt("encffn", &encFFNHiddenDim, 16);
+    LoadInt("decffn", &decFFNHiddenDim, 16);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
     LoadInt("tgtvocabsize", &tgtVocabSize, -1);
     LoadInt("encheads", &encSelfAttHeadNum, 4);
@@ -167,7 +167,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadFloat("adambeta2", &adamBeta2, 0.98F);
     LoadFloat("adamdelta", &adamDelta, 1e-9F);
     LoadFloat("labelsmoothing", &labelSmoothingP, 0.1F);
-    LoadFloat("weightdecay", &weightDecay, 1e-4F);
+    LoadFloat("weightdecay", &weightDecay, 0.0F);
     isTraining = (strcmp(trainFN, "") == 0) ? false : true;
     incremental = false;
 }

@@ -146,10 +146,10 @@ XTensor LayerHistory::Pop()
 /* clear the history */
 void LayerHistory::ClearHistory(bool reset)
 {
-    if(history != NULL)
-    delete history;
-    if(reset)
-    history = new History;
+    if (history != NULL)
+        delete history;
+    if (reset)
+        history = new History;
     else
         history = NULL;
     count = 0;

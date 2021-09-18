@@ -108,8 +108,8 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
     /* \sigma = (sum_i (x_i - \mu)^2)/m */
     variance = ReduceVariance(x, x.order - 1, mean, false);
 
-    /*if (!isTraining)
-        return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);*/
+    if (!weight.enableGrad)
+        return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
 
     /* standard = sqrt(variance) */
     standard = Power(variance, 0.5F);
