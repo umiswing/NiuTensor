@@ -1,8 +1,13 @@
 # 安装
 
-CPU版本：
+CPU版本（无MKL/OpenBLAS）：
 ```bash
-mkdir build && cd build && cmake ..
+mkdir build && cd build && cmake .. && make -j
+```
+
+CPU版本（MKL）：
+```bash
+mkdir build && cd build && cmake -DUSE_MKL=ON -DINTEL_ROOT="/home/huchi/mkl" .. && make -j
 ```
 
 GPU版本：
@@ -10,36 +15,16 @@ GPU版本：
 cmake -DUSE_CUDA=ON -DUSE_HALF_PRECISION=ON -DCUDA_TOOLKIT_ROOT="/home/huchi/cuda-11.2/" .. && make -j
 ```
 
-注意：目前只在Titan V和RTX上进行测试，因此不需要指定GPU架构，默认为多个架构生成目标代码
+注意：CUDA最低版本为9.2
 
-Windows上会生成NiuTensor.sln，打开后右键解决方案中的NiuTensor，选为启动项目，按F5编译
+Windows上去掉`make -j`命令，生成`NiuTensor.sln`，打开后右键解决方案中的`NiuTensor`，选为启动项目，按F5编译
+
+# 训练
+./bin/NiuTensor -train tools/train.data -valid tools/valid.data -dev 1 -model dlcl -enchistory 1 -shareallemb 1 -enclayer 35 -declayer 6 -maxrp 8 -wbatch 512 -updatefreq 8
+
+增量训练与正常训练命令一致，只需要保证`-model`指向的模型文件存在即可读取并继续训练。
+
 
 # 翻译
 
-第一次运行需要：
-
-1. 把bin目录拷贝到data目录下，保证bin目录、moses目录和model目录都在data目录内
-
-2. 修改fastbpe权限: chmod+x data/moses/fastbpe
-
-3. 安装parallel工具：sudo yum install -y parallel
-
-## GPU
-
-```bash
-cd data
-sh run.sh GPU throughput < wmt20.test.en > res.txt
-```
-
-## CPU
-
-```bash
-cd data
-sh run.sh CPU throughput < wmt20.test.en > res.txt
-```
-
-# 评估翻译
-
-```bash
-sacrebleu -i res.txt -t wmt20 -l en-de
-```
+./bin/NiuTensor -dev 0 -srcvocab vocab.en -tgtvocab vocab.en -sbatch 1024 -wbatch 20480 -model model.bin -input x.txt -output y.txt
