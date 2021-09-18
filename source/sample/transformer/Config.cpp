@@ -122,15 +122,15 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("sos", &sos, -1);
     LoadInt("eos", &eos, -1);
     LoadInt("unk", &unk, -1);
-    LoadInt("encemb", &encEmbDim, 512);
-    LoadInt("decemb", &decEmbDim, 512);
+    LoadInt("encemb", &encEmbDim, 16);
+    LoadInt("decemb", &decEmbDim, 16);
     LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("maxtgt", &maxTgtLen, 200);
     LoadInt("enclayer", &encLayerNum, 6);
     LoadInt("declayer", &decLayerNum, 1);
     LoadInt("maxrp", &maxRelativeLength, 8);
-    LoadInt("encffn", &encFFNHiddenDim, 1024);
-    LoadInt("decffn", &decFFNHiddenDim, 1024);
+    LoadInt("encffn", &encFFNHiddenDim, 16);
+    LoadInt("decffn", &decFFNHiddenDim, 16);
     LoadInt("srcvocabsize", &srcVocabSize, -1);
     LoadInt("tgtvocabsize", &tgtVocabSize, -1);
     LoadInt("encheads", &encSelfAttHeadNum, 4);
@@ -156,7 +156,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadInt("nstep", &nstep, 100000);
     LoadInt("savefreq", &saveFreq, 10000);
     LoadInt("nwarmup", &nwarmup, 8000);
-    LoadInt("updatefreq", &updateFreq, 4);
+    LoadInt("updatefreq", &updateFreq, 1);
     LoadInt("ncheckpoint", &ncheckpoint, 10);
     
     LoadFloat("lrbias", &lrbias, 0);

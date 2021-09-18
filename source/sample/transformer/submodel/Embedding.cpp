@@ -39,14 +39,13 @@ Embedder::Embedder()
     eSize = -1;
     padIdx = -1;
     maxLength = -1;
-    isEnc = false;
     isTraining = false;
 }
 
 /* de-constructor */
 Embedder::~Embedder()
 {
-    if ((shareEncDecEmb && isEnc) || (!shareEncDecEmb && w != NULL))
+    if (w)
         DelTensor(w);
     w = NULL;
 }
@@ -54,13 +53,12 @@ Embedder::~Embedder()
 /*
 initialize the model
 >> config - configurations of the model
->> myIsEnc - indicates if it is a encoder module
+>> isEnc - indicates if it is a encoder module
 */
-void Embedder::InitModel(NMTConfig& config, bool myIsEnc)
+void Embedder::InitModel(NMTConfig& config, bool isEnc)
 {
     SetTrainingFlag(config.training.isTraining);
     fp16 = config.common.useFP16;
-    isEnc = myIsEnc;
     shareEncDecEmb = config.model.shareEncDecEmb;
     padIdx = config.model.pad;
     devID = config.common.devID;
@@ -68,7 +66,7 @@ void Embedder::InitModel(NMTConfig& config, bool myIsEnc)
     maxLength = config.model.maxTgtLen; // TODO: reset the maxLength for src emb
     vSize = isEnc ? config.model.srcVocabSize : config.model.tgtVocabSize;
 
-    if (!shareEncDecEmb || isEnc) {
+    if (!w) {
         w = NewTensor2D(vSize, eSize, fp16 ? X_FLOAT16 : X_FLOAT, devID);
 
         maxLength = maxLength + 1 + 1;

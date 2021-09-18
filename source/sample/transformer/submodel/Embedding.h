@@ -46,9 +46,6 @@ public:
     /* indicates whether it is shared with other modules */
     bool shareEncDecEmb;
 
-    /* indicates whether it is a encoder module */
-    bool isEnc;
-
     /* indicates whether train the model */
     bool isTraining;
 

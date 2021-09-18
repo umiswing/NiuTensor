@@ -79,7 +79,7 @@ public:
     /* save a checkpoint every N steps */
     int saveFreq;
 
-    /* the number of checkpoints to keep */
+    /* the maximum number of checkpoints to keep */
     int ncheckpoint;
 
     /* indicates whether we use Adam */

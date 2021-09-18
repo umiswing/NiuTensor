@@ -89,7 +89,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     modelFile = fopen(config->common.modelFN, "rb");
 
     /* read model configurations */
-    if (!config->training.isTraining) {
+    if (modelFile) {
 
         CheckNTErrors(modelFile, "Failed to open the model file");
         fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
@@ -111,7 +111,8 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         /* reset the maximum source sentence length */
         config->model.maxSrcLen = MIN(maxSrcLen, config->model.maxSrcLen);
     }
-    else {
+
+    if (config->training.isTraining) {
 
         /* currently we do not support training with FP16 */
         config->common.useFP16 = false;
@@ -129,11 +130,11 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         CheckNTErrors(config->model.srcVocabSize > 0, "Invalid source vocabulary size");
         CheckNTErrors(config->model.tgtVocabSize > 0, "Invalid target vocabulary size");
         fclose(trainF);
-    }
 
-    /* start incremental training from a checkpoint */
-    if (modelFile) {
-        config->training.incremental = true;
+        /* start incremental training from a checkpoint */
+        if (modelFile) {
+            config->training.incremental = true;
+        }
     }
 
     encoder->InitModel(*config);
