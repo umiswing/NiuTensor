@@ -53,6 +53,7 @@ int NMTMain(int argc, const char** argv)
 
         NMTModel model;
         model.InitModel(config);
+
         Translator translator;
         translator.Init(config, model);
         translator.Translate();

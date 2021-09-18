@@ -63,10 +63,7 @@ void OutputLayer::InitModel(NMTConfig& config)
     shareDecInputOutputEmb = config.model.shareDecInputOutputEmb;
 
     if (!shareDecInputOutputEmb) {
-        if (isTraining)
-            w = NewTensor2D(vSize, hSize, X_FLOAT, devID);
-        else
-            w = NewTensor2D(hSize, vSize, X_FLOAT, devID);
+        w = NewTensor2D(vSize, hSize, X_FLOAT, devID);
 
         DTYPE v = 1.0F / (float)sqrt((float)hSize);
         if (isTraining) {
@@ -85,15 +82,7 @@ XTensor OutputLayer::Make(XTensor& input, bool normalized)
 {
     XTensor output;
 
-    if (!w->enableGrad) {
-        /* inference */
-        auto transposeFlag = (input.GetDim(-1) == w->GetDim(0)) ? X_NOTRANS : X_TRANS;
-        output = MMul(input, X_NOTRANS, *w, transposeFlag);
-    }
-    else {
-        /* training */
-        output = MMul(input, X_NOTRANS, *w, X_TRANS);
-    }
+    output = MMul(input, X_NOTRANS, *w, X_TRANS);
 
     /* use softmax for training */
     if (w->enableGrad)
