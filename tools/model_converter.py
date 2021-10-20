@@ -27,7 +27,9 @@ def get_model_params(model, configs, prefix=None):
     if prefix is not None:
         info_file += prefix
     info_file += '.info.txt'
-
+    
+    print(model['encoder.history.weight'])
+    #exit(0)
     with open(info_file, 'w') as f:
         for k, v, in model.items():
             v = v.to(torch.float32)
@@ -46,7 +48,12 @@ def get_model_params(model, configs, prefix=None):
                         flattened_params.append((v[dim:dim*2, :]).t())
                         flattened_params.append((v[dim*2:, :]).t())
                     else:
-                        flattened_params.append(v.t())
+                        if 'history.weight' in k:
+                            for i, v_i in enumerate(v):
+                                print(i)
+                                flattened_params.append(v_i[:i+1].t())
+                        else:
+                            flattened_params.append(v.t())
                 else:
                     flattened_params.append(v)
                 f.write('{}\t\t{}\n'.format(k, v.shape))
@@ -87,8 +94,8 @@ def get_model_configs(model_config, model):
         'decoder.layer_norm.weight' in model.keys() or 'decoder.layer_norm.gamma' in model.keys(),
         model_config.encoder_normalize_before,
         model_config.decoder_normalize_before,
-        'encoder.history' in model.keys(), # place-holder for the useEncHistory flag
-        'decoder.history' in model.keys(), # place-holder for the useDecHistory flag
+        'encoder.history.weight' in model.keys(), # place-holder for the useEncHistory flag
+        'decoder.history.weight' in model.keys(), # place-holder for the useDecHistory flag
         model_config.share_all_embeddings,
         model_config.share_decoder_input_output_embed,
 
@@ -176,9 +183,9 @@ def main():
 
     from glob import glob
     for ckpt in glob('./*/check*.pt'):
-        args.i = ckpt
+        #args.i = ckpt
         dirname = args.i.split('/')[-2]
-        args.o = dirname + '.' + args.data_type
+        #args.o = dirname + '.' + args.data_type
         print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
 
         state = torch.load(args.i, map_location='cpu')
@@ -201,11 +208,11 @@ def main():
             fo.write('Training settings:\n')
             for k,v in cfg.items():
                 fo.write('{}:\t\t{}\n'.format(k,v))
-            
-        # config_list = get_model_configs(config, state['model'])
-        # param_list = get_model_params(state['model'], config, dirname)
-        # save_model(config_list, param_list, args.o, args.data_type)
-
+       
+        config_list = get_model_configs(config, state['model'])
+        param_list = get_model_params(state['model'], config, dirname)
+        save_model(config_list, param_list, args.o, args.data_type)
+        exit()
 
 if __name__ == '__main__':
     main()
