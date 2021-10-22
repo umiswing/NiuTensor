@@ -151,7 +151,7 @@ bool Translator::Translate()
         if (batchLoader.appendEmptyLine)
             fprintf(stderr, "%d/%d\n", batchLoader.bufIdx - 1, batchLoader.buf->Size() - 1);
         else
-            fprintf(stderr, "%d/%d\n", batchLoader.bufIdx, batchLoader.buf->Size());
+            fprintf(stderr, "%d/%d\n", batchLoader.bufIdx, batchLoader.buf->Size());                                                                                       
     }
 
     /* handle empty lines */
@@ -162,6 +162,7 @@ bool Translator::Translate()
     }
     SortOutputs();
 
+    /* dump the translation results */
     if (strcmp(config->translation.outputFN, "") != 0)
         DumpResToFile(config->translation.outputFN);
     else

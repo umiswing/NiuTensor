@@ -1,4 +1,4 @@
-/* NiuTrans.Tensor - an open-source tensor library
+﻿/* NiuTrans.Tensor - an open-source tensor library
  * Copyright (C) 2017, Natural Language Processing Lab, Northeastern University. 
  * All rights reserved.
  *
@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include "XGlobal.h"
 
-
 #if !defined( WIN32 ) && !defined( _WIN32 )
     #include "sys/time.h"
     #include "time.h"
@@ -38,7 +37,6 @@
 
 /* the nts (NiuTrans.Tensor) namespace */
 namespace nts{
-
 
 /* memory pool setting */
 int MAX_MEM_BLOCK_NUM = 1024;

@@ -45,18 +45,16 @@ public:
     /* device id */
     int devID;
 
+    /* dimension size of the model */
+    int d;
+
     /* the transformation matrix w */
     XTensor weight;
 
     /* the bias term b */
     XTensor bias;
 
-    /* dimension size of the model */
-    int d;
-
 public:
-    /* set the training flag */
-    void SetTrainingFlag(bool myIsTraining);
 
     /* constructor */
     LayerNorm();
@@ -64,17 +62,20 @@ public:
     /* de-constructor */
     ~LayerNorm();
 
-    /* initialize the model */
-    void InitModel(NMTConfig& config, int myDevID, int hiddenSize, bool myL1Normed);
+    /* run layernorm (wrapper) */
+    XTensor Run(XTensor& input);
 
-    /* run layernorm for inference */
-    XTensor RunFast(XTensor& input);
-
-    /* run with L2-Norm */
+    /* run layernorm with L2-Norm */
     XTensor RunL2Norm(XTensor& input);
 
-    /* run with L1-Norm */
+    /* run layernorm with L1-Norm */
     XTensor RunL1Norm(XTensor& input);
+
+    /* set the training flag */
+    void SetTrainingFlag(bool myIsTraining);
+
+    /* initialize the model */
+    void InitModel(NMTConfig& config, int myDevID, int hiddenSize, bool myL1Normed);
 };
 
 } /* end of the nmt (NiuTrans.NMT) namespace */

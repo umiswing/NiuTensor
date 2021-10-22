@@ -20,7 +20,7 @@
 */
 
 #include "VectorBuffer.h"
-#include "math.h"
+#include "cmath"
 namespace nts {
 /* data size for each buffer */
 int VectorBuffer::size()
@@ -69,7 +69,7 @@ VectorBuffer VectorBuffer::loadu(const DTYPE* ptr, bool isExp , DTYPE power , DT
             }
             else if (power == (DTYPE)-1.0F) {
                 for (int i = 0; i != count; i++) {
-                    vec.values[i] = (DTYPE)exp(abs(*(ptr + i)));
+                    vec.values[i] = (DTYPE)exp(std::abs(*(ptr + i)));
                 }
             }
             else {
@@ -97,7 +97,7 @@ VectorBuffer VectorBuffer::loadu(const DTYPE* ptr, bool isExp , DTYPE power , DT
             }
             else if (power == (DTYPE)-1.0F) {
                 for (int i = 0; i != count; i++) {
-                    vec.values[i] = (DTYPE)exp(abs(*(ptr + i) - bias[i]));
+                    vec.values[i] = (DTYPE)exp(std::abs(*(ptr + i) - bias[i]));
                 }
             }
             else {
@@ -124,7 +124,7 @@ VectorBuffer VectorBuffer::loadu(const DTYPE* ptr, bool isExp , DTYPE power , DT
             }
             else if (power == (DTYPE)-1.0F) {
                 for (int i = 0; i != count; i++) {
-                    vec.values[i] = (DTYPE)abs(*(ptr + i));
+                    vec.values[i] = (DTYPE)std::abs(*(ptr + i));
                 }
             }
             else {
@@ -152,7 +152,7 @@ VectorBuffer VectorBuffer::loadu(const DTYPE* ptr, bool isExp , DTYPE power , DT
             }
             else if (power == (DTYPE)-1.0F) {
                 for (int i = 0; i != count; i++) {
-                    vec.values[i] = (DTYPE)abs(*(ptr + i) - bias[i]);
+                    vec.values[i] = (DTYPE)std::abs(*(ptr + i) - bias[i]);
                 }
             }
             else {
