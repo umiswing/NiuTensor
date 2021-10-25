@@ -38,7 +38,7 @@ flexible layer normalization for the Transformer
 XTensor LN(XTensor& input, LayerNorm& ln, bool prenorm, bool before, bool after)
 {
     if (after ^ prenorm)
-        return ln.RunFast(input);
+        return ln.Run(input);
     else
         return input;
 }

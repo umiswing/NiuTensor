@@ -70,7 +70,7 @@ initialize the model
 >> hiddenSize - the hidden size of layer normalization
 >> myL1Normed - whether use L1-Norm
 */
-XTensor LayerNorm::RunFast(XTensor& input)
+XTensor LayerNorm::Run(XTensor& input)
 {
     if (isL1Normed)
         return RunL1Norm(input);

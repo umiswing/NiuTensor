@@ -110,7 +110,7 @@ void LayerHistory::Add(XTensor& layer)
         history->Add(layer);
         return;
     }
-    layer = layerNorms[count - 2].RunFast(layer);
+    layer = layerNorms[count - 2].Run(layer);
     history->Add(layer);
 }
 

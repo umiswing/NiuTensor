@@ -272,7 +272,7 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc,
         history->ClearHistory();
 
     if (finalNorm)
-        return decoderLayerNorm->RunFast(x);
+        return decoderLayerNorm->Run(x);
 
     return x;
 }
@@ -304,7 +304,7 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         XTensor xn;
 
         /* layer normalization with pre-norm for self-attn */
-        xn = selfAttLayerNorms[i].RunFast(x);
+        xn = selfAttLayerNorms[i].Run(x);
 
         /* self attention */
         xn = selfAtts[i].Make(xn, xn, xn, NULL, &selfAttCache[i], SELF_ATT);
@@ -313,7 +313,7 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         SumMe(xn, x);
 
         /* layer normalization with pre-norm for encoder-decoder attention */
-        x = enDeAttLayerNorms[i].RunFast(xn);
+        x = enDeAttLayerNorms[i].Run(xn);
 
         /* encoder-decoder attention */
         x = enDeAtts[i].Make(outputEnc, x, outputEnc, maskEncDec,
@@ -323,7 +323,7 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         SumMe(x, xn);
 
         /* layer normalization with pre-norm for ffn */
-        xn = ffnLayerNorms[i].RunFast(x);
+        xn = ffnLayerNorms[i].Run(x);
 
         /* ffn */
         if (ffns != NULL)
@@ -340,7 +340,7 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
         x = history->Pop();
 
     if (finalNorm)
-        return decoderLayerNorm->RunFast(x);
+        return decoderLayerNorm->Run(x);
 
     return x;
 }
@@ -381,7 +381,7 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         SumMe(xn, x);
 
         /* layer normalization with post-norm for self-attn */
-        xn = selfAttLayerNorms[i].RunFast(xn);
+        xn = selfAttLayerNorms[i].Run(xn);
 
         /* encoder-decoder attention */
         x = enDeAtts[i].Make(outputEnc, xn, outputEnc, maskEncDec,
@@ -391,7 +391,7 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         SumMe(x, xn);
 
         /* layer normalization with pre-norm for ffn */
-        xn = enDeAttLayerNorms[i].RunFast(x);
+        xn = enDeAttLayerNorms[i].Run(x);
 
         /* ffn */
         if (ffns != NULL)
@@ -400,7 +400,7 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         /* residual connection */
         SumMe(x, xn);
 
-        x = ffnLayerNorms->RunFast(x);
+        x = ffnLayerNorms->Run(x);
 
         if (useHistory)
             history->Add(x);
@@ -414,7 +414,7 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         history->ClearHistory();
 
     if (finalNorm)
-        return decoderLayerNorm->RunFast(x);
+        return decoderLayerNorm->Run(x);
 
     return x;
 }

@@ -208,7 +208,7 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask, XTensor& maskEncDec)
         history->ClearHistory();
 
     if (finalNorm)
-        return encoderLayerNorm->RunFast(x);
+        return encoderLayerNorm->Run(x);
 
     return x;
 }
@@ -252,7 +252,7 @@ XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)
             x = history->Pop();
 
         /* layer normalization with pre-norm for self-attn */
-        xn = attLayerNorms[i].RunFast(x);
+        xn = attLayerNorms[i].Run(x);
 
         /* self attention */
         xn = selfAtts[i].Make(xn, xn, xn, mask, NULL, SELF_ATT);
@@ -261,7 +261,7 @@ XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)
         SumMe(xn, x);
 
         /* layer normalization with pre-norm for ffn */
-        x = fnnLayerNorms[i].RunFast(xn);
+        x = fnnLayerNorms[i].Run(xn);
 
         /* ffn */
         x = ffns[i].Make(x);
@@ -277,7 +277,7 @@ XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)
         x = history->Pop();
 
     if (finalNorm)
-        return encoderLayerNorm->RunFast(x);
+        return encoderLayerNorm->Run(x);
 
     return x;
 }
@@ -314,7 +314,7 @@ XTensor AttEncoder::RunFastPostNorm(XTensor& input, XTensor* mask)
         SumMe(selfAtt, x);
 
         /* layer normalization with post-norm for self-attn */
-        selfAtt = attLayerNorms[i].RunFast(selfAtt);
+        selfAtt = attLayerNorms[i].Run(selfAtt);
 
         /* ffn */
         x = ffns[i].Make(selfAtt);
@@ -323,7 +323,7 @@ XTensor AttEncoder::RunFastPostNorm(XTensor& input, XTensor* mask)
         SumMe(x, selfAtt);
 
         /* layer normalization with post-norm for ffn */
-        x = fnnLayerNorms[i].RunFast(x);
+        x = fnnLayerNorms[i].Run(x);
 
         if (useHistory)
             history->Add(x);
@@ -337,7 +337,7 @@ XTensor AttEncoder::RunFastPostNorm(XTensor& input, XTensor* mask)
         history->ClearHistory();
 
     if (finalNorm)
-        return encoderLayerNorm->RunFast(x);
+        return encoderLayerNorm->Run(x);
 
     return x;
 }

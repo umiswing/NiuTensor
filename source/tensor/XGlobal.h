@@ -73,8 +73,6 @@ namespace nts {
 #define MAX(a,b) ((a) > (b) ? a : b)
 #endif
 
-/* print call trace on linux */
-
 #define __FILENAME__ ( strrchr(__FILE__, DELIMITER) != NULL ? strrchr(__FILE__, DELIMITER)+1 : __FILE__ )
 
 #define CheckNTErrors(x, msg) \
@@ -85,7 +83,6 @@ namespace nts {
         throw; \
     } \
 } \
-
 
 #define CheckNTErrorsV0(x) \
 { \
