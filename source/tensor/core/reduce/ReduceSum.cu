@@ -177,7 +177,7 @@ __global__
 void KernelReduceSum(__half * input, __half * output, 
                      int stride, int strideNum, int reducedStrideNum, 
                      int blockSize, int blockNum, 
-                     __half * shift, float power, bool isExp)
+                     __half * shift, __half power, bool isExp)
 {
     int idx = threadIdx.x * blockDim.y + threadIdx.y;
     unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -378,7 +378,7 @@ template <unsigned int goodSize> __global__
 void KernelReduceSumFast(__half * input, __half * output, 
                          int stride, int strideNum, int reducedStrideNum, 
                          int blockSize, int blockNum,
-                         __half * shift, float power, bool isExp)
+                         __half * shift, __half power, bool isExp)
 {
     unsigned int tid = threadIdx.y;
     unsigned int j = blockIdx.y * (blockDim.y * 2) + threadIdx.y;
@@ -935,7 +935,7 @@ void _CudaReduceSum(const XTensor * input, XTensor * output, int dim, const XTen
             blockSize = cudaGridSize[0];
             sp = NULL;
             isExp = false;
-
+            power = (DTYPE)1.0;
             iter++;
 
         } while (strideNum > 1);
