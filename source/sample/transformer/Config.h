@@ -1,5 +1,6 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
- * Copyright (C) 2020 NiuTrans Research. All rights reserved.
+/* NiuTrans.Tensor - an open-source tensor library
+ * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
+* All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  */
 
 /*
- * We define all options of NiuTrans.NMT here, including
+ * We define all options of the NMT system here, including
  * the configuration of model, training, translation, and
  * other common options.
  * 
@@ -33,7 +34,7 @@
 using namespace std;
 using namespace nts;
 
-/* the nmt (NiuTrans.NMT) namespace */
+/* the nmt namespace */
 namespace nmt
 {
 
@@ -307,6 +308,6 @@ public:
 /* split string by a delimiter */
 vector<string> SplitString(const string& s, const string& delimiter, int maxNum);
 
-} /* end of the nmt (NiuTrans.NMT) namespace */
+} /* end of the nmt namespace */
 
 #endif /* __CONFIG_H__ */

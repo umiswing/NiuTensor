@@ -1,5 +1,6 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
- * Copyright (C) 2020 NiuTrans Research. All rights reserved.
+/* NiuTrans.Tensor - an open-source tensor library
+ * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
+* All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +25,35 @@
 #include "TrainDataSet.h"
 
 
-/* the nmt (NiuTrans.NMT) namespace */
+/* the nmt namespace */
 namespace nmt {
 
-/* sort buckets by key */
-void TrainDataSet::SortBuckets() {
+/* shuffle buckets by their keys */
+void TrainDataSet::ShuffleBuckets() {
+
+    /* assign random keys for buckets */
+    int keyIdx = 0;
+    std::random_shuffle(randomKeys.items, randomKeys.items + randomKeys.Size());
+
+    while (bufIdx < buf->Size()) {
+        int bucketKey = ((Sample*)(buf->Get(bufIdx)))->bucketKey;
+        while ((bufIdx < buf->Size()) &&
+            (((Sample*)(buf->Get(bufIdx)))->bucketKey == bucketKey)) {
+            ((Sample*)(buf->Get(bufIdx)))->bucketKey = randomKeys[keyIdx];
+            bufIdx++;
+        }
+        keyIdx++;
+    }
+
+    /* sort buckets by the previous keys */
     sort(buf->items, buf->items + buf->count,
-         [](void* a, void* b) {
+        [](void* a, void* b) {
             return ((Sample*)(a))->bucketKey <
-                   ((Sample*)(b))->bucketKey;
-         });
+                ((Sample*)(b))->bucketKey;
+        });
+
+    /* reset the buffer index */
+    bufIdx = 0;
 }
 
 /*
@@ -41,15 +61,11 @@ load samples from a file into the buffer
 */
 bool TrainDataSet::LoadBatchToBuf()
 {
-    /* reset the buffer and index */
-    bufIdx = 0;
-    ClearBuf();
     int n = 0;
 
-    while (n < MIN(sampleNum, config->common.bufSize)) {
+    while (n < config->common.bufSize) {
         Sample* sample = LoadSample();
         buf->Add(sample);
-        ReSetFilePointer();
         n++;
     }
     LOG("loaded %d samples", n);
@@ -73,10 +89,10 @@ load a mini-batch to a device
 bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
 {
     if (bufIdx == buf->Size())
-        LoadBatchToBuf();
+        ShuffleBuckets();
 
     wc = 0;
-    sc = isTraining ? DynamicBatching() : config->common.sBatchSize;
+    sc = isTraining ? GetBucket() : config->common.sBatchSize;
     sc = MIN(sc, buf->Size() - bufIdx);
 
     /* get the maximum sentence length in a mini-batch */
@@ -199,24 +215,23 @@ void TrainDataSet::BuildBucket()
             sentNum = int(buf->Size()) - idx;
 
         /* assign the same key for items in a bucket */
-        int randomKey = rand();
         for (int i = 0; i < sentNum; i++)
-            ((Sample*)(buf->Get(idx + i)))->bucketKey = randomKey;
+            ((Sample*)(buf->Get(idx + i)))->bucketKey = idx;
 
+        randomKeys.Add(idx);
         idx += sentNum;
     }
 
-    /* sort buckets by their keys */
-    SortBuckets();
+    /* shuffle buckets */
+    ShuffleBuckets();
 }
 
-/* calculate the batch size according to the number of tokens */
-inline int TrainDataSet::DynamicBatching()
+/* find the sentences in a bucket */
+inline int TrainDataSet::GetBucket()
 {
     int sent = 0;
-
-    /* dynamic batching for sentences */
     int bucketKey = ((Sample*)(buf->Get(bufIdx)))->bucketKey;
+
     while ((sent < (int(buf->Size()) - bufIdx)) &&
           (((Sample*)(buf->Get(bufIdx + sent)))->bucketKey == bucketKey)) {
         sent++;
@@ -226,21 +241,6 @@ inline int TrainDataSet::DynamicBatching()
     CheckNTErrors(sent > 0, "Invalid batch size");
 
     return sent;
-}
-
-/* reset the file pointer to the begin */
-void TrainDataSet::ReSetFilePointer()
-{
-    if (fid < (sampleNum - 1) || !isTraining)
-        return;
-
-    fid = 0;
-    rewind(fp);
-
-    /* skip the meta information */
-    int meta_info[6];
-    fread(meta_info, sizeof(*meta_info), 6, fp);
-    fread(&sampleNum, sizeof(sampleNum), 1, fp);
 }
 
 /* start the process */
@@ -267,7 +267,6 @@ Sample* TrainDataSet::LoadSample()
     CheckNTErrors(srcLen > 0, "Invalid source sentence length");
     CheckNTErrors(tgtLen > 0, "Invalid target sentence length");
 
-    fid++;
     IntList* srcSent = new IntList(srcLen);
     IntList* tgtSent = new IntList(tgtLen);
     srcSent->ReadFromFile(fp, srcLen);
@@ -285,7 +284,6 @@ the constructor of TrainDataSet
 */
 void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
 {
-    fid = 0;
     bufIdx = 0;
     config = &cfg;
     isTraining = isTrainDataset;
@@ -304,6 +302,9 @@ void TrainDataSet::Init(NMTConfig& cfg, bool isTrainDataset)
     fread(&sampleNum, sizeof(sampleNum), 1, fp);
     CheckNTErrors(sampleNum > 0, "There is no training/validation data");
 
+    /* reset the buffer size */
+    config->common.bufSize = sampleNum;
+
     LoadBatchToBuf();
 }
 
@@ -313,4 +314,4 @@ TrainDataSet::~TrainDataSet()
     fclose(fp);
 }
 
-} /* end of the nmt (NiuTrans.NMT) namespace */
+} /* end of the nmt namespace */

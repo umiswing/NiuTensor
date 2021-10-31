@@ -1,5 +1,6 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
- * Copyright (C) 2020 NiuTrans Research. All rights reserved.
+/* NiuTrans.Tensor - an open-source tensor library
+ * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
+* All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +16,19 @@
  */
 
 /*
- * NiuTrans.NMT: Efficient Neural Machine Translation with NiuTrans.Tensor
+ * Efficient Neural Machine Translation with NiuTrans.Tensor
  */
 
 #ifndef __NMT_H__
 #define __NMT_H__
 
-/* the nmt (NiuTrans.NMT) namespace */
+/* the nmt namespace */
 namespace nmt
 {
 
 /* entrance of the program */
 int NMTMain(int argc, const char** argv);
 
-} /* end of the nmt (NiuTrans.NMT) namespace */
+} /* end of the nmt namespace */
 
 #endif /* __NMT_H__ */

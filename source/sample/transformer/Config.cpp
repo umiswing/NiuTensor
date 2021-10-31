@@ -1,5 +1,6 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
- * Copyright (C) 2020 NiuTrans Research. All rights reserved.
+/* NiuTrans.Tensor - an open-source tensor library
+ * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
+* All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +25,7 @@
 using namespace nts;
 using namespace std;
 
-/* the nmt (NiuTrans.NMT) namespace */
+/* the nmt namespace */
 namespace nmt
 {
 
@@ -115,7 +116,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("dechistory", &useDecHistory, false);
     LoadBool("encfinalnorm", &encFinalNorm, true);
     LoadBool("decfinalnorm", &decFinalNorm, true);
-    LoadBool("shareallemb", &shareEncDecEmb, false);
+    LoadBool("shareencdec", &shareEncDecEmb, false);
     LoadBool("sharedec", &shareDecInputOutputEmb, false);
 
     LoadInt("pad", &pad, -1);
@@ -127,7 +128,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("maxsrc", &maxSrcLen, 200);
     LoadInt("maxtgt", &maxTgtLen, 200);
     LoadInt("enclayer", &encLayerNum, 6);
-    LoadInt("declayer", &decLayerNum, 1);
+    LoadInt("declayer", &decLayerNum, 6);
     LoadInt("maxrp", &maxRelativeLength, -1);
     LoadInt("encffn", &encFFNHiddenDim, 1024);
     LoadInt("decffn", &decFFNHiddenDim, 1024);
@@ -135,7 +136,7 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("tgtvocabsize", &tgtVocabSize, -1);
     LoadInt("encheads", &encSelfAttHeadNum, 4);
     LoadInt("decheads", &decSelfAttHeadNum, 4);
-    LoadInt("decheads", &encDecAttHeadNum, 4);
+    LoadInt("encdecheads", &encDecAttHeadNum, 4);
 
     LoadFloat("dropout", &dropout, 0.3F);
     LoadFloat("ffndropout", &ffnDropout, 0.1F);
@@ -193,7 +194,7 @@ void CommonConfig::Load(int argsNum, const char** args)
     LoadString("tgtvocab", tgtVocabFN, "");
     LoadInt("seed", &seed, 1);
     LoadInt("dev", &devID, -1);
-    LoadInt("sbatch", &sBatchSize, 16);
+    LoadInt("sbatch", &sBatchSize, 32);
     LoadInt("wbatch", &wBatchSize, 4096);
     LoadInt("bufsize", &bufSize, 2000000);
     LoadInt("bucketsize", &bucketSize, wBatchSize);
@@ -229,4 +230,4 @@ vector<string> SplitString(const string& s, const string& delimiter, int maxNum)
     return substrings;
 }
 
-} /* end of the nmt (NiuTrans.NMT) namespace */
+} /* end of the nmt namespace */

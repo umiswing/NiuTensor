@@ -19,15 +19,10 @@
  * $Created by: XIAO Tong (xiaotong@mail.neu.edu.cn) 2018-07-10
  */
 
-#include <stdio.h>
-#include "./network/XNet.h"
-#include "./tensor/XUtility.h"
-#include "./tensor/function/FHeader.h"
-#include "./tensor/core/CHeader.h"
+#include "./train/TTrain.h"
 #include "./tensor/test/Test.h"
 #include "./sample/fnnlm/FNNLM.h"
 #include "./sample/transformer/NMT.h"
-#include "./train/TTrain.h"
 
 #include <iostream>
 

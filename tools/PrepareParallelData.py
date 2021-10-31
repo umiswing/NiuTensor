@@ -21,19 +21,28 @@ SOS = 2
 EOS = 2
 UNK = 3
 
-parser = argparse.ArgumentParser(description='Binarize the training data for NiuTrans.NMT')
-parser.add_argument('-src', help='Source language file', type=str, required=True, default='')
-parser.add_argument('-tgt', help='Target language file', type=str, required=True, default='')
-parser.add_argument('-maxsrc', help='The maximum source sentence length, default: 200', type=int, default=200)
-parser.add_argument('-maxtgt', help='The maximum target sentence length, default: 200', type=int, default=200)
-parser.add_argument('-sv', help='Source language vocab file', type=str, default='')
-parser.add_argument('-tv', help='Target language vocab file', type=str, default='')
-parser.add_argument('-output', help='Training file', type=str, required=True, default='')
+parser = argparse.ArgumentParser(
+    description='Binarize the training data for NiuTrans.NMT')
+parser.add_argument('-src', help='Path to the source language file',
+                    type=str, required=True, default='')
+parser.add_argument('-tgt', help='Path to the target language file',
+                    type=str, required=True, default='')
+parser.add_argument(
+    '-maxsrc', help='The maximum source sentence length, default: 200', type=int, default=200)
+parser.add_argument(
+    '-maxtgt', help='The maximum target sentence length, default: 200', type=int, default=200)
+parser.add_argument(
+    '-sv', help='Path to the source language vocab file', type=str, default='')
+parser.add_argument(
+    '-tv', help='Path to the target language vocab file', type=str, default='')
+parser.add_argument('-output', help='Path to the binarized training file',
+                    type=str, required=True, default='')
 args = parser.parse_args()
 
 sv = dict()
 tv = dict()
 cut_num = 0
+
 
 def load_vocab(vocab, file):
     with open(file, 'r', encoding='utf8') as f:
@@ -50,6 +59,7 @@ def get_id(vocab, word, is_src=True):
         return vocab[word]
     else:
         return UNK
+
 
 # load the vocabularies
 sv_size = load_vocab(sv, args.sv)
@@ -74,7 +84,7 @@ with open(args.src, 'r', encoding='utf8') as fs:
             if len(lt) >= args.maxtgt:
                 cut_num += 1
                 lt = lt[:args.maxtgt - 1]
-            
+
             # append EOS to the begin of source sequence
             src_sent = [get_id(sv, w) for w in ls] + [EOS]
 
@@ -93,17 +103,18 @@ with open(args.src, 'r', encoding='utf8') as fs:
             args.tgt, len(tgt_sentences), tgt_tokens, sum([s.count(UNK) for s in tgt_sentences]) / tgt_tokens))
 
         with open(args.output, 'wb') as fo:
-            # seg 1: source and target vocabulary size
+            # seg 1: source and target vocabulary size (4 bits per size, 8 bits in total)
             vocab_size = [sv_size, tv_size]
             vocab_size_pack = pack("i" * len(vocab_size), *vocab_size)
             fo.write(vocab_size_pack)
 
-            # seg 2: user-defined tokens
+            # seg 2: user-defined tokens (4 bits per token, 16 bits in total)
             user_defined_tokens = [PAD, SOS, EOS, UNK]
-            user_defined_tokens_pack = pack("i" * len(user_defined_tokens), *user_defined_tokens)
+            user_defined_tokens_pack = pack(
+                "i" * len(user_defined_tokens), *user_defined_tokens)
             fo.write(user_defined_tokens_pack)
 
-            # seg 3: number of sentence pairs (8 bit per number)
+            # seg 3: number of sentence pairs (4 bits)
             sent_num = [len(src_sentences)]
             sent_num_pack = pack("i", *sent_num)
             fo.write(sent_num_pack)

@@ -1,5 +1,6 @@
-/* NiuTrans.NMT - an open-source neural machine translation system.
- * Copyright (C) 2020 NiuTrans Research. All rights reserved.
+/* NiuTrans.Tensor - an open-source tensor library
+ * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
+* All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +17,11 @@
 
 /*
  * Here we define the data manager for NMT training.
+ * Loading the training data requires 4 steps:
+ * 1. initialize the dataset class (Init)
+ * 2. load samples from the training file (LoadBatchToBuf)
+ * 3. build and shuffle bucktes of batches (ShuffleBuckets)
+ * 4. load a mini-batch from the buckets (GetBatchSimple)
  * 
  * $Created by: HU Chi (huchinlp@gmail.com) 2021-06
  */
@@ -29,10 +35,10 @@
 using namespace std;
 using namespace nts;
 
-/* the nmt (NiuTrans.NMT) namespace */
+/* the nmt namespace */
 namespace nmt { 
 
-/* The base class of datasets used in NiuTrans.NMT. */
+/* The base class of datasets used in the NMT system. */
 struct TrainDataSet : public DataSetBase
 {
 private:
@@ -42,19 +48,19 @@ private:
     /* the pointer to file stream */
     FILE* fp;
 
-    /* index of the current file pointer */
-    int fid;
+    /* a list of random keys */
+    IntList randomKeys;
 
 private:
 
     /* sort buckets by their keys */
-    void SortBuckets();
+    void ShuffleBuckets();
 
     /* group data into buckets with similar length */
     void BuildBucket();
 
     /* calculate the batch size according to the number of tokens */
-    int DynamicBatching();
+    int GetBucket();
 
     /* load a pair of sequences from the file  */
     Sample* LoadSample() override;
@@ -66,9 +72,6 @@ public:
 
     /* number of samples in the dataset */
     int sampleNum;
-
-    /* reset the file pointer to the begin */
-    void ReSetFilePointer();
 
     /* start the process */
     bool Start();
@@ -86,6 +89,6 @@ public:
     ~TrainDataSet();
 };
 
-} /* end of the nmt (NiuTrans.NMT) namespace */
+} /* end of the nmt namespace */
 
 #endif /* __DATASET_H__ */
