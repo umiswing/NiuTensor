@@ -88,8 +88,12 @@ load a mini-batch to a device
 */
 bool TrainDataSet::GetBatchSimple(XList* inputs, XList* golds)
 {
-    if (bufIdx == buf->Size())
-        ShuffleBuckets();
+    if (bufIdx == buf->Size()) {
+        if (isTraining)
+            ShuffleBuckets();
+        else
+            bufIdx = 0;
+    }
 
     wc = 0;
     sc = isTraining ? GetBucket() : config->common.sBatchSize;

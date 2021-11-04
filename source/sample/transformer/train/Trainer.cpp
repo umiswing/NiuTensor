@@ -89,16 +89,19 @@ void Trainer::Run()
     bool isEnd = false;
 
     PrepareModel();
-    model->SetTrainingFlag(true);
+    
     trainBatchLoader.Init(*config, true);
+    validBatchLoader.Init(*config, false);
 
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
+
+        model->SetTrainingFlag(true);
 
         loss = 0.0F;
         wordCount = 0;
         int sentCount = 0;
 
-        while (true) {
+        while (sentCount < trainBatchLoader.sampleNum) {
 
             XNet net;
             net.Clear();
@@ -155,6 +158,11 @@ void Trainer::Run()
             DTYPE lossLocal = lossBatch / trainBatchLoader.wc;
             bool doUpdate = (!IsNAN(lossLocal) && !IsINF(lossLocal) && lossLocal < 1e3F);
 
+            sentCount += trainBatchLoader.sc;
+            wordCount += trainBatchLoader.wc;
+            wordCountTotal += trainBatchLoader.wc;
+            batchCountTotal += trainBatchLoader.sc;
+
             if (doUpdate) {
 
                 /* back-propagation */
@@ -167,10 +175,6 @@ void Trainer::Run()
 
                 gradStep += 1;
                 loss += lossBatch;
-                sentCount += trainBatchLoader.sc;
-                wordCount += trainBatchLoader.wc;
-                wordCountTotal += trainBatchLoader.wc;
-                batchCountTotal += trainBatchLoader.sc;
 
                 /* update the parameters */
                 if (gradStep == config->training.updateFreq) {
@@ -193,20 +197,8 @@ void Trainer::Run()
             else
                 nSkipped++;
 
-            /* end of the maximum step */
-            if (++step >= config->training.nstep) {
-                isEnd = true;
-                break;
-            }
-
-            /* end of an epoch */
-            if (sentCount == trainBatchLoader.sampleNum) {
-                LOG("end of epoch %d", epoch);
-                break;
-            }
-
             /* logging */
-            if (step % config->common.logInterval == 0) {
+            if (step > 0 && step % config->common.logInterval == 0) {
                 double elapsed = GetClockSec() - startT;
                 LOG("elapsed=%.1fs, step=%d, epoch=%d, "
                     "total word=%d, total sent=%d, loss=%.3f, ppl=%.3f, lr=%.6e", 
@@ -222,7 +214,15 @@ void Trainer::Run()
                 MakeCheckpoint("step", step);
                 nStepCheck = 0;
             }
+
+            /* reach the maximum training step */
+            if (++step >= config->training.nstep) {
+                isEnd = true;
+                break;
+            }
         }
+
+        LOG("end of epoch %d", epoch);
 
         /* end of training */
         if (isEnd)
@@ -252,16 +252,13 @@ test the model
 void Trainer::Validate()
 {
     double startT = GetClockSec();
-    DISABLE_GRAD;
 
     int wordCount = 0;
     int sentCount = 0;
     float loss = 0;
 
     model->SetTrainingFlag(false);
-    validBatchLoader.Init(*config, false);
 
-    int curIdx = 0;
     while (sentCount < validBatchLoader.sampleNum) {
         /* batch of sequences */
         XTensor batchEnc;
@@ -323,8 +320,6 @@ void Trainer::Validate()
 
     double elapsed = GetClockSec() - startT;
 
-    ENABLE_GRAD;
-
     LOG("validating finished (took %.1fs, sentence=%d, word=%d, loss=%.3f and ppl=%.3f)",
         elapsed, sentCount, wordCount, loss / wordCount / log(2.0), exp(loss / wordCount));
 }
@@ -336,12 +331,16 @@ make a checkpoint
 */
 void Trainer::MakeCheckpoint(const char* label, int id)
 {
+    DISABLE_GRAD;
+
     Validate();
 
     LOG("make a checkpoint");
     char* fn = new char[MAX_LINE_LENGTH];
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
     model->DumpToFile(fn);
+
+    ENABLE_GRAD;
     delete[] fn;
 }
 
