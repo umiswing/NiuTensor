@@ -90,12 +90,11 @@ void Trainer::Run()
 
     PrepareModel();
     
+    model->SetTrainingFlag(true);
     trainBatchLoader.Init(*config, true);
     validBatchLoader.Init(*config, false);
 
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
-
-        model->SetTrainingFlag(true);
 
         loss = 0.0F;
         wordCount = 0;
@@ -257,8 +256,6 @@ void Trainer::Validate()
     int sentCount = 0;
     float loss = 0;
 
-    model->SetTrainingFlag(false);
-
     while (sentCount < validBatchLoader.sampleNum) {
         /* batch of sequences */
         XTensor batchEnc;
@@ -331,8 +328,9 @@ make a checkpoint
 */
 void Trainer::MakeCheckpoint(const char* label, int id)
 {
+    /* disable gradient flow during validating */
     DISABLE_GRAD;
-
+    model->SetTrainingFlag(false);
     Validate();
 
     LOG("make a checkpoint");
@@ -340,7 +338,9 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
     model->DumpToFile(fn);
 
+    /* enable gradient flow after validating */
     ENABLE_GRAD;
+    model->SetTrainingFlag(true);
     delete[] fn;
 }
 

@@ -34,3 +34,4 @@ tools/checker.py
 tools/data/
 *.txt
 tools/test
+data/iwslt14.tokenized.de-en.tar.gz
