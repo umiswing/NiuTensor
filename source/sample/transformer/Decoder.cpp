@@ -297,6 +297,9 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
 
     x = embedder->Make(inputDec, true, nstep);
 
+    if (useHistory)
+        history->Add(x);
+
     for (int i = 0; i < nlayer; i++) {
 
         if (useHistory)
