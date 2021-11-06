@@ -27,7 +27,7 @@
 
 using namespace nmt;
 
-int Main(int argc, const char** argv)
+int main(int argc, const char** argv)
 {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
@@ -51,8 +51,8 @@ int Main(int argc, const char** argv)
         trainer.Run();
     }
 
-    /* translating */
-    else {
+    /* translation */
+    else if (strcmp(config.translation.inputFN, "") != 0) {
 
         /* disable gradient flow */
         DISABLE_GRAD;
@@ -63,6 +63,13 @@ int Main(int argc, const char** argv)
         Translator translator;
         translator.Init(config, model);
         translator.Translate();
+    }
+
+    else {
+        fprintf(stderr, "Thanks for using NiuTrans.NMT! This is an effcient\n");
+        fprintf(stderr, "neural machine translation system. \n\n");
+        fprintf(stderr, "   Run this program with \"-train\" for training!\n");
+        fprintf(stderr, "Or run this program with \"-input\" for translation!\n");
     }
 
     return 0;

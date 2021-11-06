@@ -54,8 +54,6 @@ NMTConfig::NMTConfig(int argc, const char** argv)
     if (strcmp(configFN, "") != 0)
         argsNum = LoadFromFile(configFN, args);
 
-    ShowParams(argsNum, args);
-
     /* parse configuration in args */
     model.Load(argsNum, (const char **)args);
     common.Load(argsNum, (const char **)args);
