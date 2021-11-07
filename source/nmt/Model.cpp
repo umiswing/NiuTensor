@@ -1,6 +1,5 @@
-/* NiuTrans.Tensor - an open-source tensor library
- * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
-* All rights reserved.
+/* NiuTrans.NMT - an open-source neural machine translation system.
+ * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 /*
  * $Created by: XIAO Tong (xiaotong@mail.neu.edu.cn) 2018-07-31
@@ -48,6 +48,7 @@ NMTModel::~NMTModel()
 /* return a list to keep the configurations (interger) */
 vector<int*> NMTModel::GetIntConfigs()
 {
+    /* 18 integers */
     vector<int*> intConfig = {
         &(config->model.encEmbDim),
         &(config->model.encLayerNum),
@@ -94,6 +95,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
 
         LOG("loading configurations from the model file...");
 
+        /* 11 booleans */
         fread(&(config->model.encoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.decoderL1Norm), sizeof(bool), 1, modelFile);
         fread(&(config->model.useBigAtt), sizeof(bool), 1, modelFile);
@@ -122,8 +124,6 @@ void NMTModel::InitModel(NMTConfig& myConfig)
         /* read the source & target vocab size and special tokens from the training file */
         FILE* trainF = fopen(config->training.trainFN, "rb");
         CheckNTErrors(trainF, "Failed to open the training file");
-
-        LOG("loading configurations of the training data...");
 
         fread(&(config->model.srcVocabSize), sizeof(int), 1, trainF);
         fread(&(config->model.tgtVocabSize), sizeof(int), 1, trainF);
@@ -180,25 +180,28 @@ print model configurations
 void NMTModel::ShowModelConfig()
 {
     LOG("model configuration:");
+
+    if (config->model.maxRelativeLength > 0)
+        LOG("rpr length: %d", config->model.maxRelativeLength);
+    
+    LOG("encoder layers: %d", config->model.encLayerNum);
+    LOG("encoder self-att heads: %d", config->model.encSelfAttHeadNum);
+    LOG("encoder embedding dim: %d", config->model.encEmbDim);
+    LOG("encoder ffn hidden dim: %d", config->model.encFFNHiddenDim);
     if (config->model.encPreLN)
         LOG("encoder pre-norm with %s", config->model.encoderL1Norm ? "l1-norm" : "l2-norm");
     else
         LOG("encoder post-norm with %s", config->model.encoderL1Norm ? "l1-norm" : "l2-norm");
+    
+    LOG("decoder layers: %d", config->model.decLayerNum);
+    LOG("decoder self-att heads: %d", config->model.decSelfAttHeadNum);
+    LOG("decoder en-de-att heads: %d", config->model.encDecAttHeadNum);
+    LOG("decoder embedding dim: %d", config->model.decEmbDim);
+    LOG("decoder ffn hidden dim: %d", config->model.decFFNHiddenDim);
     if (config->model.decPreLN)
         LOG("decoder pre-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
     else
         LOG("decoder post-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
-    if (config->model.maxRelativeLength > 0)
-        LOG("rpr length: %d", config->model.maxRelativeLength);
-    LOG("encoder embedding dim: %d", config->model.encEmbDim);
-    LOG("encoder layers: %d", config->model.encLayerNum);
-    LOG("encoder heads: %d", config->model.encSelfAttHeadNum);
-    LOG("encoder ffn hidden dim: %d", config->model.encFFNHiddenDim);
-    LOG("decoder embedding dim: %d", config->model.decEmbDim);
-    LOG("decoder layers: %d", config->model.decLayerNum);
-    LOG("decoder self-att heads: %d", config->model.decSelfAttHeadNum);
-    LOG("decoder en-de-att heads: %d", config->model.encDecAttHeadNum);
-    LOG("decoder ffn hidden dim: %d", config->model.decFFNHiddenDim);
     LOG("number of parameters: %zu", GetParamNum());
 }
 

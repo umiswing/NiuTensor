@@ -27,11 +27,11 @@ python3 tools/GetVocab.py \
   -new $IWSLT_PATH/vocab.en
 python3 tools/PrepareParallelData.py \
   -src $IWSLT_PATH/train.de -tgt $IWSLT_PATH/train.en \
-  -src_vocab $IWSLT_PATH/vocab.de -tgt_vocab $IWSLT_PATH/vocab.en \
+  -sv $IWSLT_PATH/vocab.de -tv $IWSLT_PATH/vocab.en \
   -output $IWSLT_PATH/train.data
 python3 tools/PrepareParallelData.py \
   -src $IWSLT_PATH/valid.de -tgt $IWSLT_PATH/valid.en \
-  -src_vocab $IWSLT_PATH/vocab.de -tgt_vocab $IWSLT_PATH/vocab.en \
+  -sv $IWSLT_PATH/vocab.de -tv $IWSLT_PATH/vocab.en \
   -output $IWSLT_PATH/valid.data
 ```
 
@@ -44,7 +44,7 @@ bin/NiuTrans.NMT \
   -dev 0 \
   -nepoch 50 \
   -model model.bin \
-  -maxcheckpoint 10 \
+  -ncheckpoint 10 \
   -train $IWSLT_PATH/train.data \
   -valid $IWSLT_PATH/valid.data
 ```
