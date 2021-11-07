@@ -1,6 +1,6 @@
 '''
-Convert the format of a model (FP32 <-> FP16).
-Usage: python3 FormatConverter.py -src <raw_model> -tgt <new_model>
+Convert the format of a NiuTrans.NMT model (FP32 <-> FP16).
+Usage: python3 FormatConverter.py -input <raw_model> -output <new_model>
 Help: python3 FormatConverter.py -h
 '''
 
