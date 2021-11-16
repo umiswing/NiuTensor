@@ -143,7 +143,7 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
     paddingBeam.ReshapeMerged(paddingBeam.order - 3);
 
     /* max output-length = scalar * source-length */
-    int lengthLimit = MIN(int(float(input.GetDim(-1)) * scalarMaxLength), maxLen);
+    int lengthLimit = int(float(input.GetDim(-1)) * scalarMaxLength) + maxLen;
 
     CheckNTErrors(lengthLimit > 0, "no max length specified!");
 
@@ -819,7 +819,7 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
         
     /* max output-length = scalar * source-length */
-    int lengthLimit = MIN(int(float(input.GetDim(-1)) * scalarMaxLength), maxLen);
+    int lengthLimit = int(float(input.GetDim(-1)) * scalarMaxLength) + maxLen;
 
     CheckNTErrors(lengthLimit > 0, "Invalid maximum output length");
 

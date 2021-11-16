@@ -28,8 +28,6 @@ def get_model_params(model, configs, prefix=None):
         info_file += prefix
     info_file += '.info.txt'
     
-    print(model['encoder.history.weight'])
-    #exit(0)
     with open(info_file, 'w') as f:
         for k, v, in model.items():
             v = v.to(torch.float32)
@@ -181,38 +179,35 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    from glob import glob
-    for ckpt in glob('./*/check*.pt'):
-        #args.i = ckpt
-        dirname = args.i.split('/')[-2]
-        #args.o = dirname + '.' + args.data_type
-        print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
 
-        state = torch.load(args.i, map_location='cpu')
+    dirname = args.i.split('/')[-2]
+    
+    print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
 
-        if 'cfg' not in state.keys():
-            assert 'args' in state.keys()
-            config = state['args']
-        else:
-            config = state['cfg']['model']
-        
-        cfg = vars(config)
-        with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
-            fo.write('*'*75)
-            fo.write('\n')
-            fo.write('Parameters & Shapes:\n')
-            for k,v in state['model'].items():
-                fo.write('{}:\t\t{}\n'.format(k,v.shape))
-            fo.write('*'*75)
-            fo.write('\n')
-            fo.write('Training settings:\n')
-            for k,v in cfg.items():
-                fo.write('{}:\t\t{}\n'.format(k,v))
-       
-        config_list = get_model_configs(config, state['model'])
-        param_list = get_model_params(state['model'], config, dirname)
-        save_model(config_list, param_list, args.o, args.data_type)
-        exit()
+    state = torch.load(args.i, map_location='cpu')
+
+    if 'cfg' not in state.keys():
+        assert 'args' in state.keys()
+        config = state['args']
+    else:
+        config = state['cfg']['model']
+    
+    cfg = vars(config)
+    with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
+        fo.write('*'*75)
+        fo.write('\n')
+        fo.write('Parameters & Shapes:\n')
+        for k,v in state['model'].items():
+            fo.write('{}:\t\t{}\n'.format(k,v.shape))
+        fo.write('*'*75)
+        fo.write('\n')
+        fo.write('Training settings:\n')
+        for k,v in cfg.items():
+            fo.write('{}:\t\t{}\n'.format(k,v))
+    
+    config_list = get_model_configs(config, state['model'])
+    param_list = get_model_params(state['model'], config, dirname)
+    save_model(config_list, param_list, args.o, args.data_type)
 
 if __name__ == '__main__':
     main()

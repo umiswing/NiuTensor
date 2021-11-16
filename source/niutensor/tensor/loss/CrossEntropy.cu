@@ -215,12 +215,9 @@ void _CudaCrossEntropyBackward(XTensor * dedy, const XTensor * output,
     }
 
     if(padding != NULL) {
-        XTensor * tmp = NewTensor(padding);
-        _IsNonZero(padding, tmp);
         DTYPE nonZeroNum;
-        _ReduceSumAll(tmp, &nonZeroNum);
+        _ReduceSumAll(padding, &nonZeroNum);
         _ScaleAndShiftMe(dedy, (DTYPE)1.0/nonZeroNum);
-        delete tmp;
     }
     else {
         int num = dedy->unitNum / dedy->GetDim(n);

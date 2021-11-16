@@ -28,9 +28,9 @@ parser.add_argument('-src', help='Path to the source language file',
 parser.add_argument('-tgt', help='Path to the target language file',
                     type=str, required=True, default='')
 parser.add_argument(
-    '-maxsrc', help='The maximum source sentence length, default: 200', type=int, default=200)
+    '-maxsrc', help='The maximum source sentence length, default: 1024', type=int, default=1024)
 parser.add_argument(
-    '-maxtgt', help='The maximum target sentence length, default: 200', type=int, default=200)
+    '-maxtgt', help='The maximum target sentence length, default: 1024', type=int, default=1024)
 parser.add_argument(
     '-sv', help='Path to the source language vocab file', type=str, default='')
 parser.add_argument(

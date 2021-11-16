@@ -91,7 +91,7 @@ void Trainer::Run()
     trainBatchLoader.Init(*config, true);
     validBatchLoader.Init(*config, false);
 
-    for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
+    for (epoch = 0; epoch <= config->training.nepoch; epoch++) {
 
         loss = 0.0F;
         wordCount = 0;
@@ -386,6 +386,10 @@ void Trainer::Update(const float lr)
             _ScaleAndShiftMe(v2, 1.0F, d);
             _Div(m, v2, v2);
 
+            /* apply weight decay to the parameter */
+            if (config->training.weightDecay > 0.0F)
+                _SubMe(para, para, config->training.weightDecay * lr);
+
             /* the delta rule */
             _Sum(para, v2, para, -e);
 
@@ -393,6 +397,10 @@ void Trainer::Update(const float lr)
             GMems.GetMem(v->devID)->UnlockBuf();
         }
         else {
+            /* apply weight decay to the parameter */
+            if (config->training.weightDecay > 0.0F)
+                _SubMe(para, para, config->training.weightDecay * lr);
+
             /* the delta rule */
             _Sum(para, paraGrad, para, -lr);
         }

@@ -123,8 +123,8 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadInt("unk", &unk, -1);
     LoadInt("encemb", &encEmbDim, 512);
     LoadInt("decemb", &decEmbDim, 512);
-    LoadInt("maxsrc", &maxSrcLen, 200);
-    LoadInt("maxtgt", &maxTgtLen, 200);
+    LoadInt("maxsrc", &maxSrcLen, 1024);
+    LoadInt("maxtgt", &maxTgtLen, 1024);
     LoadInt("enclayer", &encLayerNum, 6);
     LoadInt("declayer", &decLayerNum, 6);
     LoadInt("maxrp", &maxRelativeLength, -1);
@@ -165,7 +165,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadFloat("adambeta1", &adamBeta1, 0.9F);
     LoadFloat("adambeta2", &adamBeta2, 0.98F);
     LoadFloat("adamdelta", &adamDelta, 1e-9F);
-    LoadFloat("labelsmoothing", &labelSmoothingP, 0.1F);
+    LoadFloat("labelsmoothing", &labelSmoothingP, 0.0F);
     LoadFloat("weightdecay", &weightDecay, 0.0F);
     isTraining = (strcmp(trainFN, "") == 0) ? false : true;
     incremental = false;
@@ -179,8 +179,8 @@ void TranslationConfig::Load(int argsNum, const char** args)
     LoadString("output", outputFN, "");
     LoadInt("beam", &beamSize, 1);
     LoadInt("maxlen", &maxLen, 200);
-    LoadFloat("lenalpha", &lenAlpha, 0.6F);
-    LoadFloat("maxlenalpha", &maxLenAlpha, 1.25F);
+    LoadFloat("lenalpha", &lenAlpha, 1.0F);
+    LoadFloat("maxlenalpha", &maxLenAlpha, 0.0F);
 }
 
 /* load training configuration from the command */

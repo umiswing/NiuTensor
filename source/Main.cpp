@@ -38,7 +38,7 @@ int main(int argc, const char** argv)
     /* load configurations */
     NMTConfig config(argc, argv);
 
-    srand(config.common.seed);
+    //srand(config.common.seed);
 
     /* training */
     if (strcmp(config.training.trainFN, "") != 0) {

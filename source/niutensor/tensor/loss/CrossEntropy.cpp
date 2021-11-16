@@ -684,12 +684,9 @@ void _CrossEntropyBackward(XTensor * dedy, const XTensor * output,
     }
 
     if(padding != NULL) {
-        XTensor * tmp = NewTensor(padding);
-        _IsNonZero(padding, tmp);
         DTYPE nonZeroNum;
-        _ReduceSumAll(tmp, &nonZeroNum);
+        _ReduceSumAll(padding, &nonZeroNum);
         _ScaleAndShiftMe(dedy, (DTYPE)1.0/nonZeroNum);
-        delete tmp;
     }
     else {
         _ScaleAndShiftMe(dedy, (DTYPE)1.0/(DTYPE)blockNum);
