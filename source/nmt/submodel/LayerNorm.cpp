@@ -1,6 +1,5 @@
-/* NiuTrans.Tensor - an open-source tensor library
- * Copyright (C) 2018, Natural Language Processing Lab, Northeastern University.
-* All rights reserved.
+/* NiuTrans.NMT - an open-source neural machine translation system.
+ * Copyright (C) 2020 NiuTrans Research. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 #include "Embedding.h"
 #include "LayerNorm.h"
@@ -80,10 +80,8 @@ XTensor LayerNorm::Run(XTensor& input)
         return RunL2Norm(input);
 }
 
-
-
 /*
-run layernorm for inference
+run standard layernorm with l2-norm
 >> input - the input tensor
 >> return - layer normalization output
 */
@@ -99,19 +97,30 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
 
     TENSOR_DATA_TYPE dataType = input.dataType;
 
-    if (dataType == X_FLOAT16) {
-        /* reduce functions can only run with FP32 */
-        x = ConvertDataType(input, X_FLOAT);
-    }
-
     /* \mu = (sum_i x_i)/m */
     mean = ReduceMean(x, x.order - 1);
+
+    /* convert the input and mean to FP32 to escape overflow */
+    if (dataType == X_FLOAT16) {
+        x = ConvertDataType(x, X_FLOAT);
+        mean = ConvertDataType(mean, X_FLOAT);
+    }
 
     /* \sigma = (sum_i (x_i - \mu)^2)/m */
     variance = ReduceVariance(x, x.order - 1, mean, false);
 
+    /* convert to FP16 if needed */
+    if (dataType != x.dataType) {
+        x = ConvertDataType(x, dataType);
+        mean = ConvertDataType(mean, dataType);
+        variance = ConvertDataType(variance, dataType);
+    }
+
+    /* call the fused function for faster inference */
     if (!weight.enableGrad)
         return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+
+    /* TODO: add the backward function for Normalize */
 
     /* standard = sqrt(variance) */
     standard = Power(variance, 0.5F);
@@ -124,11 +133,6 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
     /* x' = (x - \mu)/standard */
     xn = (x - meanFilled) / standardFilled;
 
-    if (dataType != mean.dataType) {
-        x = ConvertDataType(x, dataType);
-        xn = ConvertDataType(xn, dataType);
-    }
-
     /* result = x' * w + b   */
     xn = xn * weight;
 
@@ -138,7 +142,7 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
 }
 
 /*
-run layernorm-l1 for inference
+run layernorm with l1-norm (for faster inference)
 >> input - the input tensor
 >> return - layer normalization output
 */
