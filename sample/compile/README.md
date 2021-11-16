@@ -14,7 +14,7 @@ mv NiuTensor/source NiuTrans.NMT/source/niutensor
 rm NiuTrans.NMT/source/niutensor/Main.cpp
 rm -rf NiuTrans.NMT/source/niutensor/sample NiuTrans.NMT/source/niutensor/tensor/test
 mkdir NiuTrans.NMT/build && cd NiuTrans.NMT/build
-cmake -DUSE_CUDA=ON -DCUDA_TOOLKIT_ROOT_DIR='/home/nlplab/cuda9.2/' -DGPU_ARCH=P ..
+cmake -DUSE_CUDA=ON -DCUDA_TOOLKIT_ROOT='/home/huchi/cuda-10.2/' -DGPU_ARCH=V ..
 make -j
 ```
 
@@ -39,7 +39,7 @@ mv NiuTensor/source NiuTrans.NMT/source/niutensor
 rm NiuTrans.NMT/source/niutensor/Main.cpp
 rm -rf NiuTrans.NMT/source/niutensor/sample NiuTrans.NMT/source/niutensor/tensor/test
 mkdir NiuTrans.NMT/build && cd NiuTrans.NMT/build
-cmake -DUSE_CUDA=ON -DCUDA_TOOLKIT_ROOT_DIR='/home/nlplab/cuda9.2/' -DGPU_ARCH=P -DUSE_HALF_PRECISION=ON ..
+cmake -DUSE_CUDA=ON -DCUDA_TOOLKIT_ROOT='/home/huchi/cuda-10.2/' -DGPU_ARCH=V -DUSE_HALF_PRECISION=ON ..
 make -j
 ```
 

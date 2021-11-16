@@ -1,15 +1,13 @@
 '''
-Convert a bpe vocabulary to a NiuTrans.NMT vocab
+Convert a BPE vocabulary to a NiuTrans.NMT vocabulary
 Usage: python3 GetVocab.py -src [bpe_vocab] -tgt [niutrans_nmt_vocab]
 '''
 
 import sys
 import argparse
 
-
 parser = argparse.ArgumentParser(
-    description='Convert a bpe vocabulary to a NiuTrans.NMT vocab',
-    formatter_class=argparse.RawTextHelpFormatter)
+    description='Convert a BPE vocabulary to a NiuTrans.NMT vocabulary')
 parser.add_argument(
     '-raw', help='Path of the BPE vocabulary', type=str, default='')
 parser.add_argument(

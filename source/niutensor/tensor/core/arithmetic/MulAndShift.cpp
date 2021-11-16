@@ -37,7 +37,9 @@ operation c = x * w + b  MulAndShift
 */
 XTensor MulAndShift(const XTensor &x, const XTensor &w, const XTensor &b,
                     DTYPE alpha, XPRunner * parallelRunner)
-{
+{   
+    //const_cast<XTensor*>(&x)->Dump(stderr, "x", 1);
+    //const_cast<XTensor*>(&w)->Dump(stderr, "w", 1);
     CheckNTErrors(x.dataType == w.dataType, "Input tensors should have the same data type!");
     CheckNTErrors(x.order >= 2 && w.order >= 2, "Input tensors must have a order >= 2!");
 
