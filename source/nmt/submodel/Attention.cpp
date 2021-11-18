@@ -202,7 +202,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
     XTensor att;
 
     if (isTraining)
-        q = Scale(q, 1.0F / (float)sqrt((float)kDim / nhead));
+        q = ScaleAndShift(q, 1.0F / (float)sqrt((float)kDim / nhead), 0.0, true);
     else
         ScaleMe(q, 1.0F / (float)sqrt((float)kDim / nhead));
 
@@ -289,7 +289,7 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     }
 
     float scaling = (float)sqrt(embDim / nhead);
-    qheads = ScaleAndShift(qheads, 1.0F / scaling);
+    qheads = ScaleAndShift(qheads, 1.0F / scaling, 0.0F, true);
 
     dot = RPDotProduct(qheads, kheads, relativeKey, true);
 
