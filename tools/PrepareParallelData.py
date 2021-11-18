@@ -97,9 +97,9 @@ with open(args.src, 'r', encoding='utf8') as fs:
         # print information
         src_tokens = sum([len(s) - 1 for s in src_sentences])
         tgt_tokens = sum([len(t) - 1 for t in tgt_sentences])
-        print("{}: {} sents, {} tokens, {:.2f} replaced by <UNK>".format(
+        print("{}: {} sents, {} tokens, {:.6f} replaced by <UNK>".format(
             args.src, len(src_sentences), src_tokens, sum([s.count(UNK) for s in src_sentences]) / src_tokens))
-        print("{}: {} sents, {} tokens, {:.2f} replaced by <UNK>".format(
+        print("{}: {} sents, {} tokens, {:.6f} replaced by <UNK>".format(
             args.tgt, len(tgt_sentences), tgt_tokens, sum([s.count(UNK) for s in tgt_sentences]) / tgt_tokens))
 
         with open(args.output, 'wb') as fo:
