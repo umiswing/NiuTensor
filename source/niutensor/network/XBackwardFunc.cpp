@@ -47,10 +47,19 @@ void XFuncGrad::MakeGrad(XTensor * node, bool isEfficient)
     XTensor * output = node;
 
     if (!isEfficient || input->isGrad) {
-        XNoder::MakeGrad(input);
+        /* the data address is lazy allocated */
+        input->grad = NewTensor(input, false);
 
         XTensor * dedx = input->grad;
         XTensor * dedy = output->grad;
+
+        /* share the data address in this case (need more tests!) */
+        if (_IsSameShaped(input->grad, output->grad)) {
+            input->grad->data = output->grad->data;
+        }
+        else {
+            input->grad = NewTensor(input);
+        }
 
         XTensor* tmp;
 
@@ -73,8 +82,12 @@ void XFuncGrad::MakeGrad(XTensor * node, bool isEfficient)
             CheckNTErrors(leadDim >= 0 && leadDim < input->order, "wrong leading dimension in logsoftmax!");
             _LogSoftmaxBackward(NULL, output, input, dedy, tmp, NULL, leadDim, NOLOSS);
         }
-        else if (operID == FUNC_RECTIFY)
+        else if (operID == FUNC_RECTIFY) {
             _RectifyBackward(output, input, dedy, tmp);
+
+            /* delete unused data to save memory */
+            output->DestroyData();
+        }
         else if (operID == FUNC_SIGMOID)
             _SigmoidBackward(output, input, dedy, tmp);
         else if (operID == FUNC_SOFTMAX) {
@@ -93,6 +106,11 @@ void XFuncGrad::MakeGrad(XTensor * node, bool isEfficient)
         if (input->outgo.tailNum > 1) {
             _SumMe(dedx, tmp);
             DelTensor(tmp);
+        }
+
+        /* the data address is shared and the raw pointer should be NULL to escape re-delete */
+        if (input->grad->data == output->grad->data) {
+            output->grad->data = NULL;
         }
     }
 
