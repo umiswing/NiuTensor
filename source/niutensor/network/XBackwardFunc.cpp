@@ -81,6 +81,10 @@ void XFuncGrad::MakeGrad(XTensor * node, bool isEfficient)
             int leadDim = income.GetParamInt(0);
             CheckNTErrors(leadDim >= 0 && leadDim < input->order, "wrong leading dimension in softmax!");
             _SoftmaxBackward(NULL, output, input, dedy, tmp, NULL, leadDim, NOLOSS);
+
+            /* delete unused data to save memory */
+            output->DestroyData();
+            input->DestroyData();
         }
         else {
             ShowNTErrors("Unsupported backward computation! TODO!");

@@ -30,8 +30,13 @@ void XNoder::MakeGrad(XTensor * node)
         return;
 
     if(!_IsSameShaped(node, node->grad)){
-        delete node->grad;
-        node->grad = NewTensor(node);
+        if (node->grad != NULL && node->grad->unitNum == node->unitNum) {
+            node->grad->Reshape(node->order, node->dimSize);
+        }
+        else {
+            delete node->grad;
+            node->grad = NewTensor(node);
+        }
         node->grad->SetZeroAll();
     }
 }

@@ -50,7 +50,10 @@ void XLossGrad::MakeGrad(XTensor * node, bool isEfficient)
     bool isRoot = XNoder::IsRoot(node);
 
     if (!isEfficient || output->isGrad) {
-        XNoder::MakeGrad(output);
+        
+        /* the gradient's data is lazy allocated */
+        output->grad = NewTensor(output, false);
+
         XTensor * dedy = output->grad;
 
         if (income.tailNum == 1) {
@@ -59,6 +62,9 @@ void XLossGrad::MakeGrad(XTensor * node, bool isEfficient)
         }
 
         gold = income.tails[1];
+
+        /* gold's data address is shared with dedy */
+        output->grad->data = gold->data;
 
         XTensor* tmp;
         if (!isRoot) {
@@ -75,10 +81,14 @@ void XLossGrad::MakeGrad(XTensor * node, bool isEfficient)
             leadingDim = income.GetParamInt(0);
             CheckNTErrors(leadingDim >= 0 && leadingDim < output->order, "wrong leading dimension in logsoftmax!");
             _CrossEntropyBackward(tmp, output, gold, weight, padding, leadingDim);
-            if (isRoot)
-                gold->DestroyData();
-            else
+            if (!isRoot)
                 _SumMe(dedy, tmp);
+
+            /* remove unused data */
+            padding->DestroyData();
+
+            /* gold's data arrays is used by dedy */
+            gold->data = NULL;
         }
         else {
             ShowNTErrors("Unsupported backward computation! TODO!");

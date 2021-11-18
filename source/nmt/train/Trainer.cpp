@@ -133,6 +133,12 @@ void Trainer::Run()
             paddingDec.SetDevice(model->devID);
             label.SetDevice(model->devID);
 
+            XTensor labelOnehot;
+            labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, config->training.labelSmoothingP);
+
+            /* remove unused data to save memory */
+            label.DestroyData();
+
             CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
 
             /* output probabilities */
@@ -142,14 +148,14 @@ void Trainer::Run()
             output = model->MakeMT(batchEnc, batchDec, paddingEnc, paddingDec);
 
             /* get loss and probabilities */
-            XTensor labelOnehot;
             XTensor lossTensor;
-
-            labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, config->training.labelSmoothingP);
 
             lossTensor = CrossEntropy(output, labelOnehot, paddingDec);
 
             float lossBatch = ReduceSumAllValue(lossTensor);
+
+            /* remove unused data to save memory */
+            lossTensor.DestroyData();
 
             DTYPE lossLocal = lossBatch / trainBatchLoader.wc;
             bool doUpdate = (!IsNAN(lossLocal) && !IsINF(lossLocal) && lossLocal < 1e3F);
