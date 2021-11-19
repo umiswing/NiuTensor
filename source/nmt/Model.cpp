@@ -283,15 +283,30 @@ XTensor NMTModel::MakeMT(XTensor& inputEnc, XTensor& inputDec,
     XTensor maskDec;
     XTensor maskEncDec;
 
+    DISABLE_GRAD;
+
     /* encoder mask */
     MakeMTMaskEnc(paddingEnc, maskEnc);
 
     /* decoder mask */
     MakeMTMaskDec(paddingEnc, paddingDec, maskDec, maskEncDec);
 
+    ENABLE_GRAD;
+
+    maskEnc.enableGrad = true;
+    maskDec.enableGrad = true;
+    maskEncDec.enableGrad = true;
+
     encoding = MakeEncoder(inputEnc, &maskEnc);
 
     decoding = MakeDecoder(inputDec, encoding, &maskDec, maskEncDec);
+
+    maskEnc.isGrad = false;
+    maskDec.isGrad = false;
+    maskEncDec.isGrad = false;
+    maskEnc.DestroyData();
+    maskDec.DestroyData();
+    maskEncDec.DestroyData();
 
     return outputLayer->Make(decoding, true);
 }

@@ -37,3 +37,5 @@ tools/test
 data/iwslt14.tokenized.de-en.tar.gz
 tools/vocab.de
 train.log
+model.fp32.*
+model.fp*
