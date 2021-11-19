@@ -131,9 +131,10 @@ make a new tensor to keep the result and return it
 >> a - input tensor
 >> dim - where to insert the dimension
 >> dSize - size of the newly-inserted dimension
+>> inplace - indicates whether to destroy the raw data arrays
 << return - a tensor by inserting a dimension by copying the blocks for x times
 */
-XTensor Unsqueeze(const XTensor &a, int dim, int dSize)
+XTensor Unsqueeze(const XTensor &a, int dim, int dSize, bool inplace)
 {
     int order = a.order + 1;
     int * dimSize = new int[order];
@@ -154,6 +155,12 @@ XTensor Unsqueeze(const XTensor &a, int dim, int dSize)
 
     /* call _Unsqueeze function */
     _Unsqueeze(&a, &b, dim, dSize);
+
+    /* delete unused data to save memory */
+    if (inplace) {
+        XTensor* p = const_cast<XTensor*>(&a);
+        p->DestroyData();
+    }
 
     /* tensor connections */
     if (a.enableGrad) {

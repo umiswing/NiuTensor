@@ -194,9 +194,9 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
 
     /* multi head */
     if (nhead > 1) {
-        q = Split(q, q.order - 1, nhead);
-        kheads = Split(k, k.order - 1, nhead);
-        vheads = Split(v, v.order - 1, nhead);
+        q = Split(q, q.order - 1, nhead, /*inplace=*/true);
+        kheads = Split(k, k.order - 1, nhead, /*inplace=*/true);
+        vheads = Split(v, v.order - 1, nhead, /*inplace=*/true);
     }
 
     XTensor att;
@@ -238,7 +238,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
 
     /* concatenate the heads */
     if (nhead > 1)
-        return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
+        return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/true), weightO, biasO);
     else
         return MulAndShift(att, weightO, biasO);
 }
@@ -266,9 +266,9 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     const auto dataType = k.dataType;
 
     /* multi head */
-    kheads = Split(k, k.order - 1, nhead);
-    qheads = Split(q, q.order - 1, nhead);
-    vheads = Split(v, v.order - 1, nhead);
+    kheads = Split(k, k.order - 1, nhead, /*inplace=*/true);
+    qheads = Split(q, q.order - 1, nhead, /*inplace=*/true);
+    vheads = Split(v, v.order - 1, nhead, /*inplace=*/true);
 
     XTensor att;
     XTensor dot;
@@ -312,7 +312,7 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
         att = ConvertDataType(att, dataType);
 
     /* concatenate the heads */
-    return MulAndShift(Merge(att, att.order - 1), weightO, biasO);
+    return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/true), weightO, biasO);
 }
 
 /*
@@ -335,8 +335,8 @@ XTensor Attention::GetRPEmbedding(int lenQ, int lenKV, bool isEnc)
         range.SetData(index, lenKV);
         XTensor range2D;
         XTensor range2DTrans;
-        range2D = Unsqueeze(range, 0, lenQ);
-        range2DTrans = Transpose(range2D, 0, 1);
+        range2D = Unsqueeze(range, 0, lenQ, /*inplace=*/true);
+        range2DTrans = Transpose(range2D, 0, 1, /*inplace=*/false);
 
         embMatrix = Sum(range2D, range2DTrans, false, -1);
     }
@@ -344,7 +344,7 @@ XTensor Attention::GetRPEmbedding(int lenQ, int lenKV, bool isEnc)
         for (int i = 0; i < lenKV; i++)
             index[i] = -lenKV + i + 1;
         range.SetData(index, lenKV);
-        embMatrix = Unsqueeze(range, 0, lenQ);
+        embMatrix = Unsqueeze(range, 0, lenQ, /*inplace=*/true);
     }
 
     ClipMe(embMatrix, -float(maxRP), float(maxRP));
@@ -371,48 +371,56 @@ relative position-aware dot-product attention inner calculation.
 >> isKey - Whether y is key.
 << return - A Tensor with shape [batch_size*heads, length, length or depth].
 */
-XTensor Attention::RPDotProduct(XTensor& x, XTensor& y, XTensor& z, const bool isKey)
+XTensor Attention::RPDotProduct(XTensor& rawX, XTensor& rawY, XTensor& z, const bool isKey)
 {
     const int headNum = nhead;
-    const int batchSize = x.GetDim(1);
-    const int lenQ = x.GetDim(2);
-    const int lenKV = y.GetDim(2);
-    const int depth = y.GetDim(3);
+    const int batchSize = rawX.GetDim(1);
+    const int lenQ = rawX.GetDim(2);
+    const int lenKV = rawY.GetDim(2);
+    const int depth = rawY.GetDim(3);
 
     const int lastDim = isKey ? lenKV : depth;
     auto transposeFlag = isKey ? X_TRANS : X_NOTRANS;
 
-    int mergeDimsX[] = { headNum * batchSize, lenQ, x.GetDim(3) };
-    int mergeDimsY[] = { headNum * batchSize, lenKV, y.GetDim(3) };
+    int mergeDimsX[] = { headNum * batchSize, lenQ, rawX.GetDim(3) };
+    int mergeDimsY[] = { headNum * batchSize, lenKV, rawY.GetDim(3) };
     
-    x = Reshape(x, 3, mergeDimsX);
-    y = Reshape(y, 3, mergeDimsY);
+    XTensor x;
+    XTensor y;
+    XTensor context;
+    x = Reshape(rawX, 3, mergeDimsX, /*inplace=*/true);
+    y = Reshape(rawY, 3, mergeDimsY, /*inplace=*/true);
 
     if (isKey) {
-        y = Transpose(y, 1, 2);
-    }
+        XTensor transY;
+        transY = Transpose(y, 1, 2, /*inplace=*/true);
 
-    XTensor context;
-    context = BMMul(x, y);
+        context = BMMul(x, transY);
+    }
+    else {
+        context = BMMul(x, y);
+    }
 
     int newDims[]{ headNum, batchSize, context.GetDim(1), context.GetDim(2) };
 
-    context = Reshape(context, 4, newDims);
+    XTensor reshapedContext;
+    reshapedContext = Reshape(context, 4, newDims, /*inplace=*/true);
 
     XTensor xTrans;
-    xTrans = Transpose(x, 0, 1);
+    xTrans = Transpose(x, 0, 1, /*inplace=*/false);
 
     XTensor relative;
     relative = MatrixMulBatched(xTrans, X_NOTRANS, z, transposeFlag);
 
     XTensor relativeTrans;
-    relativeTrans = Transpose(relative, 0, 1);
+    relativeTrans = Transpose(relative, 0, 1, /*inplace=*/true);
 
     int splitDims[] = { headNum, batchSize, lenQ, lastDim };
 
-    relativeTrans = Reshape(relativeTrans, 4, splitDims);
+    XTensor reshapedRelativeTrans;
+    reshapedRelativeTrans = Reshape(relativeTrans, 4, splitDims, /*inplace=*/true);
 
-    return Sum(context, relativeTrans);
+    return Sum(reshapedContext, reshapedRelativeTrans);
 }
 
 /* constructor */

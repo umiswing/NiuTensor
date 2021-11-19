@@ -27,7 +27,7 @@
 namespace nts { // namespace nts(NiuTrans.Tensor)
 
 /* reshape the tensor */
-XTensor Reshape(XTensor &s, int order, int * dimSize);
+XTensor Reshape(XTensor &s, int order, int * dimSize, bool inplace);
 
 void Reshape(XTensor &s, XTensor &t, int order, int * dimSize);
 

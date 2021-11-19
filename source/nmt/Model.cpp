@@ -442,7 +442,7 @@ XTensor NMTModel::MakeMTMaskDecInference(XTensor& paddingEnc)
 {
     /* encoder-decoder mask that prevents the attention to paded words */
     XTensor maskEncDecTMP;
-    maskEncDecTMP = Unsqueeze(paddingEnc, paddingEnc.order - 1, 1);
+    maskEncDecTMP = Unsqueeze(paddingEnc, paddingEnc.order - 1, 1, /*inplace=*/false);
 
     if (config->model.encDecAttHeadNum > 1) {
         XTensor maskEncDec;

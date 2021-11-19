@@ -216,9 +216,10 @@ e.g., (3, M, N/3) -> (M, N)
 >> leadingDim - the leading dimension of merging, take (3, M, N/3) -> (M, N) 
    for example, whereToMerge = 2 (i.e., the dimension for "N/3")
    leadingDim = 0 (i.e., the dimension for "3")
+>> inplace - indicates whether to destroy the raw data arrays
 << return - the transformed tensor by merging along with a dimension
 */
-XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim)
+XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim, bool inplace)
 {
     CheckNTErrors(leadingDim < whereToMerge, "Invalid leading dimension!");
     
@@ -244,6 +245,12 @@ XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim)
 
     /* call _Merge function */
     _Merge(&s, &t, whereToMerge, leadingDim);
+
+    /* delete unused data to save memory */
+    if (inplace) {
+        XTensor* p = const_cast<XTensor*>(&s);
+        p->DestroyData();
+    }
 
     /* tensor connections */
     if (s.enableGrad) {

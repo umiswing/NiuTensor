@@ -37,7 +37,7 @@ class XNoder
 public:
     /* make gradient tensor for a node */
     static
-    void MakeGrad(XTensor * node);
+    bool MakeGrad(XTensor * node);
 
     /* the node is a leaf node (intput) or not */
     static

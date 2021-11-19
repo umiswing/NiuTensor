@@ -31,7 +31,7 @@ void _Merge(const XTensor * s, XTensor * t, int whereToMerge, int leadingDim = -
 
 /* transform a tensor by merging it along with a dimension (return an XTensor structure)
    e.g., (M, N/3, 3) -> (M, N) */
-XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim = -1);
+XTensor Merge(const XTensor &s, int whereToMerge, int leadingDim = -1, bool inplace = false);
 
 void Merge(const XTensor &s, XTensor &t, int whereToMerge, int leadingDim = -1);
 

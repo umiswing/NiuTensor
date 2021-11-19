@@ -36,3 +36,4 @@ tools/data/
 tools/test
 data/iwslt14.tokenized.de-en.tar.gz
 tools/vocab.de
+train.log

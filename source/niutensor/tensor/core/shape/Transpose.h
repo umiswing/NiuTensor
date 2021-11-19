@@ -38,7 +38,7 @@ tensor transposition of dimensions i and j (return an XTensor structure).
 make a new tensor to keep the result and return it.
 b = transposed(a)
 */
-XTensor Transpose(const XTensor &a, const int i, const int j);
+XTensor Transpose(const XTensor &a, const int i, const int j, bool inplace=false);
 
 } // namespace nts(NiuTrans.Tensor)
 

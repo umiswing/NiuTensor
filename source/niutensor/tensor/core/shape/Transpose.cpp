@@ -118,9 +118,10 @@ then the output will be a tensor of size z * y * x.
 >> a - the input tensor
 >> i - the transposed dimension
 >> j - the transposed dimension
+>> inplace - indicates whether to destroy the raw data arrays
 << return - the output tensor by transpose tensor a with specified dimensions i and j
 */
-XTensor Transpose(const XTensor &a, const int i, const int j)
+XTensor Transpose(const XTensor &a, const int i, const int j, bool inplace)
 {
     CheckNTErrors(a.order > i && i >= 0, "index of dimension is out of scope!");
     CheckNTErrors(a.order > j && j >= 0, "index of dimension is out of scope!");
@@ -143,6 +144,12 @@ XTensor Transpose(const XTensor &a, const int i, const int j)
 
     /* call _Transpose function */
     _Transpose(&a, &b, i, j);
+
+    /* remove unused data to save memory */
+    if (inplace) {
+        XTensor* p = const_cast<XTensor*>(&a);
+        p->DestroyData();
+    }
     
     /* tensor connection */
     if (a.enableGrad) {

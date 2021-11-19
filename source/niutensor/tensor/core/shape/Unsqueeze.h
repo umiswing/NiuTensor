@@ -33,7 +33,7 @@ void _Unsqueeze(const XTensor * a, XTensor * b, int dim, int dSize);
 /* insert a dimension by copying the blocks for x times 
   (where x is the size of the inerted dimension) (return an XTensor structure)
    make a new tensor to keep the result and return it */
-XTensor Unsqueeze(const XTensor &a, int dim, int dSize);
+XTensor Unsqueeze(const XTensor &a, int dim, int dSize, bool inplace=false);
 
 void Unsqueeze(const XTensor &a, XTensor &b, int dim, int dSize);
 

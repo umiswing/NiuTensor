@@ -199,9 +199,10 @@ make a new tensor to keep the result and return it
 >> s - the source tensor
 >> whereToSplit - which dimension of the tensor is to split
 >> splitNum - how many splits
+>> inplace - indicates whether to destroy the raw data arrays
 << return - teh transformed tensor by splitting it
 */
-XTensor Split(const XTensor &s, int whereToSplit, int splitNum)
+XTensor Split(const XTensor &s, int whereToSplit, int splitNum, bool inplace)
 {
     CheckNTErrors(&s, "Invalid tensors!");
     CheckNTErrors(s.dimSize[whereToSplit] % splitNum == 0, 
@@ -224,6 +225,12 @@ XTensor Split(const XTensor &s, int whereToSplit, int splitNum)
 
     /* call _Split function */
     _Split(&s, &t, whereToSplit, splitNum);
+
+    /* delete unused data to save memory */
+    if (inplace) {
+        XTensor* p = const_cast<XTensor*>(&s);
+        p->DestroyData();
+    }
         
     /* tensor connections */
     if (s.enableGrad) {

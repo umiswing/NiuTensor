@@ -336,10 +336,10 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     model->SetTrainingFlag(false);
     Validate();
 
-    LOG("make a checkpoint");
     char* fn = new char[MAX_LINE_LENGTH];
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
-    model->DumpToFile(fn);
+    LOG("make a checkpoint to `%s`", fn);
+    //model->DumpToFile(fn);
 
     /* enable gradient flow after validating */
     ENABLE_GRAD;

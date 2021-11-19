@@ -23,11 +23,17 @@
 
 namespace nts{
 
-/* make gradient tensor for a node */
-void XNoder::MakeGrad(XTensor * node)
+/* 
+make gradient tensor for a node 
+>> node - the node to make gradient
+<< bool - whether the node's gradient is newly made
+*/
+bool XNoder::MakeGrad(XTensor * node)
 {
+    bool isInit = (node->grad == NULL);
+
     if(node == NULL)
-        return;
+        return false;
 
     if(!_IsSameShaped(node, node->grad)){
         if (node->grad != NULL && node->grad->unitNum == node->unitNum) {
@@ -39,6 +45,8 @@ void XNoder::MakeGrad(XTensor * node)
         }
         node->grad->SetZeroAll();
     }
+
+    return isInit;
 }
 
 /* the node is a leaf node (intput) or not */

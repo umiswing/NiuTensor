@@ -39,7 +39,7 @@ transform a tensor by splitting it (return an XTensor structure)
 make a new tensor to keep the result and return it
 e.g., (M, N) -> (M, N/3, 3) 
 */
-XTensor Split(const XTensor &s, int whereToSplit, int splitNum);
+XTensor Split(const XTensor &s, int whereToSplit, int splitNum, bool inplace=false);
 
 void Split(const XTensor &s, XTensor &t, int whereToSplit, int splitNum);
 

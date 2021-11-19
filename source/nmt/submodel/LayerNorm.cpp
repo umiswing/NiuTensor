@@ -127,8 +127,8 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
 
     /* unsqueeze mean and standard deviation to fit them into
        the same shape of x */
-    meanFilled = Unsqueeze(mean, x.order - 1, x.GetDim(-1));
-    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1));
+    meanFilled = Unsqueeze(mean, x.order - 1, x.GetDim(-1), /*inplace=*/false);
+    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1), /*inplace=*/true);
 
     /* x' = (x - \mu)/standard */
     xn = (x - meanFilled) / standardFilled;

@@ -136,7 +136,7 @@ XTensor LayerHistory::Pop()
         dimSize[i + 1] = stack.dimSize[i];
     dimSize[0] = int(list.Size());
     dimSize[1] /= dimSize[0];
-        stack = Reshape(stack, stack.order + 1, dimSize);
+    stack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/false);
 
     XTensor res;
     res = MultiplyDim(stack, weights[list.Size() - 1], 0);

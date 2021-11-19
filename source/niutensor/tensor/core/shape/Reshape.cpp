@@ -32,13 +32,18 @@ reshape the tensor
 >> s - the input tensor
 >> order - order of the tensor
 >> dimSize - the size of each dimension
+>> inplace - indicates whether to destroy the raw data arrays
 << return - the output tensor
 */
-XTensor Reshape(XTensor &s, int order, int * dimSize)
+XTensor Reshape(XTensor &s, int order, int * dimSize, bool inplace)
 {
     XTensor t(&s);
     t.SetTMPFlag();
     _CopyValues(&s, &t);
+
+    if (inplace) {
+        s.DestroyData();
+    }
 
     /* call Reshape function */
     t.Reshape(order, dimSize);
