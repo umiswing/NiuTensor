@@ -136,7 +136,7 @@ void Trainer::Run()
             XTensor labelOnehot;
             labelOnehot = IndexToOnehot(label, config->model.tgtVocabSize, config->training.labelSmoothingP);
 
-            /* remove unused data to save memory */
+            /* delete unused data to save memory */
             label.DestroyData();
 
             CheckNTErrors(batchEnc.order == 2, "Wrong tensor order of the sequence batch");
@@ -154,7 +154,7 @@ void Trainer::Run()
 
             float lossBatch = ReduceSumAllValue(lossTensor);
 
-            /* remove unused data to save memory */
+            /* delete unused data to save memory */
             lossTensor.DestroyData();
 
             DTYPE lossLocal = lossBatch / trainBatchLoader.wc;

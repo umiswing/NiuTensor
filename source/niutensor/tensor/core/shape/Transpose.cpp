@@ -145,7 +145,7 @@ XTensor Transpose(const XTensor &a, const int i, const int j, bool inplace)
     /* call _Transpose function */
     _Transpose(&a, &b, i, j);
 
-    /* remove unused data to save memory */
+    /* delete unused data to save memory */
     if (inplace) {
         XTensor* p = const_cast<XTensor*>(&a);
         p->DestroyData();
