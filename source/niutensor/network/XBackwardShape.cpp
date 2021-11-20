@@ -301,7 +301,6 @@ void XShapeGrad::GradMerge(XTensor * node, bool isEfficient)
             }
             /* delete unused data to save memory */
             input->DestroyData();
-            node->grad->DestroyData();
         }
 
         /* a more complicated case is that the input tensor is used for
@@ -474,7 +473,6 @@ void XShapeGrad::GradSplit(XTensor * node, bool isEfficient)
 
             /* delete unused data to save memory */
             input->DestroyData();
-            node->grad->DestroyData();
         }
 
         /* if the tensor is used somewhere else, we need another SUM
@@ -619,17 +617,11 @@ void XShapeGrad::GradTranspose(XTensor * node, bool isEfficient)
         if (input->mem != NULL)
             input->mem->LockBuf();
 
-        /* not sure if it is correct for gradient accumulation */
-        if (input->outgo.tailNum == 1) {
-            _Transpose(output->grad, input->grad, i, j);
-        }
-        else {
-            XTensor* tmp = NewTensorBufV2(input, input->devID, input->mem);
-            _Transpose(output->grad, tmp, i, j);
-            _Sum(input->grad, tmp, input->grad);
+        XTensor* tmp = NewTensorBufV2(input, input->devID, input->mem);
+        _Transpose(output->grad, tmp, i, j);
+        _Sum(input->grad, tmp, input->grad);
 
-            DelTensorBuf(tmp);
-        }
+        DelTensorBuf(tmp);
         if (input->mem != NULL)
             input->mem->UnlockBuf();
     }
@@ -668,18 +660,12 @@ void XShapeGrad::GradUnsqueeze(XTensor * node, bool isEfficient)
         if (input->mem != NULL)
             input->mem->LockBuf();
 
-        /* not sure if it is correct for gradient accumulation */
-        if (input->outgo.tailNum == 1) {
-            _ReduceSum(output->grad, input->grad, dim);
-        }
-        else {
-            XTensor* tmp = NewTensorBufV2(input->grad, input->devID, input->mem);
+        XTensor* tmp = NewTensorBufV2(input->grad, input->devID, input->mem);
 
-            _ReduceSum(output->grad, tmp, dim);
-            _Sum(input->grad, tmp, input->grad);
+        _ReduceSum(output->grad, tmp, dim);
+        _Sum(input->grad, tmp, input->grad);
 
-            DelTensorBuf(tmp);
-        }
+        DelTensorBuf(tmp);
         if (input->mem != NULL)
             input->mem->UnlockBuf();
     }

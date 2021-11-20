@@ -194,9 +194,9 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
 
     /* multi head */
     if (nhead > 1) {
-        q = Split(q, q.order - 1, nhead, /*inplace=*/true);
-        kheads = Split(k, k.order - 1, nhead, /*inplace=*/true);
-        vheads = Split(v, v.order - 1, nhead, /*inplace=*/true);
+        q = Split(q, q.order - 1, nhead, /*inplace=*/isTraining);
+        kheads = Split(k, k.order - 1, nhead, /*inplace=*/isTraining);
+        vheads = Split(v, v.order - 1, nhead, /*inplace=*/isTraining);
     }
 
     XTensor att;
@@ -218,7 +218,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
 
     if (mask) {
         if (isTraining)
-            att = Sum(att, *mask, /*inplace=*/true);
+            att = Sum(att, *mask, /*inplace=*/isTraining);
         else
             SumMe(att, *mask);
     }
@@ -238,7 +238,7 @@ XTensor Attention::MakeAttention(XTensor& k, XTensor& q, XTensor& v,
 
     /* concatenate the heads */
     if (nhead > 1)
-        return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/true), weightO, biasO);
+        return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/isTraining), weightO, biasO);
     else
         return MulAndShift(att, weightO, biasO);
 }
@@ -266,9 +266,9 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     const auto dataType = k.dataType;
 
     /* multi head */
-    kheads = Split(k, k.order - 1, nhead, /*inplace=*/true);
-    qheads = Split(q, q.order - 1, nhead, /*inplace=*/true);
-    vheads = Split(v, v.order - 1, nhead, /*inplace=*/true);
+    kheads = Split(k, k.order - 1, nhead, /*inplace=*/isTraining);
+    qheads = Split(q, q.order - 1, nhead, /*inplace=*/isTraining);
+    vheads = Split(v, v.order - 1, nhead, /*inplace=*/isTraining);
 
     XTensor att;
     XTensor dot;
@@ -294,7 +294,7 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     dot = RPDotProduct(qheads, kheads, relativeKey, true);
 
     if (mask)
-        dot = Sum(dot, *mask, /*inplace=*/true);
+        dot = Sum(dot, *mask, /*inplace=*/isTraining);
 
     /* softmax */
     scalar = Softmax(dot, -1);
@@ -312,7 +312,7 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
         att = ConvertDataType(att, dataType);
 
     /* concatenate the heads */
-    return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/true), weightO, biasO);
+    return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/isTraining), weightO, biasO);
 }
 
 /*
@@ -335,7 +335,7 @@ XTensor Attention::GetRPEmbedding(int lenQ, int lenKV, bool isEnc)
         range.SetData(index, lenKV);
         XTensor range2D;
         XTensor range2DTrans;
-        range2D = Unsqueeze(range, 0, lenQ, /*inplace=*/true);
+        range2D = Unsqueeze(range, 0, lenQ, /*inplace=*/isTraining);
         range2DTrans = Transpose(range2D, 0, 1, /*inplace=*/false);
 
         embMatrix = Sum(range2D, range2DTrans, false, -1);
@@ -344,7 +344,7 @@ XTensor Attention::GetRPEmbedding(int lenQ, int lenKV, bool isEnc)
         for (int i = 0; i < lenKV; i++)
             index[i] = -lenKV + i + 1;
         range.SetData(index, lenKV);
-        embMatrix = Unsqueeze(range, 0, lenQ, /*inplace=*/true);
+        embMatrix = Unsqueeze(range, 0, lenQ, /*inplace=*/isTraining);
     }
 
     ClipMe(embMatrix, -float(maxRP), float(maxRP));
@@ -388,12 +388,12 @@ XTensor Attention::RPDotProduct(XTensor& rawX, XTensor& rawY, XTensor& z, const 
     XTensor x;
     XTensor y;
     XTensor context;
-    x = Reshape(rawX, 3, mergeDimsX, /*inplace=*/true);
-    y = Reshape(rawY, 3, mergeDimsY, /*inplace=*/true);
+    x = Reshape(rawX, 3, mergeDimsX, /*inplace=*/isTraining);
+    y = Reshape(rawY, 3, mergeDimsY, /*inplace=*/isTraining);
 
     if (isKey) {
         XTensor transY;
-        transY = Transpose(y, 1, 2, /*inplace=*/true);
+        transY = Transpose(y, 1, 2, /*inplace=*/isTraining);
 
         context = BMMul(x, transY);
     }
@@ -404,7 +404,7 @@ XTensor Attention::RPDotProduct(XTensor& rawX, XTensor& rawY, XTensor& z, const 
     int newDims[]{ headNum, batchSize, context.GetDim(1), context.GetDim(2) };
 
     XTensor reshapedContext;
-    reshapedContext = Reshape(context, 4, newDims, /*inplace=*/true);
+    reshapedContext = Reshape(context, 4, newDims, /*inplace=*/isTraining);
 
     XTensor xTrans;
     xTrans = Transpose(x, 0, 1, /*inplace=*/false);
@@ -413,12 +413,12 @@ XTensor Attention::RPDotProduct(XTensor& rawX, XTensor& rawY, XTensor& z, const 
     relative = MatrixMulBatched(xTrans, X_NOTRANS, z, transposeFlag);
 
     XTensor relativeTrans;
-    relativeTrans = Transpose(relative, 0, 1, /*inplace=*/true);
+    relativeTrans = Transpose(relative, 0, 1, /*inplace=*/isTraining);
 
     int splitDims[] = { headNum, batchSize, lenQ, lastDim };
 
     XTensor reshapedRelativeTrans;
-    reshapedRelativeTrans = Reshape(relativeTrans, 4, splitDims, /*inplace=*/true);
+    reshapedRelativeTrans = Reshape(relativeTrans, 4, splitDims, /*inplace=*/isTraining);
 
     return Sum(reshapedContext, reshapedRelativeTrans);
 }

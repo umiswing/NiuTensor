@@ -1384,7 +1384,7 @@ void XMathGrad::GradSum(XTensor * node, bool isEfficient)
     }
 
     /* dE/db = dE/dc * \beta */
-    if (b->isGrad && b->enableGrad) {
+    if (!isEfficient || b->isGrad) {
         XNoder::MakeGrad(b);
         _Sum(b->grad, node->grad, b->grad, beta);
     }

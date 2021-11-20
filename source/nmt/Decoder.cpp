@@ -190,7 +190,7 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc,
 
     /* dropout */
     if (isTraining && dropoutP > 0)
-        x = Dropout(x, dropoutP, /*inplace=*/true);
+        x = Dropout(x, dropoutP, /*inplace=*/isTraining);
 
     if (useHistory)
         history->Add(x);
@@ -220,10 +220,10 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc,
 
         /* dropout */
         if (isTraining && dropoutP > 0)
-            att = Dropout(att, dropoutP, /*inplace=*/true);
+            att = Dropout(att, dropoutP, /*inplace=*/isTraining);
 
         /* residual connection */
-        res = Sum(att, x, /*inplace=*/true);
+        res = Sum(att, x, /*inplace=*/isTraining);
 
         /* layer normalization with post-norm for self-attention */
         selfAttnAfter = LN(res, selfAttLayerNorms[i], preLN, false, true);
