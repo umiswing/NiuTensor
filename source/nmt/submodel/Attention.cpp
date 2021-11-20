@@ -33,6 +33,12 @@ void Attention::SetTrainingFlag(bool myIsTraining)
     isTraining = myIsTraining;
 }
 
+/* set the validating flag */
+void Attention::SetValidatingFlag(bool myIsValidating)
+{
+    isValidating = myIsValidating;
+}
+
 /* constructor */
 Attention::Attention()
 {
@@ -45,6 +51,7 @@ Attention::Attention()
     maxRP = -1;
     useRPR = false;
     isTraining = false;
+    isValidating = false;
 }
 
 /* de-constructor */
@@ -135,7 +142,7 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
 
     q2 = MulAndShift(q, weightQ, biasQ);
 
-    if (!cache || isTraining || !(cache->enable)) {
+    if (!cache || isTraining || !(cache->enabled)) {
         /* self attention for encoder layers */
         k2 = MulAndShift(k, weightK, biasK);
         v2 = MulAndShift(v, weightV, biasV);
@@ -277,7 +284,7 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     XTensor embMatrix, relativeKey;
 
     /* generate the relative emb index (L_q, L_kv) */
-    embMatrix = GetRPEmbedding(lenQ, lenKV, isEnc || isTraining);
+    embMatrix = GetRPEmbedding(lenQ, lenKV, isEnc || (isTraining || isValidating));
 
     /* generate the relative key from the RPEmbK (L_q, L_kv, H/K) */
     relativeKey = Gather(RPEmbK, embMatrix);
@@ -427,7 +434,7 @@ XTensor Attention::RPDotProduct(XTensor& rawX, XTensor& rawY, XTensor& z, const 
 Cache::Cache()
 {
     miss = true;
-    enable = true;
+    enabled = true;
 }
 
 /* update the states cache */

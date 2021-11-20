@@ -51,7 +51,7 @@ public:
     bool miss;
 
     /* indicates whether we use cache */
-    bool enable;
+    bool enabled;
 
     /* constructor */
     Cache();
@@ -72,6 +72,9 @@ class Attention
 public:
     /* indicates whether train the model */
     bool isTraining;
+
+    /* indicates whether validate the model */
+    bool isValidating;
 
     /* device id */
     int devID;
@@ -127,6 +130,9 @@ public:
 public:
     /* set the training flag */
     void SetTrainingFlag(bool myIsTraining);
+
+    /* set the validating flag */
+    void SetValidatingFlag(bool myIsValidating);
 
     /* constructor */
     Attention();

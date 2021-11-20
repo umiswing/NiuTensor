@@ -231,8 +231,7 @@ void Trainer::Run()
             break;
 
         /* save the checkpoint every epoch */
-        int checkpointID = epoch % config->training.ncheckpoint;
-        MakeCheckpoint("epoch", checkpointID);
+        MakeCheckpoint("epoch", epoch);
     }
 
     /* final logging */
@@ -334,9 +333,16 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     /* disable gradient flow during validating */
     DISABLE_GRAD;
     model->SetTrainingFlag(false);
+    model->SetValidatingFlag(true);
     Validate();
 
     char* fn = new char[MAX_LINE_LENGTH];
+
+    /* remove old checkpoints */
+    if (id > config->training.ncheckpoint) {
+        sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id - config->training.ncheckpoint);
+        remove(fn);
+    }
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
     LOG("make a checkpoint to `%s`", fn);
     model->DumpToFile(fn);
@@ -344,6 +350,7 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     /* enable gradient flow after validating */
     ENABLE_GRAD;
     model->SetTrainingFlag(true);
+    model->SetValidatingFlag(false);
     delete[] fn;
 }
 

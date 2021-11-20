@@ -755,6 +755,12 @@ void NMTModel::SetTrainingFlag(bool isTraining)
     outputLayer->SetTrainingFlag(isTraining);
 }
 
+/* set the validating flags in the decoder */
+void NMTModel::SetValidatingFlag(bool isValidating)
+{
+    decoder->SetValidatingFlag(isValidating);
+}
+
 XModel* NMTModel::Clone(int devID)
 {
     NMTModel* newModel = new NMTModel();

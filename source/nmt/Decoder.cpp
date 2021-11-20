@@ -38,9 +38,9 @@ void AttDecoder::SetTrainingFlag(bool myIsTraining)
     if (isTraining) {
         for (int i = 0; i < nlayer; i++) {
             if (selfAttCache != NULL)
-                selfAttCache[i].enable = false;
+                selfAttCache[i].enabled = false;
             if (enDeAttCache != NULL)
-                enDeAttCache[i].enable = false;
+                enDeAttCache[i].enabled = false;
         }
     }
 
@@ -66,6 +66,20 @@ void AttDecoder::SetTrainingFlag(bool myIsTraining)
         decoderLayerNorm->SetTrainingFlag(myIsTraining);
 }
 
+/* set the validating flag */
+void AttDecoder::SetValidatingFlag(bool myIsValidating)
+{
+    isValidating = myIsValidating;
+
+    /* the validating flag is only used for decoder attention modules */
+    for (int i = 0; i < nlayer; i++) {
+        if (selfAtts != NULL)
+            selfAtts[i].SetValidatingFlag(myIsValidating);
+        if (enDeAtts != NULL)
+            enDeAtts[i].SetValidatingFlag(myIsValidating);
+    }
+}
+
 /* constructor */
 AttDecoder::AttDecoder()
 {
@@ -78,6 +92,7 @@ AttDecoder::AttDecoder()
     finalNorm = false;
     useHistory = false;
     isTraining = false;
+    isValidating = false;
     shareEncDecEmb = false;
     ffns = NULL;
     history = NULL;

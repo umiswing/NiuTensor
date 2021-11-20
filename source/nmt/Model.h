@@ -115,6 +115,9 @@ public:
     /* set the training flag */
     void SetTrainingFlag(bool isTraining);
 
+    /* set the validating flag */
+    void SetValidatingFlag(bool isValidating);
+
 public:
 
     /* clone the model (overloaded method of XModel) */

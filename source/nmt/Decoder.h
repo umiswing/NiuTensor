@@ -39,6 +39,9 @@ public:
     /* indicates whether train the model */
     bool isTraining;
 
+    /* indicates whether validate the model */
+    bool isValidating;
+
     /* device id */
     int devID;
 
@@ -99,6 +102,9 @@ public:
 public:
     /* set the training flag */
     void SetTrainingFlag(bool myIsTraining);
+
+    /* set the validating flag */
+    void SetValidatingFlag(bool isValidating);
 
     /* constructor */
     AttDecoder();
