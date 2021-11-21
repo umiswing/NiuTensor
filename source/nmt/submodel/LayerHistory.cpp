@@ -25,9 +25,6 @@
 #include "LayerHistory.h"
 #include "../../niutensor/tensor/core/CHeader.h"
 
-#define SAFE_DELETE(x) do{ if((x) != NULL){delete (x); (x) = NULL;} } while(false)
-#define SAFE_DELETE_ARRAY(x) do{ if((x) != NULL) {delete [] (x); (x)=NULL;} } while(false)
-
 /* the nmt namespace */
 namespace nmt
 {
