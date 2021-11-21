@@ -138,15 +138,15 @@ XTensor LayerHistory::Pop()
     dimSize[1] /= dimSize[0];
 
     XTensor reshapedStack;
-    reshapedStack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/false);
-    if(isTraining)
-        stack.DestroyData();
+    reshapedStack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/isTraining);
 
     XTensor multiplication;
     multiplication = MultiplyDim(reshapedStack, weights[list.Size() - 1], 0);
 
     XTensor res;
     res = ReduceSum(multiplication, 0);
+
+    /* delete unused data to save memory */
     if (isTraining)
         multiplication.DestroyData();
 
