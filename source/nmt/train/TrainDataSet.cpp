@@ -68,15 +68,19 @@ bool TrainDataSet::LoadBatchToBuf()
         buf->Add(sample);
         n++;
     }
-    LOG("loaded %d samples", n);
 
     /* group samples into buckets */
     SortByTgtLengthAscending();
     SortBySrcLengthAscending();
 
     /* build buckets for training */
-    if (isTraining)
+    if (isTraining) {
         BuildBucket();
+        LOG("loaded %d samples from the training file `%s`", n, config->training.trainFN);
+    }
+    else {
+        LOG("loaded %d samples from the validation file `%s`", n, config->training.validFN);
+    }
 
     return true;
 }

@@ -33,7 +33,8 @@ using namespace std;
 namespace nmt
 {
 
-#define MAX_LAYER_NUM 50
+/* the maximum layers */
+#define MAX_LAYER_NUM 150
 
 /* 
 the class of history list

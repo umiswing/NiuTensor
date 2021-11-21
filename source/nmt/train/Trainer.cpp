@@ -91,7 +91,7 @@ void Trainer::Run()
     trainBatchLoader.Init(*config, true);
     validBatchLoader.Init(*config, false);
 
-    for (epoch = 0; epoch <= config->training.nepoch; epoch++) {
+    for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
 
         loss = 0.0F;
         wordCount = 0;

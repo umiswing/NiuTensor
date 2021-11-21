@@ -164,9 +164,9 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadFloat("warmupinitlr", &warmupInitLR, 1e-7F);
     LoadFloat("adambeta1", &adamBeta1, 0.9F);
     LoadFloat("adambeta2", &adamBeta2, 0.98F);
-    LoadFloat("adamdelta", &adamDelta, 1e-9F);
+    LoadFloat("adamdelta", &adamDelta, 1e-8F);
     LoadFloat("labelsmoothing", &labelSmoothingP, 0.1F);
-    LoadFloat("weightdecay", &weightDecay, 0.00001F);
+    LoadFloat("weightdecay", &weightDecay, 0.0001F);
     isTraining = (strcmp(trainFN, "") == 0) ? false : true;
     incremental = false;
 }

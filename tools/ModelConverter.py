@@ -12,6 +12,7 @@ import argparse
 import numpy as np
 from struct import pack, unpack
 
+
 def get_model_params(model, configs, prefix=None):
     """
     Get flattened model parameters
@@ -27,7 +28,7 @@ def get_model_params(model, configs, prefix=None):
     if prefix is not None:
         info_file += prefix
     info_file += '.info.txt'
-    
+
     with open(info_file, 'w') as f:
         for k, v, in model.items():
             v = v.to(torch.float32)
@@ -48,7 +49,6 @@ def get_model_params(model, configs, prefix=None):
                     else:
                         if 'history.weight' in k:
                             for i, v_i in enumerate(v):
-                                print(i)
                                 flattened_params.append(v_i[:i+1].t())
                         else:
                             flattened_params.append(v.t())
@@ -67,6 +67,7 @@ def get_model_params(model, configs, prefix=None):
     # print(encoder_embedding.view(-1)[:10])
     # print(decoder_embedding.view(-1)[:10])
     return flattened_params
+
 
 def get_model_configs(model_config, model):
     """
@@ -88,12 +89,16 @@ def get_model_configs(model_config, model):
         'encoder.layers.0.final_layer_norm.gamma' in model.keys(),
         'decoder.layers.0.final_layer_norm.gamma' in model.keys(),
         'encoder.layers.0.self_attn.in_proj_weight' in model.keys(),
-        'encoder.layer_norm.weight' in model.keys() or 'encoder.layer_norm.gamma' in model.keys(),
-        'decoder.layer_norm.weight' in model.keys() or 'decoder.layer_norm.gamma' in model.keys(),
+        'encoder.layer_norm.weight' in model.keys(
+        ) or 'encoder.layer_norm.gamma' in model.keys(),
+        'decoder.layer_norm.weight' in model.keys(
+        ) or 'decoder.layer_norm.gamma' in model.keys(),
         model_config.encoder_normalize_before,
         model_config.decoder_normalize_before,
-        'encoder.history.weight' in model.keys(), # place-holder for the useEncHistory flag
-        'decoder.history.weight' in model.keys(), # place-holder for the useDecHistory flag
+        # place-holder for the useEncHistory flag
+        'encoder.history.weight' in model.keys(),
+        # place-holder for the useDecHistory flag
+        'decoder.history.weight' in model.keys(),
         model_config.share_all_embeddings,
         model_config.share_decoder_input_output_embed,
 
@@ -102,21 +107,21 @@ def get_model_configs(model_config, model):
         model_config.encoder_layers,
         model_config.encoder_attention_heads,
         model_config.encoder_ffn_embed_dim,
-        
+
         model_config.decoder_embed_dim,
         model_config.decoder_layers,
         model_config.decoder_attention_heads,
         model_config.decoder_attention_heads,
         model_config.decoder_ffn_embed_dim if 'decoder.layers.0.fc1.weight' in model.keys() else -1,
-        
+
         model_config.max_relative_length,
         model_config.max_source_positions,
         model_config.max_target_positions,
 
         # configurations of token ids
-        model_config.eos, 
-        model_config.eos, 
-        model_config.pad, 
+        model_config.eos,
+        model_config.eos,
+        model_config.pad,
         model_config.unk,
 
         # source and target vocabulary size
@@ -127,6 +132,7 @@ def get_model_configs(model_config, model):
     assert len(flattened_configs) == 29
 
     return flattened_configs
+
 
 def save_model(configs, params, model_path, data_type):
     """
@@ -158,12 +164,15 @@ def save_model(configs, params, model_path, data_type):
         for p in tqdm(params):
             param_num += p.numel()
             if data_type in ['fp32', 'FP32']:
-                values = pack('f' * p.numel(), *(p.contiguous().view(-1).numpy().astype(np.float32)))
+                values = pack(
+                    'f' * p.numel(), *(p.contiguous().view(-1).numpy().astype(np.float32)))
                 f.write(values)
             elif data_type in ['fp16', 'FP16']:
-                values = pack('e' * p.numel(), *(p.contiguous().view(-1).numpy().astype(np.float16)))
+                values = pack(
+                    'e' * p.numel(), *(p.contiguous().view(-1).numpy().astype(np.float16)))
                 f.write(values)
         print('number of parameters:', param_num)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -179,10 +188,10 @@ def main():
     args = parser.parse_args()
     print(args)
 
-
     dirname = args.i.split('/')[-2]
-    
-    print('Converting `{}` to `{}` with {}...'.format(args.i, args.o, args.data_type))
+
+    print('Converting `{}` to `{}` with {}...'.format(
+        args.i, args.o, args.data_type))
 
     state = torch.load(args.i, map_location='cpu')
 
@@ -191,23 +200,24 @@ def main():
         config = state['args']
     else:
         config = state['cfg']['model']
-    
+
     cfg = vars(config)
     with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
         fo.write('*'*75)
         fo.write('\n')
         fo.write('Parameters & Shapes:\n')
-        for k,v in state['model'].items():
-            fo.write('{}:\t\t{}\n'.format(k,v.shape))
+        for k, v in state['model'].items():
+            fo.write('{}:\t\t{}\n'.format(k, v.shape))
         fo.write('*'*75)
         fo.write('\n')
         fo.write('Training settings:\n')
-        for k,v in cfg.items():
-            fo.write('{}:\t\t{}\n'.format(k,v))
-    
+        for k, v in cfg.items():
+            fo.write('{}:\t\t{}\n'.format(k, v))
+
     config_list = get_model_configs(config, state['model'])
     param_list = get_model_params(state['model'], config, dirname)
     save_model(config_list, param_list, args.o, args.data_type)
+
 
 if __name__ == '__main__':
     main()

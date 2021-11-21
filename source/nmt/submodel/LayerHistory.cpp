@@ -111,8 +111,9 @@ void LayerHistory::Add(XTensor& layer)
         history->Add(layer);
         return;
     }
-    layer = layerNorms[count - 2].Run(layer);
-    history->Add(layer);
+    XTensor normed;
+    normed = layerNorms[count - 2].Run(layer);
+    history->Add(normed);
 }
 
 /*
@@ -129,19 +130,25 @@ XTensor LayerHistory::Pop()
     }
     XTensor stack;
     stack = Merge(list, 0);
-    //Stack(list, 0);
 
     int dimSize[MAX_TENSOR_DIM_NUM];
     for (int i = 0; i < stack.order + 1; i++)
         dimSize[i + 1] = stack.dimSize[i];
     dimSize[0] = int(list.Size());
     dimSize[1] /= dimSize[0];
-    stack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/false);
+
+    XTensor reshapedStack;
+    reshapedStack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/false);
+    stack.DestroyData();
+
+    XTensor multiplication;
+    multiplication = MultiplyDim(reshapedStack, weights[list.Size() - 1], 0);
 
     XTensor res;
-    res = MultiplyDim(stack, weights[list.Size() - 1], 0);
+    res = ReduceSum(multiplication, 0);
+    multiplication.DestroyData();
 
-    return ReduceSum(res, 0);
+    return res;
 }
 
 /* clear the history */
@@ -177,9 +184,7 @@ History::~History()
 /* append a layer to the history */
 void History::Add(XTensor& layer)
 {
-    list[count] = std::move(layer);
-    XLink::ClearOutgoing(&layer);
-    XLink::ClearIncoming(&layer);
+    list[count] = layer;
     count++;
 }
 

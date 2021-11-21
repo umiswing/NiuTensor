@@ -134,9 +134,9 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
 
-    encodingBeam = Unsqueeze(encoding, encoding.order - 2, beamSize, /*inplace=*/true);
-    inputBeam = Unsqueeze(input, input.order - 1, beamSize, /*inplace=*/true);
-    paddingBeam = Unsqueeze(padding, padding.order - 1, beamSize, /*inplace=*/true);
+    encodingBeam = Unsqueeze(encoding, encoding.order - 2, beamSize);
+    inputBeam = Unsqueeze(input, input.order - 1, beamSize);
+    paddingBeam = Unsqueeze(padding, padding.order - 1, beamSize);
 
     encodingBeam.ReshapeMerged(encodingBeam.order - 4);
     inputBeam.ReshapeMerged(inputBeam.order - 3);

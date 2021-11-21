@@ -146,16 +146,12 @@ void NMTModel::InitModel(NMTConfig& myConfig)
     outputLayer->InitModel(*config);
 
     /* share encoder&decoder embeddings */
-    if (config->model.shareEncDecEmb) {
+    if (config->model.shareEncDecEmb)
         decoder->embedder = &(encoder->embedder);
-        LOG("share encoder decoder embeddings");
-    }
 
     /* share embeddings with output weights */
-    if (config->model.shareDecInputOutputEmb) {
+    if (config->model.shareDecInputOutputEmb)
         outputLayer->w = decoder->embedder->w;
-        LOG("share decoder embeddings with output weights");
-    }
 
     ShowModelConfig();
 
@@ -185,6 +181,8 @@ void NMTModel::ShowModelConfig()
         LOG("rpr length: %d", config->model.maxRelativeLength);
     
     LOG("encoder layers: %d", config->model.encLayerNum);
+    if (config->model.useEncHistory)
+        LOG("use dlcl for the encoder");
     LOG("encoder self-att heads: %d", config->model.encSelfAttHeadNum);
     LOG("encoder embedding dim: %d", config->model.encEmbDim);
     LOG("encoder ffn hidden dim: %d", config->model.encFFNHiddenDim);
@@ -194,6 +192,8 @@ void NMTModel::ShowModelConfig()
         LOG("encoder post-norm with %s", config->model.encoderL1Norm ? "l1-norm" : "l2-norm");
     
     LOG("decoder layers: %d", config->model.decLayerNum);
+    if (config->model.useDecHistory)
+        LOG("use dlcl for the decoder");
     LOG("decoder self-att heads: %d", config->model.decSelfAttHeadNum);
     LOG("decoder en-de-att heads: %d", config->model.encDecAttHeadNum);
     LOG("decoder embedding dim: %d", config->model.decEmbDim);
@@ -202,6 +202,13 @@ void NMTModel::ShowModelConfig()
         LOG("decoder pre-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
     else
         LOG("decoder post-norm with %s", config->model.decoderL1Norm ? "l1-norm" : "l2-norm");
+
+    if (config->model.shareEncDecEmb)
+        LOG("share encoder decoder embeddings");
+
+    if (config->model.shareDecInputOutputEmb)
+        LOG("share decoder embeddings with output weights");
+
     LOG("number of parameters: %zu", GetParamNum());
 }
 
