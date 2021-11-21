@@ -80,7 +80,7 @@ void KernelNormalizeFloat(T * input, T * output, T * mean, T * var,
 template<class T>
 __global__
 void KernelNormalizeHalf(T * input, T * output, T * mean, T * var,
-                         T * a, T * b, 
+                         T * a, T * b, T epsilon,
                          int stride, int strideNum, int blockNum)
 {
     __shared__ half iMean[MAX_CUDA_THREAD_NUM_PER_BLOCK];
@@ -109,7 +109,7 @@ void KernelNormalizeHalf(T * input, T * output, T * mean, T * var,
     int offset = iBlock[threadIdx.x] * blockSize + inBlockOffset;
 
     output[offset] = __hadd(__hdiv(__hmul(a[inBlockOffset], __hsub(input[offset], iMean[threadIdx.x])),
-                            hsqrt(iVar[threadIdx.x])), b[inBlockOffset]);
+                            hsqrt(__hadd(iVar[threadIdx.x], epsilon))), b[inBlockOffset]);
 }
 
 /*
@@ -155,14 +155,14 @@ void _CudaNormalize(const XTensor * input, XTensor * output, int dim,
     if (input->dataType == DEFAULT_DTYPE) {
         KernelNormalizeFloat <DTYPE><< <blocks, threads >> >((DTYPE*)input->data, (DTYPE*)output->data,
                                              (DTYPE*)mean->data, (DTYPE*)var->data,
-                                             (DTYPE*)a->data, (DTYPE*)b->data, epsilon,
+                                             (DTYPE*)a->data, (DTYPE*)b->data, (DTYPE)epsilon,
                                              stride, strideNum, blockNum);
     }
     else if (input->dataType == X_FLOAT16) {
 #ifdef HALF_PRECISION
         KernelNormalizeHalf <half><< <blocks, threads>>> ((__half*)input->data, (__half*)output->data,
                                              (__half*)mean->data, (__half*)var->data,
-                                             (__half*)a->data, (__half*)b->data,
+                                             (__half*)a->data, (__half*)b->data, (__half)epsilon,
                                              stride, strideNum, blockNum);
 #else
         ShowNTErrors("Please compile with -DHALF_PRECISION");

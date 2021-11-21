@@ -511,6 +511,11 @@ int XDevManager::GetCudaThread2D(const int devID, const int n, const int m, int 
     int gYSize = int(ceil(float(m)/bYSize));
 
     CheckNTErrors((!(b & (b-1))), "Block size (x-axis) must be in 2^x");
+    if (!(gXSize <= GPUs[devID].GPUMaxGridSize[0] &&
+        gYSize <= GPUs[devID].GPUMaxGridSize[1])) {
+        LOG("gXSize: %d, gYSize: %d, maxX: %d, maxY: %d", gXSize, gYSize,
+            GPUs[devID].GPUMaxGridSize[0], GPUs[devID].GPUMaxGridSize[1]);
+    }
     CheckNTErrors((gXSize <= GPUs[devID].GPUMaxGridSize[0] && 
                    gYSize <= GPUs[devID].GPUMaxGridSize[1]), "A too large grid size.");
 

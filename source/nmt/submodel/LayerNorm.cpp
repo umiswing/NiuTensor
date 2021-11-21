@@ -118,7 +118,7 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
 
     /* call the fused function for faster inference */
     if (!isTraining)
-        return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
+        return Normalize(x, x.order - 1, mean, variance, weight, bias, 1e-5F);
 
     /* TODO: add the backward function for Normalize */
 

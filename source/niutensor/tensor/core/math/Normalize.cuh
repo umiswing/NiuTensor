@@ -40,7 +40,8 @@ void KernelNormalizeFloat(T * input, T* output, T* mean, T* var,
 
 template<class T> __global__
 void KernelNormalizeHalf(T* input, T* output, T* mean, T* var,
-                         T* a, T* b, int stride, int strideNum, int blockNum);
+                         T* a, T* b, T epsilon, 
+                         int stride, int strideNum, int blockNum);
 
 /* 
 normalized the data with normal distribution. For an input x,
