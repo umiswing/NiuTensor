@@ -52,9 +52,6 @@ public:
     /* contructor */
     History();
 
-    /* de-contructor */
-    ~History();
-
     /* append a layer to the list */
     void Add(XTensor& layer);
 };

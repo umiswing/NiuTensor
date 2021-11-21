@@ -171,22 +171,14 @@ History::History()
     count = 0;
 }
 
-/* delete the history */
-History::~History()
-{
-    /*for (int i = 0; i < MAX_LAYER_NUM; i++) {
-        list[i].DestroyData();
-        XLink::ClearOutgoing(&list[i]);
-        XLink::ClearIncoming(&list[i]);
-        if (list[i].grad != NULL)
-            delete list[i].grad;
-    }*/
-}
-
 /* append a layer to the history */
 void History::Add(XTensor& layer)
 {
     list[count] = layer;
+
+    /* delete unused data to save memory */
+    layer.DestroyData();
+
     count++;
 }
 
