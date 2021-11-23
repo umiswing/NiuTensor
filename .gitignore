@@ -8,3 +8,4 @@ build/
 bin/
 .vs/
 tools/iwslt14.tokenized.de-en/*
+data/

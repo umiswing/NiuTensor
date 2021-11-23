@@ -124,6 +124,12 @@ public:
     /* make the encoding network (wrapper) */
     XTensor Make(XTensor& input, XTensor* mask);
 
+    /* run encoding for training with pre-norm */
+    XTensor RunPreNorm(XTensor& input, XTensor* mask);
+
+    /* run encoding for training with post-norm */
+    XTensor RunPostNorm(XTensor& input, XTensor* mask);
+
     /* run encoding for inference with pre-norm */
     XTensor RunFastPreNorm(XTensor& input, XTensor* mask);
 

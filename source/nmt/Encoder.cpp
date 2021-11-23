@@ -223,7 +223,82 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask)
 {
     XTensor nothing;
 
-    return Make(input, mask, nothing);
+    if (preLN)
+        return Make(input, mask, nothing);
+    else
+        return RunPostNorm(input, mask);
+}
+
+/*
+run encoding for training with post-norm
+>> input - the input tensor of the encoder
+>> mask - the mask that indicate each position is valid
+<< return - the output tensor of the encoder
+*/
+XTensor AttEncoder::RunPostNorm(XTensor& input, XTensor* mask)
+{
+    /* clear the history */
+    if (useHistory)
+        history->ClearHistory();
+
+    XTensor x;
+    x = embedder.Make(input, false, 0);
+
+    /* dropout */
+    if (isTraining && dropoutP > 0)
+        x = Dropout(x, dropoutP, /*inplace=*/isTraining);
+
+    if (useHistory)
+        history->Add(x);
+
+    for (int i = 0; i < nlayer; i++) {
+
+        if (useHistory)
+            x = history->Pop();
+
+        XTensor selfAtt;
+
+        /* self attention */
+        selfAtt = selfAtts[i].Make(x, x, x, mask, NULL, SELF_ATT);
+
+        /* dropout */
+        if (isTraining && dropoutP > 0)
+            selfAtt = Dropout(selfAtt, dropoutP, /*inplace=*/isTraining);
+
+        /* residual connection */
+        selfAtt = Sum(selfAtt, x, /*inplace=*/isTraining);
+
+        /* layer normalization with post-norm for self-attn */
+        selfAtt = attLayerNorms[i].Run(selfAtt);
+
+        /* ffn */
+        x = ffns[i].Make(selfAtt);
+
+        /* dropout */
+        if (isTraining && dropoutP > 0)
+            x = Dropout(x, dropoutP, /*inplace=*/isTraining);
+
+        /* residual connection */
+        x = Sum(x, selfAtt, /*inplace=*/isTraining);
+
+        /* layer normalization with post-norm for ffn */
+        x = fnnLayerNorms[i].Run(x);
+
+        if (useHistory)
+            history->Add(x);
+    }
+
+    if (useHistory)
+        x = history->Pop();
+
+    /* clear the history while not training */
+    if (useHistory && !isTraining)
+        history->ClearHistory();
+
+    if (finalNorm)
+        return encoderLayerNorm->Run(x);
+
+    return x;
 }
 
 /* 
