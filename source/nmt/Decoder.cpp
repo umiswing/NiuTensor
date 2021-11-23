@@ -252,10 +252,10 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc,
 
         /* dropout */
         if (isTraining && dropoutP > 0)
-            ende = Dropout(ende, dropoutP, /*inplace=*/true);
+            ende = Dropout(ende, dropoutP, /*inplace=*/isTraining);
 
         /* residual connection */
-        res = Sum(ende, selfAttnAfter, /*inplace=*/true);
+        res = Sum(ende, selfAttnAfter, /*inplace=*/isTraining);
 
         /* layer normalization with post-norm for encoder-decoder attention */
         endeAttnAfter = LN(res, enDeAttLayerNorms[i], preLN, false, true);
@@ -268,10 +268,10 @@ XTensor AttDecoder::Make(XTensor& inputDec, XTensor& outputEnc,
 
         /* dropout */
         if (isTraining && dropoutP > 0)
-            ffn = Dropout(ffn, dropoutP, /*inplace=*/true);
+            ffn = Dropout(ffn, dropoutP, /*inplace=*/isTraining);
 
         /* residual connection */
-        res = Sum(ffn, endeAttnAfter, /*inplace=*/true);
+        res = Sum(ffn, endeAttnAfter, /*inplace=*/isTraining);
 
         /* layer normalization with post-norm for ffn */
         x = LN(res, ffnLayerNorms[i], preLN, false, true);
@@ -358,6 +358,10 @@ XTensor AttDecoder::RunFastPreNorm(XTensor& inputDec, XTensor& outputEnc, XTenso
     if (useHistory)
         x = history->Pop();
 
+    /* clear the history while not training */
+    if (useHistory && !isTraining)
+        history->ClearHistory();
+
     if (finalNorm)
         return decoderLayerNorm->Run(x);
 
@@ -380,46 +384,55 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         history->ClearHistory();
 
     XTensor x;
-
     x = embedder->Make(inputDec, true, nstep);
+
+    /* dropout */
+    if (isTraining && dropoutP > 0)
+        x = Dropout(x, dropoutP, /*inplace=*/isTraining);
 
     if (useHistory)
         history->Add(x);
 
     for (int i = 0; i < nlayer; i++) {
-        XTensor xn;
 
         if (useHistory)
             x = history->Pop();
 
+        XTensor att;
+        XTensor ffn;
+        XTensor res;
+        XTensor ende;
+        XTensor selfAttnAfter;
+        XTensor endeAttnAfter;
+
         /******************/
         /* self attention */
-        xn = selfAtts[i].Make(x, x, x, NULL, &selfAttCache[i], SELF_ATT);
+        att = selfAtts[i].Make(x, x, x, NULL, &selfAttCache[i], SELF_ATT);
 
         /* residual connection */
-        SumMe(xn, x);
+        res = Sum(att, x, /*inplace=*/false);
 
-        /* layer normalization with post-norm for self-attn */
-        xn = selfAttLayerNorms[i].Run(xn);
+        /* layer normalization with post-norm for self-attention */
+        selfAttnAfter = LN(res, selfAttLayerNorms[i], preLN, false, true);
 
         /* encoder-decoder attention */
-        x = enDeAtts[i].Make(outputEnc, xn, outputEnc, maskEncDec,
-                             &enDeAttCache[i], EN_DE_ATT);
+        ende = enDeAtts[i].Make(outputEnc, selfAttnAfter, outputEnc, maskEncDec,
+            &enDeAttCache[i], EN_DE_ATT);
 
         /* residual connection */
-        SumMe(x, xn);
+        res = Sum(ende, selfAttnAfter, /*inplace=*/false);
 
-        /* layer normalization with pre-norm for ffn */
-        xn = enDeAttLayerNorms[i].Run(x);
+        /* layer normalization with post-norm for encoder-decoder attention */
+        endeAttnAfter = LN(res, enDeAttLayerNorms[i], preLN, false, true);
 
         /* ffn */
-        if (ffns != NULL)
-            x = ffns[i].Make(xn);
+        ffn = ffns[i].Make(endeAttnAfter);
 
         /* residual connection */
-        SumMe(x, xn);
+        res = Sum(ffn, endeAttnAfter, /*inplace=*/false);
 
-        x = ffnLayerNorms->Run(x);
+        /* layer normalization with post-norm for ffn */
+        x = LN(res, ffnLayerNorms[i], preLN, false, true);
 
         if (useHistory)
             history->Add(x);

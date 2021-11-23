@@ -149,7 +149,7 @@ XTensor Embedder::Make(XTensor& input, bool isDec, int nstep)
     /* we make positional embeddings first */
     XTensor embTMP;
     embTMP = Gather(posEmbeddingBase, position);
-    posEmbedding = Unsqueeze(embTMP, 0, input.GetDim(0), /*inplace=*/true);
+    posEmbedding = Unsqueeze(embTMP, 0, input.GetDim(0), /*inplace=*/isTraining);
 
     /* then we make word embeddings */
     wordEmbedding = Gather(*w, input);

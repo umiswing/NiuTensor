@@ -118,7 +118,7 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
 
     /* call the fused function for faster inference */
     if (!isTraining)
-        return Normalize(x, x.order - 1, mean, variance, weight, bias, 1e-5F);
+        return Normalize(x, x.order - 1, mean, variance, weight, bias, 0.0F);
 
     /* TODO: add the backward function for Normalize */
 
@@ -128,7 +128,7 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
     /* unsqueeze mean and standard deviation to fit them into
        the same shape of x */
     meanFilled = Unsqueeze(mean, x.order - 1, x.GetDim(-1), /*inplace=*/false);
-    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1), /*inplace=*/true);
+    standardFilled = Unsqueeze(standard, x.order - 1, x.GetDim(-1), /*inplace=*/isTraining);
 
     /* x' = (x - \mu)/standard */
     xn = (x - meanFilled) / standardFilled;
@@ -136,7 +136,7 @@ XTensor LayerNorm::RunL2Norm(XTensor& input)
     /* result = x' * w + b   */
     xn = xn * weight;
 
-    xn = Sum(xn, bias, /*inplace=*/true);
+    xn = Sum(xn, bias, /*inplace=*/isTraining);
 
     return xn;
 }

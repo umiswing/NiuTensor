@@ -147,7 +147,7 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask, XTensor& maskEncDec)
 
     /* dropout */
     if (isTraining && dropoutP > 0)
-        x = Dropout(x, dropoutP, /*inplace=*/true);
+        x = Dropout(x, dropoutP, /*inplace=*/isTraining);
 
     if (useHistory)
         history->Add(x);
@@ -172,10 +172,10 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask, XTensor& maskEncDec)
 
         /* dropout */
         if (isTraining && dropoutP > 0)
-            att = Dropout(att, dropoutP, /*inplace=*/true);
+            att = Dropout(att, dropoutP, /*inplace=*/isTraining);
 
         /* residual connection */
-        res = Sum(att, x, /*inplace=*/true);
+        res = Sum(att, x, /*inplace=*/isTraining);
 
         /* layer normalization with post-norm for self-attn */
         attnAfter = LN(res, attLayerNorms[i], preLN, false, true);
@@ -188,10 +188,10 @@ XTensor AttEncoder::Make(XTensor& input, XTensor* mask, XTensor& maskEncDec)
 
         /* dropout */
         if (isTraining && dropoutP > 0)
-            fnn = Dropout(fnn, dropoutP, /*inplace=*/true);
+            fnn = Dropout(fnn, dropoutP, /*inplace=*/isTraining);
 
         /* residual connection */
-        res = Sum(fnn, attnAfter, /*inplace=*/true);
+        res = Sum(fnn, attnAfter, /*inplace=*/isTraining);
 
         /* layer normalization with post-norm for fnn */
         x = LN(res, fnnLayerNorms[i], preLN, false, true);
@@ -275,6 +275,10 @@ XTensor AttEncoder::RunFastPreNorm(XTensor& input, XTensor* mask)
 
     if (useHistory)
         x = history->Pop();
+
+    /* clear the history while not training */
+    if (useHistory && !isTraining)
+        history->ClearHistory();
 
     if (finalNorm)
         return encoderLayerNorm->Run(x);

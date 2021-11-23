@@ -112,8 +112,8 @@ void ModelConfig::Load(int argsNum, const char** args)
     LoadBool("decoderonly", &decoderOnly, false);
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);
-    LoadBool("encfinalnorm", &encFinalNorm, false);
-    LoadBool("decfinalnorm", &decFinalNorm, false);
+    LoadBool("encfinalnorm", &encFinalNorm, encPreLN);
+    LoadBool("decfinalnorm", &decFinalNorm, decPreLN);
     LoadBool("shareencdec", &shareEncDecEmb, false);
     LoadBool("sharedec", &shareDecInputOutputEmb, false);
 

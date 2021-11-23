@@ -95,7 +95,7 @@ XTensor FFN::Make(XTensor& input)
     t1 = Rectify(MulAndShift(input, w1, b1));
     
     if (isTraining && dropoutP > 0)
-        t1 = Dropout(t1, dropoutP, /*inplace=*/true);
+        t1 = Dropout(t1, dropoutP, /*inplace=*/isTraining);
 
     /* result = t1 * w2 + b2 */
     return MulAndShift(t1, w2, b2);
