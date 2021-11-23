@@ -5,7 +5,6 @@ Example: python Ensemble.py -input 'model.bin.epoch.00*' -output model.ensemble
 Help: python3 ModelConverter.py -h
 '''
 
-
 import argparse
 import numpy as np
 from glob import glob

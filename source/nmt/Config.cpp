@@ -105,15 +105,15 @@ void ModelConfig::Load(int argsNum, const char** args)
     Create(argsNum, args);
 
     LoadBool("bigatt", &useBigAtt, false);
-    LoadBool("encprenorm", &encPreLN, true);
-    LoadBool("decprenorm", &decPreLN, true);
+    LoadBool("encprenorm", &encPreLN, false);
+    LoadBool("decprenorm", &decPreLN, false);
     LoadBool("encl1norm", &encoderL1Norm, false);
     LoadBool("decl1norm", &decoderL1Norm, false);
     LoadBool("decoderonly", &decoderOnly, false);
     LoadBool("enchistory", &useEncHistory, false);
     LoadBool("dechistory", &useDecHistory, false);
-    LoadBool("encfinalnorm", &encFinalNorm, true);
-    LoadBool("decfinalnorm", &decFinalNorm, true);
+    LoadBool("encfinalnorm", &encFinalNorm, false);
+    LoadBool("decfinalnorm", &decFinalNorm, false);
     LoadBool("shareencdec", &shareEncDecEmb, false);
     LoadBool("sharedec", &shareDecInputOutputEmb, false);
 

@@ -12,7 +12,6 @@ import argparse
 import numpy as np
 from struct import pack, unpack
 
-
 def get_model_params(model, configs, prefix=None):
     """
     Get flattened model parameters

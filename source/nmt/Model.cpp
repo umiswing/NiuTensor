@@ -151,7 +151,7 @@ void NMTModel::InitModel(NMTConfig& myConfig)
 
     /* share embeddings with output weights */
     if (config->model.shareDecInputOutputEmb)
-        outputLayer->w = decoder->embedder->w;
+        outputLayer->weight = decoder->embedder->w;
 
     ShowModelConfig();
 
@@ -531,8 +531,7 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->selfAtts[i].RPEmbK);
             list.Add(&decoder->selfAtts[i].weightO);
             list.Add(&decoder->selfAtts[i].biasO);
-            list.Add(&decoder->selfAttLayerNorms[i].weight);
-            list.Add(&decoder->selfAttLayerNorms[i].bias);
+            
             if (!config->model.decoderOnly) {
                 list.Add(&decoder->enDeAtts[i].weightQ);
                 list.Add(&decoder->enDeAtts[i].weightK);
@@ -542,8 +541,6 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->enDeAtts[i].biasV);
                 list.Add(&decoder->enDeAtts[i].weightO);
                 list.Add(&decoder->enDeAtts[i].biasO);
-                list.Add(&decoder->enDeAttLayerNorms[i].weight);
-                list.Add(&decoder->enDeAttLayerNorms[i].bias);
             }
             if (decoder->ffns != NULL) {
                 list.Add(&decoder->ffns[i].w1);
@@ -551,6 +548,10 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->ffns[i].w2);
                 list.Add(&decoder->ffns[i].b2);
             }
+            list.Add(&decoder->selfAttLayerNorms[i].weight);
+            list.Add(&decoder->selfAttLayerNorms[i].bias);
+            list.Add(&decoder->enDeAttLayerNorms[i].weight);
+            list.Add(&decoder->enDeAttLayerNorms[i].bias);
             list.Add(&decoder->ffnLayerNorms[i].weight);
             list.Add(&decoder->ffnLayerNorms[i].bias);
         }
@@ -652,7 +653,7 @@ void NMTModel::GetParams(TensorList& list)
     }
 
     if (!config->model.shareDecInputOutputEmb) {
-        list.Add(outputLayer->w);
+        list.Add(outputLayer->weight);
     }
 }
 
@@ -706,11 +707,6 @@ void NMTModel::LoadFromFile(FILE* file)
     TensorList params;
     GetParams(params);
 
-    int size = 0;
-    for (int i = 0; i < params.Size(); i++) {
-        size += params[i]->unitNum;
-    }
-
     if (config->common.useFP16) {
         LOG("running with fp16");
     }
@@ -738,7 +734,6 @@ void NMTModel::LoadFromFile(FILE* file)
 
     double elapsed = GetClockSec() - startT;
     LOG("model loaded (took %.1fs)", elapsed);
-
 }
 
 /* get the total number of parameters */
