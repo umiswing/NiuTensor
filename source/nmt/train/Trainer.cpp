@@ -158,7 +158,7 @@ void Trainer::Run()
             lossTensor.DestroyData();
 
             DTYPE lossLocal = lossBatch / trainBatchLoader.wc;
-            bool doUpdate = (!IsNAN(lossLocal) && !IsINF(lossLocal) && lossLocal < 1e3F);
+            bool doUpdate = (!IsNAN(lossLocal) && !IsINF(lossLocal) && lossLocal < 1e2F);
 
             sentCount += trainBatchLoader.sc;
             wordCount += trainBatchLoader.wc;
@@ -202,9 +202,9 @@ void Trainer::Run()
             /* logging */
             if (step > 0 && step % config->common.logInterval == 0) {
                 double elapsed = GetClockSec() - startT;
-                LOG("elapsed=%.1fs, step=%d, epoch=%d, "
-                    "total word=%d, total sent=%d, loss=%.3f, ppl=%.3f, lr=%.6e", 
-                    elapsed, step, epoch, wordCountTotal, batchCountTotal,
+                LOG("elapsed=%.1fs, step=%d, skipped=%d, epoch=%d, "
+                    "total words=%d, total sents=%d, loss=%.3f, ppl=%.3f, lr=%.6e", 
+                    elapsed, step, nSkipped, epoch, wordCountTotal, batchCountTotal,
                     loss / wordCount / log(2.0), exp(loss / wordCount), lr);
                 
                 if (!doUpdate)

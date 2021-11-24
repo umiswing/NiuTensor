@@ -222,12 +222,7 @@ XTensor NMTModel::MakeEncoder(XTensor& input, XTensor* mask)
 {
     XTensor nothing;
 
-    if (encoder->preLN) {
-        return encoder->Make(input, mask, nothing);
-    }
-    else {
-        return encoder->RunPostNorm(input, mask);
-    }
+    return encoder->Make(input, mask, nothing);
 }
 
 /*
@@ -241,12 +236,7 @@ make the decoding network
 XTensor NMTModel::MakeDecoder(XTensor& inputDec, XTensor& outputEnc,
                               XTensor* mask, XTensor& maskEncDec)
 {
-    if (decoder->preLN) {
-        return decoder->Make(inputDec, outputEnc, mask, &maskEncDec, inputDec.GetDim(1));
-    }
-    else {
-        return decoder->RunPostNorm(inputDec, outputEnc, mask, &maskEncDec, inputDec.GetDim(1));
-    }
+    return decoder->Make(inputDec, outputEnc, mask, &maskEncDec, inputDec.GetDim(1));
 }
 
 /*

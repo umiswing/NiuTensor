@@ -36,10 +36,12 @@ flexible layer normalization for the Transformer
 */
 XTensor LN(XTensor& input, LayerNorm& ln, bool prenorm, bool before, bool after)
 {
-    if (after ^ prenorm)
+    if (after ^ prenorm) {
         return ln.Run(input);
-    else
+    }
+    else {
         return input;
+    }
 }
 
 } /* end of the nmt namespace */

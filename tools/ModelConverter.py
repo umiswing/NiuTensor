@@ -12,6 +12,7 @@ import argparse
 import numpy as np
 from struct import pack, unpack
 
+
 def get_model_params(model, configs, prefix=None):
     """
     Get flattened model parameters
@@ -201,6 +202,11 @@ def main():
         config = state['cfg']['model']
 
     cfg = vars(config)
+
+    config_list = get_model_configs(config, state['model'])
+    param_list = get_model_params(state['model'], config, dirname)
+    save_model(config_list, param_list, args.o, args.data_type)
+
     with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
         fo.write('*'*75)
         fo.write('\n')
@@ -212,10 +218,6 @@ def main():
         fo.write('Training settings:\n')
         for k, v in cfg.items():
             fo.write('{}:\t\t{}\n'.format(k, v))
-
-    config_list = get_model_configs(config, state['model'])
-    param_list = get_model_params(state['model'], config, dirname)
-    save_model(config_list, param_list, args.o, args.data_type)
 
 
 if __name__ == '__main__':
