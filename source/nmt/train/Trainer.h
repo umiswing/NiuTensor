@@ -36,6 +36,9 @@ namespace nmt
 class Trainer
 {
 public:
+    /* the current training step */
+    int step;
+
     /* parameters of adam */
     float adamBeta1T;
     float adamBeta2T;
@@ -88,6 +91,12 @@ public:
 
     /* prepare model for training */
     void PrepareModel();
+
+    /* load optimizer state from a file */
+    void LoadOptimizerState(const char* file);
+
+    /* dump optimizer state to a file */
+    void DumpOptimizerState(const char* path);
 };
 
 } /* end of the nmt namespace */

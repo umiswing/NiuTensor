@@ -30,6 +30,7 @@ namespace nmt
 /* constructor */
 NMTModel::NMTModel()
 {
+    filePos = -1;
     devID = -1;
     config = NULL;
     encoder = new AttEncoder();
@@ -166,8 +167,10 @@ void NMTModel::InitModel(NMTConfig& myConfig)
             AddParam(params[i]);
     }
 
-    if (modelFile)
+    if (modelFile) {
+        filePos = ftell(modelFile);
         fclose(modelFile);
+    }
 }
 
 /*

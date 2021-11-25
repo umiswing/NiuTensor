@@ -30,6 +30,7 @@ namespace nmt
 /* constructor */
 Trainer::Trainer()
 {
+    step = 0;
     model = NULL;
     config = NULL;
     adamBeta1T = 0.0F;
@@ -71,7 +72,7 @@ void Trainer::Run()
 {
     double startT = GetClockSec();
 
-    int step = 0;
+    step = 0;
     int epoch = 0;
     int nSkipped = 0;
     int gradStep = 0;
@@ -86,6 +87,9 @@ void Trainer::Run()
     bool isEnd = false;
 
     PrepareModel();
+
+    if (config->training.incremental)
+        LoadOptimizerState(config->common.modelFN);
     
     model->SetTrainingFlag(true);
     trainBatchLoader.Init(*config, true);
@@ -347,6 +351,7 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
     LOG("make a checkpoint to `%s`", fn);
     model->DumpToFile(fn);
+    DumpOptimizerState(fn);
 
     /* enable gradient flow after validating */
     ENABLE_GRAD;
@@ -453,6 +458,51 @@ void Trainer::PrepareModel()
 
     adamBeta1T = 1.0F;
     adamBeta2T = 1.0F;
+}
+
+/* 
+load optimizer state from a checkpoint file 
+>> file - path of the checkpoint file
+*/
+void Trainer::LoadOptimizerState(const char* file)
+{
+    FILE* f = fopen(file, "rb");
+
+    /* set the file pointer to the end of model parameters */
+    fseek(f, model->filePos, SEEK_SET);
+
+    /* load the step number */
+    fread(&step, sizeof(step), 1, f);
+
+    LOG("Resume training from step %d", step);
+
+    /* load moments and 2nd moments from the file */
+    for (int i = 0; i < moments.Size(); i++) {
+        moments[i]->BinaryRead(f);
+        moments2nd[i]->BinaryRead(f);
+    }
+
+    fclose(f);
+}
+
+/* 
+append the optimizer state to the end of a checkpoint file 
+>> file - path of the checkpoint file
+*/
+void Trainer::DumpOptimizerState(const char* file)
+{
+    FILE* f = fopen(file, "ab");
+
+    /* save the step number */
+    fwrite(&step, sizeof(step), 1, f);
+
+    /* save moments and 2nd moments to the file */
+    for (int i = 0; i < moments.Size(); i++) {
+        moments[i]->BinaryDump(f);
+        moments2nd[i]->BinaryDump(f);
+    }
+
+    fclose(f);
 }
 
 } /* end of the nmt namespace */

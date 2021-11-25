@@ -43,6 +43,9 @@ public:
     /* device id */
     int devID;
 
+    /* the current position of the model file pointer */
+    long filePos;
+
     /* configurations */
     NMTConfig* config;
 

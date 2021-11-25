@@ -133,6 +133,26 @@ def get_model_configs(model_config, model):
 
     return flattened_configs
 
+def get_optimizer_state(state):
+    """
+    Get flattened optimizer states
+    Args:
+        state - the stored optimizer state
+    """
+
+    if 'last_optimizer_state' in state.keys():
+        optimizer_state = state['last_optimizer_state']
+    elif 'optimizer' in state.keys():
+        optimizer_state = state['optimizer']
+    else:
+        optimizer_state = None
+    
+    assert 'state' in optimizer_state.keys()
+
+    flattend_state = list(optimizer_state['state'].values())[0]
+    return (flattend_state['step'],
+            flattend_state['exp_avg'].contiguous().view(-1).numpy().astype(np.float32), 
+            flattend_state['exp_avg_sq'].contiguous().view(-1).numpy().astype(np.float32))
 
 def save_model(configs, params, model_path, data_type):
     """
@@ -173,6 +193,21 @@ def save_model(configs, params, model_path, data_type):
                 f.write(values)
         print('number of parameters:', param_num)
 
+def save_optimizer(optimizer_state_list, model_path):
+    """
+    Append optimizer state to a NiuTrans.NMT model
+    Args:
+        optimizer_state_list - optimizer state (a tuple of lists)
+        model_path - path to the target model file (str)
+    """
+
+    with open(model_path, 'ab') as f:
+        int_config_list = [optimizer_state_list[0]]
+        values = pack('i' * len(int_config_list), *int_config_list)
+        f.write(values)
+        for s in optimizer_state_list[1:]:
+            values = pack('f' * len(s), *(s))
+            f.write(values)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -185,28 +220,35 @@ def main():
     parser.add_argument('-data-type', type=str,
                         help='Data type of the output model, FP32 (Default) or FP16',
                         default='fp32')
+    parser.add_argument('-save-optimizer', help='Whether save the optimizer state', action='store_true')
     args = parser.parse_args()
     print(args)
 
     dirname = args.i.split('/')[-2]
-
     print('Converting `{}` to `{}` with {}...'.format(
         args.i, args.o, args.data_type))
 
+    # load the state
     state = torch.load(args.i, map_location='cpu')
-
     if 'cfg' not in state.keys():
         assert 'args' in state.keys()
         config = state['args']
     else:
         config = state['cfg']['model']
-
     cfg = vars(config)
 
+    # save the configurations and model parameters
     config_list = get_model_configs(config, state['model'])
     param_list = get_model_params(state['model'], config, dirname)
     save_model(config_list, param_list, args.o, args.data_type)
 
+    # save the optimizer state
+    if args.save_optimizer:
+        state_list = get_optimizer_state(state)
+        if state_list is not None:
+            save_optimizer(state_list, args.o)
+
+    # print the detailed model information
     with open(dirname + '.info.txt', 'w', encoding='utf8') as fo:
         fo.write('*'*75)
         fo.write('\n')
