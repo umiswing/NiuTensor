@@ -153,7 +153,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
 
     LoadInt("nepoch", &nepoch, 50);
     LoadInt("nstep", &nstep, 100000);
-    LoadInt("savefreq", &saveFreq, 10000);
+    LoadInt("savefreq", &saveFreq, 100000);
     LoadInt("nwarmup", &nwarmup, 8000);
     LoadInt("updatefreq", &updateFreq, 1);
     LoadInt("ncheckpoint", &ncheckpoint, 10);

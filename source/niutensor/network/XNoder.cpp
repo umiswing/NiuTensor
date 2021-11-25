@@ -43,7 +43,8 @@ bool XNoder::MakeGrad(XTensor * node)
             delete node->grad;
             node->grad = NewTensor(node);
         }
-        node->grad->SetZeroAll();
+        if (!node->isVar)
+            node->grad->SetZeroAll();
     }
 
     return isInit;

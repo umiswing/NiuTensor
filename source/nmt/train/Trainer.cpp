@@ -97,10 +97,8 @@ void Trainer::Run()
         wordCount = 0;
         int sentCount = 0;
 
+        XNet net;
         while (sentCount < trainBatchLoader.sampleNum) {
-
-            XNet net;
-            net.Clear();
 
             /* batch of sequences */
             XTensor batchEnc;
@@ -175,7 +173,7 @@ void Trainer::Run()
                 if (model->decoder->useHistory)
                     model->decoder->history->ClearHistory();
 
-                gradStep += 1;
+                gradStep++;
                 loss += lossBatch;
 
                 /* update the parameters */
@@ -192,15 +190,15 @@ void Trainer::Run()
                     /* model update */
                     Update(lr);
 
-                    gradStep = 0;
                     validStep++;
+                    gradStep = 0;
                 }
             }
             else
                 nSkipped++;
 
             /* logging */
-            if (step > 0 && step % config->common.logInterval == 0) {
+            if (gradStep == 0 && step > 0 && step % config->common.logInterval == 0) {
                 double elapsed = GetClockSec() - startT;
                 LOG("elapsed=%.1fs, step=%d, skipped=%d, epoch=%d, "
                     "total words=%d, total sents=%d, loss=%.3f, ppl=%.3f, lr=%.6e", 
@@ -217,8 +215,11 @@ void Trainer::Run()
                 nStepCheck = 0;
             }
 
+            if (gradStep == 0)
+                step++;
+
             /* reach the maximum training step */
-            if (++step >= config->training.nstep) {
+            if (step >= config->training.nstep) {
                 isEnd = true;
                 break;
             }
@@ -438,6 +439,7 @@ void Trainer::PrepareModel()
     for (int i = 0; i < ws.Size(); i++) {
         XTensor* para = ws[i];
         XNoder::MakeGrad(para);
+        para->isVar = true;
 
         if (config->training.useAdam) {
             XTensor* m = new XTensor(para);
