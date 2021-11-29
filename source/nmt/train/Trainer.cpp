@@ -479,9 +479,11 @@ void Trainer::LoadOptimizerState(const char* file)
     /* load moments and 2nd moments from the file */
     for (int i = 0; i < moments.Size(); i++) {
         moments[i]->BinaryRead(f);
+    }
+    for (int i = 0; i < moments.Size(); i++) {
         moments2nd[i]->BinaryRead(f);
     }
-
+    
     fclose(f);
 }
 
@@ -499,6 +501,8 @@ void Trainer::DumpOptimizerState(const char* file)
     /* save moments and 2nd moments to the file */
     for (int i = 0; i < moments.Size(); i++) {
         moments[i]->BinaryDump(f);
+    }
+    for (int i = 0; i < moments.Size(); i++) {
         moments2nd[i]->BinaryDump(f);
     }
 

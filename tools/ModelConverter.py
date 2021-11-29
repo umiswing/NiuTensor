@@ -18,8 +18,19 @@ def get_model_params(model, configs, prefix=None):
     Get flattened model parameters
     Args:
         model - model parameters (dict)
+        configs - model configurations (Namespace)
+        prefix (optional) - the prefix of the information file
+    Return:
+        flattened_params - flattened model parameters
+        name_interval - the names and positions of parameters
     """
+
+    cur_pos = 0
+    name_interval = []
     flattened_params = []
+
+    # we deal with embeddings separately and place them at the tail of the parameter list
+    embedding_name_interval = []
     encoder_embedding = None
     decoder_embedding = None
     decoder_output_weight = None
@@ -34,26 +45,59 @@ def get_model_params(model, configs, prefix=None):
             v = v.to(torch.float32)
             if 'encoder.embed_tokens.weight' in k:
                 encoder_embedding = v
+                embedding_name_interval.append(
+                    ('no_trans', k, v.shape, cur_pos, v.numel()))
+                cur_pos += v.numel()
             elif 'decoder.embed_tokens.weight' in k:
                 decoder_embedding = v
+                if not configs.share_all_embeddings:
+                    embedding_name_interval.append(
+                        ('no_trans', k, v.shape, cur_pos, v.numel()))
+                    cur_pos += v.numel()
             elif 'decoder.output_projection.weight' in k:
                 decoder_output_weight = v
+                if not configs.share_decoder_input_output_embed:
+                    embedding_name_interval.append(
+                        ('no_trans', k, v.shape, cur_pos, v.numel()))
+                    cur_pos += v.numel()
             elif v.numel() != 1:
                 if 'weight' in k and 'norm' not in k:
                     if 'in_proj' in k:
-                        # split qkv weights to slices
+                        # split qkv weights to three small parts
                         dim = v.shape[0] // 3
+
                         flattened_params.append((v[:dim, :]).t())
+                        name_interval.append(
+                            ('trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                        cur_pos += flattened_params[-1].numel()
+
                         flattened_params.append((v[dim:dim*2, :]).t())
+                        name_interval.append(
+                            ('trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                        cur_pos += flattened_params[-1].numel()
+
                         flattened_params.append((v[dim*2:, :]).t())
+                        name_interval.append(
+                            ('trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                        cur_pos += flattened_params[-1].numel()
                     else:
                         if 'history.weight' in k:
                             for i, v_i in enumerate(v):
                                 flattened_params.append(v_i[:i+1].t())
+                                name_interval.append(
+                                    ('trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                                cur_pos += flattened_params[-1].numel()
                         else:
                             flattened_params.append(v.t())
+                            name_interval.append(
+                                ('trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                            cur_pos += flattened_params[-1].numel()
                 else:
                     flattened_params.append(v)
+                    name_interval.append(
+                        ('no_trans', k, flattened_params[-1].shape, cur_pos, flattened_params[-1].numel()))
+                    cur_pos += flattened_params[-1].numel()
+
                 f.write('{}\t\t{}\n'.format(k, v.shape))
 
     flattened_params.append(encoder_embedding)
@@ -64,9 +108,9 @@ def get_model_params(model, configs, prefix=None):
         if not configs.share_decoder_input_output_embed:
             flattened_params.append(decoder_output_weight)
 
-    # print(encoder_embedding.view(-1)[:10])
-    # print(decoder_embedding.view(-1)[:10])
-    return flattened_params
+    name_interval.extend(embedding_name_interval)
+
+    return flattened_params, name_interval
 
 
 def get_model_configs(model_config, model):
@@ -133,12 +177,17 @@ def get_model_configs(model_config, model):
 
     return flattened_configs
 
-def get_optimizer_state(state):
+
+def get_optimizer_state(state, name_interval):
     """
     Get flattened optimizer states
     Args:
         state - the stored optimizer state
+        name_interval - names of parameters and their indices
     """
+
+    exp_avg_list = []
+    exp_avg_sq_list = []
 
     if 'last_optimizer_state' in state.keys():
         optimizer_state = state['last_optimizer_state']
@@ -146,13 +195,35 @@ def get_optimizer_state(state):
         optimizer_state = state['optimizer']
     else:
         optimizer_state = None
-    
+
     assert 'state' in optimizer_state.keys()
 
     flattend_state = list(optimizer_state['state'].values())[0]
-    return (flattend_state['step'],
-            flattend_state['exp_avg'].contiguous().view(-1).numpy().astype(np.float32), 
-            flattend_state['exp_avg_sq'].contiguous().view(-1).numpy().astype(np.float32))
+    exp_avg = flattend_state['exp_avg']
+    exp_avg_sq = flattend_state['exp_avg_sq']
+
+    # param_info: option, key, shape, start_pos, length
+    for param_info in name_interval:
+
+        shape = param_info[2]
+        start_pos = param_info[3]
+        end_pos = param_info[3] + param_info[4]
+
+        exp_avg_value = exp_avg[start_pos:end_pos]
+        exp_avg_sq_value = exp_avg_sq[start_pos:end_pos]
+
+        if param_info[0] == 'trans' and len(shape) != 1:
+            exp_avg_value = exp_avg_value.view(shape[1], shape[0])
+            exp_avg_value = exp_avg_value.t().contiguous()
+            exp_avg_sq_value = exp_avg_sq_value.view(shape[1], shape[0])
+            exp_avg_sq_value = exp_avg_sq_value.t().contiguous()
+
+        exp_avg_list.append(exp_avg_value.view(-1).numpy().astype(np.float32))
+        exp_avg_sq_list.append(
+            exp_avg_sq_value.view(-1).numpy().astype(np.float32))
+
+    return (flattend_state['step'], exp_avg_list, exp_avg_sq_list)
+
 
 def save_model(configs, params, model_path, data_type):
     """
@@ -193,6 +264,7 @@ def save_model(configs, params, model_path, data_type):
                 f.write(values)
         print('number of parameters:', param_num)
 
+
 def save_optimizer(optimizer_state_list, model_path):
     """
     Append optimizer state to a NiuTrans.NMT model
@@ -202,12 +274,28 @@ def save_optimizer(optimizer_state_list, model_path):
     """
 
     with open(model_path, 'ab') as f:
+
         int_config_list = [optimizer_state_list[0]]
         values = pack('i' * len(int_config_list), *int_config_list)
         f.write(values)
-        for s in optimizer_state_list[1:]:
-            values = pack('f' * len(s), *(s))
+
+        exp_param_num = 0
+        exp_avg_list = optimizer_state_list[1]
+        for exp_avg in tqdm(exp_avg_list):
+            exp_param_num += len(exp_avg)
+            values = pack('f' * len(exp_avg), *(exp_avg))
             f.write(values)
+
+        exp_sq_param_num = 0
+        exp_avg_sq_list = optimizer_state_list[2]
+        for exp_avg_sq in tqdm(exp_avg_sq_list):
+            exp_sq_param_num += len(exp_avg_sq)
+            values = pack('f' * len(exp_avg_sq), *(exp_avg_sq))
+            f.write(values)
+
+        print('number of exp_avg parameters:', exp_param_num)
+        print('number of exp_sq_avg parameters:', exp_sq_param_num)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -220,7 +308,8 @@ def main():
     parser.add_argument('-data-type', type=str,
                         help='Data type of the output model, FP32 (Default) or FP16',
                         default='fp32')
-    parser.add_argument('-save-optimizer', help='Whether save the optimizer state', action='store_true')
+    parser.add_argument(
+        '-save-optimizer', help='Whether save the optimizer state', action='store_true')
     args = parser.parse_args()
     print(args)
 
@@ -239,12 +328,13 @@ def main():
 
     # save the configurations and model parameters
     config_list = get_model_configs(config, state['model'])
-    param_list = get_model_params(state['model'], config, dirname)
+    param_list, name_interval = get_model_params(
+        state['model'], config, dirname)
     save_model(config_list, param_list, args.o, args.data_type)
 
     # save the optimizer state
     if args.save_optimizer:
-        state_list = get_optimizer_state(state)
+        state_list = get_optimizer_state(state, name_interval)
         if state_list is not None:
             save_optimizer(state_list, args.o)
 
