@@ -150,6 +150,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadString("valid", validFN, "");
 
     LoadBool("adam", &useAdam, true);
+    LoadBool("resetoptimizer", &resetOptimizer, false);
 
     LoadInt("nepoch", &nepoch, 50);
     LoadInt("nstep", &nstep, 100000);
@@ -157,8 +158,7 @@ void TrainingConfig::Load(int argsNum, const char **args)
     LoadInt("nwarmup", &nwarmup, 8000);
     LoadInt("updatefreq", &updateFreq, 1);
     LoadInt("ncheckpoint", &ncheckpoint, 10);
-    
-    LoadFloat("lrbias", &lrbias, 0);
+
     LoadFloat("lrate", &lrate, 0.0015F);
     LoadFloat("minlr", &minLR, 1e-9F);
     LoadFloat("warmupinitlr", &warmupInitLR, 1e-7F);

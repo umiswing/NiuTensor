@@ -65,9 +65,6 @@ public:
     /* the minimum learning rate for training */
     float minLR;
 
-    /* the parameter that controls the maximum learning rate in training */
-    float lrbias;
-
     /* the maximum number of training epochs */
     int nepoch;
 
@@ -85,6 +82,10 @@ public:
 
     /* indicates whether we use Adam */
     bool useAdam;
+
+    /* indicates whether reset the optimizer when 
+       resuming training from previous checkpoints */
+    bool resetOptimizer;
 
     /* hyper parameters of Adam */
     float adamBeta1;
@@ -118,7 +119,7 @@ public:
     /* beam size */
     int beamSize;
 
-    /* the alpha parameter controls the length preference */
+    /* the length penalty factor for beam search */
     float lenAlpha;
 
     /* scalar of the input sequence (for max number of search steps) */

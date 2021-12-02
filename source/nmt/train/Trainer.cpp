@@ -86,22 +86,31 @@ void Trainer::Run()
     float loss = 0.0F;
     bool isEnd = false;
 
+    /* initialize the optimizer */
     PrepareModel();
 
-    if (config->training.incremental)
+    /* load the optimizer states from the previous checkpoint */
+    if (config->training.incremental && !config->training.resetOptimizer)
         LoadOptimizerState(config->common.modelFN);
     
+    /* set the training flag */
     model->SetTrainingFlag(true);
+
+    /* initialize the dataloader */
     trainBatchLoader.Init(*config, true);
     validBatchLoader.Init(*config, false);
 
+    /* loop of training epochs */
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
 
+        /* reset the metrics */
         loss = 0.0F;
         wordCount = 0;
         int sentCount = 0;
 
         XNet net;
+
+        /* loop of a training epoch */
         while (sentCount < trainBatchLoader.sampleNum) {
 
             /* batch of sequences */
@@ -125,7 +134,7 @@ void Trainer::Run()
             golds.Add(&paddingDec);
             golds.Add(&label);
 
-            /* load a mini-batch */
+            /* prepare the inputs, paddings, and labels */
             trainBatchLoader.GetBatchSimple((XList*)(&inputs), (XList*)(&golds));
 
             /* flush the batch to the target device */
@@ -263,7 +272,9 @@ void Trainer::Validate()
     int sentCount = 0;
     float loss = 0;
 
+    /* loop of the validation steps */
     while (sentCount < validBatchLoader.sampleNum) {
+        
         /* batch of sequences */
         XTensor batchEnc;
         XTensor batchDec;
@@ -335,25 +346,27 @@ make a checkpoint
 */
 void Trainer::MakeCheckpoint(const char* label, int id)
 {
-    /* disable gradient flow during validating */
+    /* disable gradient flow and set the flags during validating */
     DISABLE_GRAD;
     model->SetTrainingFlag(false);
     model->SetValidatingFlag(true);
+
     Validate();
 
-    char* fn = new char[MAX_LINE_LENGTH];
-
     /* remove old checkpoints */
+    char* fn = new char[MAX_LINE_LENGTH];
     if (id > config->training.ncheckpoint) {
         sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id - config->training.ncheckpoint);
         remove(fn);
     }
     sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id);
-    LOG("make a checkpoint to `%s`", fn);
+
+    /* save a checkpoint */
     model->DumpToFile(fn);
     DumpOptimizerState(fn);
+    LOG("make a checkpoint to `%s`", fn);
 
-    /* enable gradient flow after validating */
+    /* enable gradient flow and restore the flags after validating */
     ENABLE_GRAD;
     model->SetTrainingFlag(true);
     model->SetValidatingFlag(false);
