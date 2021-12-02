@@ -13,10 +13,10 @@
   - [Usage](#usage)
     - [Training](#training)
       - [Commands](#commands)
-      - [An Example](#an-example)
+      - [Training Example](#training-example)
     - [Translating](#translating)
       - [Commands](#commands-1)
-      - [An Example](#an-example-1)
+      - [An Example](#an-example)
   - [Low Precision Inference](#low-precision-inference)
   - [Converting Models from Fairseq](#converting-models-from-fairseq)
   - [A Model Zoo](#a-model-zoo)
@@ -115,12 +115,14 @@ We provide [several examples](./sample/compile/README.md) to build the project w
 #### Compile on Linux
 
 ```bash
-make -j && cd ..
+cmake --build . -j
 ```
 
 #### Compile on Windows
 
-Add ``-A 64`` to the cmake command and it will generate a visual studio project on windows, i.e., ``NiuTrans.NMT.sln`` so you can open & build it with Visual Studio (>= Visual Studio 2015).
+```bash
+cmake --build . --config Release
+```
 
 If it succeeds, you will get an executable file **`NiuTrans.NMT`** in the 'bin' directory.
 

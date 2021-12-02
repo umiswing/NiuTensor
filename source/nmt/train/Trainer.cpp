@@ -372,6 +372,9 @@ void Trainer::Update(const float lr)
     TensorList ws;
     model->GetParams(ws);
 
+    adamBeta1T *= config->training.adamBeta1;
+    adamBeta2T *= config->training.adamBeta2;
+
     for (int i = 0; i < ws.Size(); i++) {
         XTensor* para = ws[i];
         XTensor* paraGrad = para->grad;
@@ -383,8 +386,7 @@ void Trainer::Update(const float lr)
         CheckNTErrors(paraGrad != NULL, "NULL gradient tensor!");
 
         if (config->training.useAdam) {
-            adamBeta1T *= config->training.adamBeta1;
-            adamBeta2T *= config->training.adamBeta2;
+            
             float e = lr * sqrtf(1.0F - adamBeta2T) / (1.0F - adamBeta1T);
             float d = config->training.adamDelta * sqrtf(1.0F - adamBeta2T);
 

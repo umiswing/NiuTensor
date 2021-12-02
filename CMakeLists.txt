@@ -25,6 +25,13 @@ option(USE_MKL "Use MKL" OFF)
 option(USE_OPENBLAS "Use OpenBLAS" OFF)
 option(GEN_DLL "Generate Dynamic Link Library" OFF)
 
+if(MSVC)
+    add_definitions(/MP)
+    add_compile_options(/wd4996)
+else()
+    add_definitions()
+endif()
+
 # If set USE_CUDA ON, please modify CUDA_TOOLKIT_ROOT below.
 # If set USE_MKL ON, please modify the INTEL_ROOT below.
 # If set USE_OPENBLAS ON, please modify the OPENBLAS_ROOT below.
@@ -235,14 +242,18 @@ set(OPENBLAS_LIB ${OPENBLAS_LIB_PATH})
 if(USE_CUDA)
     if(GEN_DLL)
         cuda_add_library(${NIUTRANS_NMTDLL} SHARED ${CPP_FILES} ${H_FILES} ${CU_FILES} ${CUH_FILES})
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${NIUTRANS_NMTDLL})
     else()
         my_add_executable(${NIUTRANS_NMTEXE} ${CPP_FILES} ${H_FILES} ${CU_FILES} ${CUH_FILES})
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${NIUTRANS_NMTEXE})
     endif()
 else()
     if(GEN_DLL)
         add_library(${NIUTRANS_NMTDLL} SHARED ${CPP_FILES} ${H_FILES})
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${NIUTRANS_NMTDLL})
     else()
         my_add_executable(${NIUTRANS_NMTEXE} ${CPP_FILES} ${H_FILES})
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${NIUTRANS_NMTEXE})
     endif()
 endif()
 
