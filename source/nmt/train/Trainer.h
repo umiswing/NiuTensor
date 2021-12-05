@@ -39,6 +39,9 @@ public:
     /* the current training step */
     int step;
 
+    /* the best validation loss during training */
+    float bestValidLoss;
+
     /* parameters of adam */
     float adamBeta1T;
     float adamBeta2T;
@@ -81,7 +84,7 @@ public:
     void RunStep();
 
     /* test the model */
-    void Validate();
+    float Validate();
 
     /* make a checkpoint */
     void MakeCheckpoint(const char* label, int id);

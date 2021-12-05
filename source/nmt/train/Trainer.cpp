@@ -35,6 +35,7 @@ Trainer::Trainer()
     config = NULL;
     adamBeta1T = 0.0F;
     adamBeta2T = 0.0F;
+    bestValidLoss = 1e9F;
 }
 
 /* de-constructor */
@@ -263,8 +264,9 @@ test the model
 >> fn - test data file
 >> ofn - output data file
 >> model - model that is trained
+<< validLoss - loss on the validation set
 */
-void Trainer::Validate()
+float Trainer::Validate()
 {
     double startT = GetClockSec();
 
@@ -337,6 +339,8 @@ void Trainer::Validate()
 
     LOG("validating finished (took %.1fs, sentence=%d, word=%d, loss=%.3f and ppl=%.3f)",
         elapsed, sentCount, wordCount, loss / wordCount / log(2.0), exp(loss / wordCount));
+
+    return loss;
 }
 
 /*
@@ -351,10 +355,16 @@ void Trainer::MakeCheckpoint(const char* label, int id)
     model->SetTrainingFlag(false);
     model->SetValidatingFlag(true);
 
-    Validate();
+    float validLoss = Validate();
+    char* fn = new char[MAX_LINE_LENGTH];
+
+    /* update the best checkpoint */
+    if (validLoss < bestValidLoss) {
+        sprintf(fn, "%s.checkpoint.best", config->common.modelFN);
+        model->DumpToFile(fn);
+    }
 
     /* remove old checkpoints */
-    char* fn = new char[MAX_LINE_LENGTH];
     if (id > config->training.ncheckpoint) {
         sprintf(fn, "%s.%s.%03d", config->common.modelFN, label, id - config->training.ncheckpoint);
         remove(fn);
