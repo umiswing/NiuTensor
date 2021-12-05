@@ -291,7 +291,7 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
        be involved in further sorting and beam search. */
     SumDim(score, mask, score, 0);
 
-    prob.Reshape(order, dims);
+    prob.DestroyData();
     score.Reshape(order, dims);
     probPath.Reshape(order, dims);
 }
@@ -313,7 +313,6 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
     XTensor& index = beam->prediction;
     XTensor& preID = beam->preID;
     XTensor& probPath = beam->probPath;
-    XTensor& prob = beam->prob;
 
     int order = score.order;
 
@@ -379,11 +378,10 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
 
     probPath.Reshape(probPath.unitNum, 1);
     indexCPU.Reshape(indexCPU.dimSize[0], indexCPU.dimSize[indexCPU.order - 1]);
-    indexCPU.FlushToDevice(prob.devID);
+    indexCPU.FlushToDevice(probPath.devID);
 
     probPath = Gather(probPath, indexCPU);
     probPath.Reshape(order, dimsTopK);
-    prob.DestroyData();
 }
 
 /*
