@@ -44,9 +44,6 @@ private:
     /* for batching */
     TranslateDataset batchLoader;
 
-    /* the searcher for translation */
-    void* seacher;
-
     /* configuration of the NMT system */
     NMTConfig* config;
 
@@ -54,6 +51,9 @@ private:
     XList* outputBuf;
 
 public:
+    /* the searcher for translation */
+    void* seacher;
+
     /* constructor */
     Translator();
 

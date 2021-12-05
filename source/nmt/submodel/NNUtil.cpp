@@ -33,6 +33,7 @@ a wrapper for the gather function
 */
 XTensor AutoGather(XTensor& src, XTensor& index)
 {
+    CheckNTErrors(src.devID == index.devID, "the source and index should be on the same device");
 
     if (src.order == 2)
         return Gather(src, index);

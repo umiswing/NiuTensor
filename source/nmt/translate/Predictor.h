@@ -24,6 +24,8 @@
 #ifndef __PREDICTOR_H__
 #define __PREDICTOR_H__
 
+#include <cstdio>
+#include <ctime>
 #include "../Model.h"
 #include "LengthPenalty.h"
 
@@ -139,6 +141,11 @@ private:
     int endSymbol;
 
 public:
+    /* cost of each part in predicting */
+    double decoderCost = 0.0;
+    double cachingCost = 0.0;
+    double outputCost = 0.0;
+
     /* constructor */
     Predictor();
 
@@ -157,7 +164,7 @@ public:
     /* predict the next state */
     void Predict(StateBundle* next, XTensor& aliveIndices, XTensor& encoding,
         XTensor& inputEnc, XTensor& paddingEnc, int rawBatchSize,
-        bool isStart, XTensor& reorderState, bool needReorder, int nstep);
+        bool isStart, XTensor& reorderState, XTensor& index, bool needReorder, int nstep);
 
     /* generate paths up to the states of the current step */
     XTensor GeneratePaths(StateBundle* state);

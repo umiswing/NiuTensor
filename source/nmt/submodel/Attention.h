@@ -56,14 +56,11 @@ public:
     /* constructor */
     Cache();
 
-    /* update the states cache */
-    void Update(XTensor&& k, XTensor&& v);
-
     /* keep alive states */
     void KeepAlive(XTensor& aliveIdx);
 
     /* reorder alive states */
-    void Reorder(XTensor& reorder);
+    void Reorder(XTensor& reorder, XTensor& index);
 };
 
 /* multi-head attention */

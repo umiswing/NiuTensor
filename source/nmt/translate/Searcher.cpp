@@ -113,6 +113,8 @@ search for the most promising states
 void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding, 
                         IntList** outputs, XTensor& score)
 {
+    std::clock_t beamSearchStart = std::clock();
+
     Predictor predictor;
     XTensor maskEnc;
     XTensor encoding;
@@ -125,6 +127,8 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     Prepare(input.GetDim(0), beamSize);
 
+    std::clock_t encoderStart = std::clock();
+
     /* encoder mask */
     model->MakeMTMaskEnc(padding, maskEnc);
 
@@ -133,6 +137,8 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         encoding = model->encoder->RunFastPreNorm(input, &maskEnc);
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
+
+    encoderCost += (std::clock() - encoderStart) / (double)CLOCKS_PER_SEC;
 
     encodingBeam = Unsqueeze(encoding, encoding.order - 2, beamSize);
     inputBeam = Unsqueeze(input, input.order - 1, beamSize);
@@ -164,7 +170,10 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     XTensor reorderState;
     InitTensor1D(&reorderState, batchSize * beamSize, X_INT, input.devID);
-    SetAscendingOrder(reorderState, 0);
+
+    XTensor originalOrder;
+    InitTensor1D(&originalOrder, batchSize * beamSize, X_INT, input.devID);
+    SetAscendingOrder(originalOrder, 0);
 
     /* generate the sequence from left to right */
     for (int l = 0; l < lengthLimit; l++) {
@@ -177,7 +186,11 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
         /* predict the next state */
         predictor.Predict(next, aliveState, encodingBeam, inputBeam,
-            paddingBeam, batchSize * beamSize, l == 0, reorderState, needReorder, l);
+            paddingBeam, batchSize * beamSize, l == 0, reorderState, originalOrder, needReorder, l);
+
+        cachingCost += predictor.cachingCost;
+        decoderCost += predictor.decoderCost;
+        outputCost += predictor.outputCost;
 
         /* compute the model score (given the prediction probability) */
         Score(cur, next);
@@ -199,11 +212,13 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         /* remove finished sentences */
         //RemoveFinishedStates(next, encodingBeam, inputBeam, paddingBeam, aliveState, reorderState);
 
+        std::clock_t cachingStart = std::clock();
         if (needReorder) {
             inputBeam = AutoGather(inputBeam, reorderState);
-            paddingBeam = AutoGather(paddingBeam, reorderState);
-            encodingBeam = AutoGather(encodingBeam, reorderState);
+            paddingBeam = CopyIndexed(paddingBeam, 0, reorderState, originalOrder, 1);
+            encodingBeam = CopyIndexed(encodingBeam, 0, reorderState, originalOrder, 1);
         }
+        cachingCost += (std::clock() - cachingStart) / (double)CLOCKS_PER_SEC;
     }
 
     /* fill the heap with incomplete hypotheses if necessary */
@@ -212,6 +227,8 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
     Dump(outputs, &score);
 
     delete[] states;
+
+    beamSearchCost += (std::clock() - beamSearchStart) / (double)CLOCKS_PER_SEC;
 }
 
 /*

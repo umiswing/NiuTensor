@@ -437,14 +437,6 @@ Cache::Cache()
     enabled = true;
 }
 
-/* update the states cache */
-void Cache::Update(XTensor&& k, XTensor&& v)
-{
-    key = k;
-    value = v;
-    miss = false;
-}
-
 /* keep alive states */
 void Cache::KeepAlive(XTensor& aliveIdx)
 {
@@ -455,11 +447,11 @@ void Cache::KeepAlive(XTensor& aliveIdx)
 }
 
 /* reorder alive states */
-void Cache::Reorder(XTensor& reorder)
+void Cache::Reorder(XTensor& reorder, XTensor& index)
 {
     if (!miss) {
-        key = AutoGather(key, reorder);
-        value = AutoGather(value, reorder);
+        key = CopyIndexed(key, 0, reorder, index, 1);
+        value = CopyIndexed(value, 0, reorder, index, 1);
     }
 }
 

@@ -42,9 +42,6 @@ private:
     /* the alpha parameter controls the length preference */
     float alpha;
 
-    /* predictor */
-    Predictor predictor;
-
     /* max length of the generated sequence */
     int maxLen;
 
@@ -82,6 +79,16 @@ private:
     bool needReorder;
 
 public:
+    /* predictor */
+    Predictor predictor;
+
+    /* cost of each part in a beam search */
+    double cachingCost = 0.0;
+    double outputCost = 0.0;
+    double encoderCost = 0.0;
+    double decoderCost = 0.0;
+    double beamSearchCost = 0.0;
+
     /* constructor */
     BeamSearch();
 

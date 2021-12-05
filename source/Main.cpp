@@ -29,6 +29,8 @@ using namespace nmt;
 
 int main(int argc, const char** argv)
 {
+    std::clock_t mainStart = std::clock();
+
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
@@ -64,6 +66,13 @@ int main(int argc, const char** argv)
         Translator translator;
         translator.Init(config, model);
         translator.Translate();
+
+        BeamSearch* searcher = (BeamSearch*)(translator.seacher);
+        LOG("Duration of encoding: %f", searcher->encoderCost);
+        LOG("Duration of decoding: %f", searcher->decoderCost);
+        LOG("Duration of output: %f", searcher->outputCost);
+        LOG("Duration of caching: %f", searcher->cachingCost);
+        LOG("Duration of beam search: %f", searcher->beamSearchCost);
     }
 
     else {
@@ -72,6 +81,8 @@ int main(int argc, const char** argv)
         fprintf(stderr, "   Run this program with \"-train\" for training!\n");
         fprintf(stderr, "Or run this program with \"-input\" for translation!\n");
     }
+
+    LOG("Duration of main: %f", (std::clock() - mainStart) / (double)CLOCKS_PER_SEC);
 
     return 0;
 }

@@ -144,12 +144,13 @@ predict the next state
 >> rawBatchSize - the raw batch size (in case of some states are pruned)
 >> isStart - whether it is the start state or not
 >> reorderState - the new order of states
+>> index - the indices of states
 >> needReorder - whether we need reordering the states
 >> nstep - current time step of the target sequence
 */
 void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encoding,
                         XTensor& inputEnc, XTensor& paddingEnc, int batchSize, bool isStart,
-                        XTensor& reorderState, bool needReorder, int nstep)
+                        XTensor& reorderState, XTensor& index, bool needReorder, int nstep)
 {
     int dims[MAX_TENSOR_DIM_NUM];
 
@@ -166,6 +167,8 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
         inputDec = GetLastPrediction(s, inputEnc.devID);
     }
 
+    std::clock_t cachingStart = std::clock();
+
     /* keep alive states for the decoder */
     if (aliveState.dimSize[0] < batchSize) {
         /* alive inputs */
@@ -180,10 +183,11 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
 
     if (needReorder) {
         for (int i = 0; i < m->decoder->nlayer; i++) {
-            m->decoder->selfAttCache[i].Reorder(reorderState);
-            m->decoder->enDeAttCache[i].Reorder(reorderState);
+            m->decoder->selfAttCache[i].Reorder(reorderState, index);
         }
     }
+
+    cachingCost = (std::clock() - cachingStart) / (double)CLOCKS_PER_SEC;
 
     /* prediction probabilities */
     XTensor& output = next->prob;
@@ -197,11 +201,13 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     InitTensor(&paddingDec, inputDec.order, dims, X_INT, paddingEnc.devID);
     paddingDec.SetDataFixed(1);
 
+    std::clock_t decoderStart = std::clock();
+
     XTensor maskDec;
     XTensor maskEncDec;
 
     /* decoder mask */
-    m->MakeMTMaskDec(paddingEnc, paddingDec, maskDec, maskEncDec);
+    maskEncDec = m->MakeMTMaskDecInference(paddingEnc);
 
     /* make the decoding network */
     if (m->config->model.decPreLN)
@@ -209,10 +215,16 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     else
         decoding = m->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, nstep);
 
+    decoderCost = (std::clock() - decoderStart) / (double)CLOCKS_PER_SEC;
+
     CheckNTErrors(decoding.order >= 2, "The tensor must be of order 2 or larger!");
+
+    std::clock_t outputStart = std::clock();
 
     /* generate the output probabilities */
     output = m->outputLayer->Make(decoding, true);
+
+    outputCost = (std::clock() - outputStart) / (double)CLOCKS_PER_SEC;
 }
 
 /*
@@ -263,21 +275,8 @@ get the predictions of the previous step
 */
 XTensor Predictor::GetLastPrediction(StateBundle* state, int devID)
 {
-    CheckNTErrors(state->stateNum >= 0, "Illegal state!");
-
-    IntList last;
-
-    for (int i = 0; i < state->stateNum; i++) {
-        State* cur = state->states + i;
-
-        last.Add(cur->prediction);
-    }
-
-    XTensor lastPred;
-    InitTensor2D(&lastPred, int(last.Size()), 1, X_INT, devID);
-    lastPred.SetData(last.items, int(last.Size()));
-
-    return lastPred;
+    int dims[] = { state->prediction.unitNum, 1 };
+    return Reshape(state->prediction, 2, dims, /*inplace=*/false);
 }
 
 } /* end of the nmt namespace */
