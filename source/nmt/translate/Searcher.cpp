@@ -168,11 +168,6 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     /* generate the sequence from left to right */
     for (int l = 0; l < lengthLimit; l++) {
-        if (beamSize > 1) {
-            inputBeam = AutoGather(inputBeam, reorderState);
-            paddingBeam = AutoGather(paddingBeam, reorderState);
-            encodingBeam = AutoGather(encodingBeam, reorderState);
-        }
 
         cur = states + l;
         next = states + l + 1;
@@ -202,7 +197,13 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         }
 
         /* remove finished sentences */
-        //RemoveFinishedStates(next, encodingBeam, inputBeam, paddingBeam, aliveState);
+        //RemoveFinishedStates(next, encodingBeam, inputBeam, paddingBeam, aliveState, reorderState);
+
+        if (needReorder) {
+            inputBeam = AutoGather(inputBeam, reorderState);
+            paddingBeam = AutoGather(paddingBeam, reorderState);
+            encodingBeam = AutoGather(encodingBeam, reorderState);
+        }
     }
 
     /* fill the heap with incomplete hypotheses if necessary */
@@ -235,24 +236,23 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
     if (prob.dataType == X_FLOAT16)
         prob = ConvertDataType(prob, X_FLOAT);
 
-    InitTensor(&score, &prob);
+    if (prev->isStart) {
+        InitTensor1D(&probPathPrev, prob.GetDim(0), prob.dataType, prob.devID);
+        probPathPrev.SetZeroAll();
+    }
+
     InitTensor(&probPath, &prob);
 
-    prob.Reshape(prob.unitNum / outputSize, outputSize);
-    score.Reshape(score.unitNum / outputSize, outputSize);
-    probPath.Reshape(score.unitNum / outputSize, outputSize);
     probPathPrev.Reshape(probPathPrev.unitNum);
+    prob.Reshape(prob.unitNum / outputSize, outputSize);
+    probPath.Reshape(prob.unitNum / outputSize, outputSize);
 
     /* the log-scale probability of the entire sequence */
     SumDim(prob, probPathPrev, probPath, 0);
 
     beam->nstep = prev->nstep + 1.0F;
 
-    /* the GNMT-like length penalty */
-    float lp = LengthPenalizer::GNMT(beam->nstep, alpha);
-
-    /* score = log-prob/lp */
-    score = probPath / lp;
+    score = probPath;
 
     if (prev->isStart) {
         XTensor firstMask = MakeFirstMask(beam);
@@ -263,10 +263,10 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
     }
 
     InitTensor(&mask,
-        prev->endMark.order, prev->endMark.dimSize, X_FLOAT,
+        prev->endMark.order, prev->endMark.dimSize, score.dataType,
         prev->endMark.devID);
     mask.SetZeroAll();
-    _SetDataFixedCond(&mask, &prev->endMark, -1e9F);
+    _SetDataFixedCond(&mask, &prev->endMark, -2e4F);
 
     mask.Reshape(mask.unitNum);
 
@@ -327,8 +327,6 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
     /* keep the most promising candidates in the beam */
     TopK(score, scoreTopK, index, -1, beamSize, true);
 
-    float lp = LengthPenalizer::GNMT(beam->nstep, alpha);
-
     CopyValues(index, indexCPU);
     CopyValues(index, preID);
 
@@ -344,8 +342,9 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
        in the vocabulary by dividing it with vocab-size and computing the remainder. */
     ModMe(index, sizeVocab);
 
-    /* we keep the top-k scores */
-    score = CopyValues(scoreTopK);
+    /* the GNMT-like length penalty */
+    float lp = LengthPenalizer::GNMT(beam->nstep, alpha);
+    score = scoreTopK / lp;
 
     for (int i = 0; i < indexCPU.unitNum; i += beamSize) {
         for (int j = 0; j < beamSize; j++) {
@@ -402,20 +401,31 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     XTensor reorderStateCPU;
 
     InitTensorOnCPU(&id, &idRef);
-    InitTensorOnCPU(&modelScore, &modelScoreRef);
-    InitTensorOnCPU(&prob, &probRef);
-    InitTensorOnCPU(&probPath, &probPathRef);
     InitTensorOnCPU(&prediction, &predictionRef);
     InitTensorOnCPU(&endMarkCPU, &predictionRef);
     InitTensor(&endMark, &predictionRef);
     InitTensorOnCPU(&reorderStateCPU, &reorderState);
 
+    if (probRef.dataType == X_FLOAT) {
+        InitTensorOnCPU(&modelScore, &modelScoreRef);
+        InitTensorOnCPU(&prob, &probRef);
+        InitTensorOnCPU(&probPath, &probPathRef);
+        CopyValues(modelScoreRef, modelScore);
+        CopyValues(probRef, prob);
+        CopyValues(probPathRef, probPath);
+    }
+    else {
+        modelScore = ConvertDataType(modelScoreRef, X_FLOAT);
+        prob = ConvertDataType(probRef, X_FLOAT);
+        probPath = ConvertDataType(probPathRef, X_FLOAT);
+        modelScore.SetDevice(-1);
+        prob.SetDevice(-1);
+        probPath.SetDevice(-1);
+    }
+
     /* we copy the data to CPU because the frequent access to GPU is slow
        and we can speed-up the process by doing the job on CPU. */
     CopyValues(idRef, id);
-    CopyValues(modelScoreRef, modelScore);
-    CopyValues(probRef, prob);
-    CopyValues(probPathRef, probPath);
     CopyValues(predictionRef, prediction);
 
     CheckNTErrors(beam->stateNum == id.unitNum, "Errors occur in counting!");
@@ -424,8 +434,12 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
        maintained on CPUs to ease the implementation of frequent access and
        modification of the states. An alternative is to do this on GPUs but
        it needs much more coding work and the speed-up is not obvious. */
-
+    bool reorder = false;
     for (int i = 0; i < beam->stateNum; i += beamSize) {
+        
+        int bestBeamID = -1;
+        float bestScore = -1e9F;
+        
         for (int j = 0; j < beamSize; j++) {
             int k = i + j;
             State& state = states[k];
@@ -434,7 +448,7 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
             int pid = i / beamSize;
             reorderStateCPU.SetInt(i + offset, i + j);
             if (offset != j)
-                needReorder = true;
+                reorder = true;
 
             State* last = prev->states + pid * beamSize + offset;
 
@@ -473,12 +487,31 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
 
             /* set the ending mark */
             endMarkCPU.SetInt(state.isEnd, k);
+
+            /* find the beam with the highest score */
+            if (state.isCompleted && state.modelScore > bestScore) {
+                bestBeamID = j;
+                bestScore = state.modelScore;
+            }
+        }
+
+        /* force other beams with lower scores to be finished */
+        for (int j = 0; j < beamSize; j++) {
+            int k = i + j;
+            State& state = states[k];
+            if (state.modelScore < bestScore) {
+                state.isEnd = true;
+                state.isCompleted = true;
+            }
         }
     }
 
     /* copy the ending mark from CPU to the target device */
     CopyValues(endMarkCPU, endMark);
-    CopyValues(reorderStateCPU, reorderState);
+    
+    needReorder = reorder;
+    if(needReorder)
+        CopyValues(reorderStateCPU, reorderState);
 }
 
 /*
@@ -552,7 +585,7 @@ void BeamSearch::Dump(IntList** output, XTensor* score)
         XHeap<MIN_HEAP, float>& heap = fullHypos[h];
         int c = heap.Count();
 
-        float bestScore = -1e9F;
+        float bestScore = -2e4F;
         State* state = NULL;
         for (int i = 0; i < c; i++) {
             auto node = heap.Pop();
@@ -644,7 +677,7 @@ update the beam by removing finished hypotheses
 */
 void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
                                       XTensor& aliveInput, XTensor& alivePadding, 
-                                      XTensor& aliveState)
+                                      XTensor& aliveState, XTensor& reorderState)
 {
     State* states = beam->states;
 
@@ -657,7 +690,7 @@ void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
     for (int i = 0; i < beam->stateNum; i += beamSize) {
         int endState = 0;
         for (int j = 0; j < beamSize; j++) {
-            if (states[i + j].isEnd) {
+            if (states[i + j].isCompleted) {
                 endState++;
             }
         }
@@ -684,9 +717,10 @@ void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
     aliveSent.SetData(aliveSentList.items, int(aliveSentList.Size()));
 
     if (aliveStateList.Size() < aliveEncoding.dimSize[0] && aliveStateList.Size() > 0) {
-        aliveInput = AutoGather(aliveInput, aliveState);
-        alivePadding = AutoGather(alivePadding, aliveState);
-        aliveEncoding = AutoGather(aliveEncoding, aliveState);
+        needReorder = true;
+        reorderState.Reshape(reorderState.unitNum, 1);
+        reorderState = AutoGather(reorderState, aliveState);
+        reorderState.Reshape(reorderState.unitNum);
         beam->prob = AutoGather(beam->prob, aliveSent);
         beam->endMark = AutoGather(beam->endMark, aliveSent);
         beam->probPath = AutoGather(beam->probPath, aliveSent);
@@ -709,12 +743,12 @@ XTensor BeamSearch::MakeFirstMask(StateBundle* beam)
     for (int i = 0; i < order - 1; i++)
         dims[i] = prob.dimSize[i];
 
-    InitTensor(&mask, order - 1, dims, X_FLOAT);
+    InitTensor(&mask, order - 1, dims, prob.dataType);
     mask.SetZeroAll();
 
     for (int i = 0; i < mask.unitNum; i++) {
         if (i % beamSize != 0)
-            mask.Set(-1e9, i);
+            mask.Set(-2e4, i);
     }
 
     mask.FlushToDevice(prob.devID);

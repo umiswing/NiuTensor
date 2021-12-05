@@ -123,7 +123,7 @@ public:
 
     /* update the beam by pruning finished states */
     void RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
-        XTensor& aliveInput, XTensor& alivePadding, XTensor& aliveIdx);
+        XTensor& aliveInput, XTensor& alivePadding, XTensor& aliveIdx, XTensor& reorderState);
 
     /* set end symbols for search */
     void SetEnd(const int* tokens, const int tokenNum);

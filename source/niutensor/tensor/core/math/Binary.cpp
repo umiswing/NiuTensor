@@ -36,15 +36,15 @@ T1 BinaryDescale(T1 x, T2 num)
 template<class T1, class T2>
 T1 BinaryPower(T1 x, T2 num)
 {
-    if (num == 0)
+    if (num == T2(0))
         return (T1)1.0;
-    else if (num == 0.5)
+    else if (num == T2(0.5))
         return (T1)sqrt(x);
-    else if (num == 2)
+    else if (num == T2(2))
         return x * x;
     else {
         if (x == 0 && num < 0)
-            return (T1)1e9F;
+            return (T1)1e4F;
         else
             return (T1)pow(x, num);
     }

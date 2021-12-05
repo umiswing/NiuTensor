@@ -264,8 +264,8 @@ XTensor NMTModel::MakeLM(XTensor& input, XTensor& padding)
     /* a upper triangular matrix where the cells of the upper triangular are set to -1e-9.
         this matrix can be used to prevent the attention to current or following words in
         a given sequence. */
-    _SetDataLowTri(&mask, 1e9F, 0);
-    ScaleAndShiftMe(mask, 1.0F, -1e9F);
+    _SetDataLowTri(&mask, 2e4F, 0);
+    ScaleAndShiftMe(mask, 1.0F, -2e4F);
 
     /* forward */
     XTensor encoding;
@@ -330,8 +330,8 @@ void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
     /* an upper triangular matrix where the cells of the upper triangular are set to -1e-9.
        this matrix can be used to prevent the attention to current or following words in
        a given sequence. */
-    _SetDataLowTri(&maskDec, 1e9F, 0);
-    ScaleAndShiftMe(maskDec, 1.0F, -1e9F);
+    _SetDataLowTri(&maskDec, 2e4F, 0);
+    ScaleAndShiftMe(maskDec, 1.0F, -2e4F);
 
     /* encoder-decoder mask that prevents the attention to padding dummy words */
     dims[inputDec.order + 1] = inputEnc.GetDim(inputEnc.order - 1);
@@ -343,7 +343,7 @@ void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
     XTensor* maskEncDecTMPDec = NewTensorBufV2(maskEncDecTMPEnc, paddingEnc.devID, paddingEnc.mem);
 
     _Unsqueeze(&paddingEnc, maskEncDecTMPEnc, paddingEnc.order - 1, paddingDec.GetDim(-1));
-    _ScaleAndShiftMe(maskEncDecTMPEnc, 1e9F, -1e9F);
+    _ScaleAndShiftMe(maskEncDecTMPEnc, 2e4F, -2e4F);
     _Unsqueeze(maskEncDecTMPEnc, &maskEncDec, 0, dims[0]);
 
     DelTensorBuf(maskEncDecTMPDec);
@@ -371,7 +371,7 @@ void NMTModel::MakeMTMask(XTensor& inputEnc, XTensor& inputDec,
     _Unsqueeze(&paddingEnc, padding2, paddingEnc.order - 1, paddingEnc.GetDim(-1));
     _Unsqueeze(padding2, padding3, 0, config->model.decSelfAttHeadNum);
 
-    _ScaleAndShiftMe(padding3, 1e9F, -1e9F);
+    _ScaleAndShiftMe(padding3, 2e4F, -2e4F);
 
     InitTensor(&maskEnc, padding3);
     maskEnc.SetZeroAll();
@@ -399,7 +399,7 @@ void NMTModel::MakeMTMaskEnc(XTensor& paddingEnc, XTensor& maskEnc)
     /* mask of the padding */
     Unsqueeze(paddingEnc, padding2, paddingEnc.order - 1, paddingEnc.GetDim(-1));
     Unsqueeze(padding2, maskEnc, 0, config->model.encSelfAttHeadNum);
-    ScaleAndShiftMe(maskEnc, 1e9F, -1e9F);
+    ScaleAndShiftMe(maskEnc, 2e4F, -2e4F);
 }
 
 /*
@@ -424,8 +424,8 @@ void NMTModel::MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
         /* An upper triangular matrix where the cells of the upper triangular are set to -1e-9.
            This matrix can be used to block the attention to current or following words in
            a given sequence. */
-        _SetDataLowTri(&maskDec, 1e9F, 0);
-        ScaleAndShiftMe(maskDec, 1.0F, -1e9F);
+        _SetDataLowTri(&maskDec, 2e4F, 0);
+        ScaleAndShiftMe(maskDec, 1.0F, -2e4F);
         delete[] dims;
     }
 
@@ -437,7 +437,7 @@ void NMTModel::MakeMTMaskDec(XTensor& paddingEnc, XTensor& paddingDec,
         Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.encDecAttHeadNum);
     else
         maskEncDec = maskEncDecTMP;
-    ScaleAndShiftMe(maskEncDec, 1e9F, -1e9F);
+    ScaleAndShiftMe(maskEncDec, 2e4F, -2e4F);
 }
 
 /*
@@ -456,11 +456,11 @@ XTensor NMTModel::MakeMTMaskDecInference(XTensor& paddingEnc)
     if (config->model.encDecAttHeadNum > 1) {
         XTensor maskEncDec;
         Unsqueeze(maskEncDecTMP, maskEncDec, 0, config->model.encDecAttHeadNum);
-        ScaleAndShiftMe(maskEncDec, 1e9F, -1e9F);
+        ScaleAndShiftMe(maskEncDec, 2e4F, -2e4F);
         return maskEncDec;
     }
     else {
-        ScaleAndShiftMe(maskEncDecTMP, 1e9F, -1e9F);
+        ScaleAndShiftMe(maskEncDecTMP, 2e4F, -2e4F);
         return maskEncDecTMP;
     }
 }

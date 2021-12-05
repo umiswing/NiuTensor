@@ -99,19 +99,19 @@ if the condition entry is non-zero
 >> size - size of the array
 >> p - the initial value
 */
-template<class T>
+template<class T, class U>
 __global__ 
-void KernelSetDataFixedCond(T * d, T * c, T value, int size)
+void KernelSetDataFixedCond(T * d, U * c, T value, int size)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if (i < size && c[i] != 0)
+    if (i < size && c[i] != U(0))
         d[i] = value;
 }
 template __global__ void KernelSetDataFixedCond<int>(int*, int*, int, int);
 template __global__ void KernelSetDataFixedCond<float>(float*, float*, float, int);
 template __global__ void KernelSetDataFixedCond<double>(double*, double*, double, int);
-//template __global__ void KernelSetDataFixedCond<__half>(__half*, __half*, __half, int);
+template __global__ void KernelSetDataFixedCond<__half>(__half*, int*, __half, int);
 
 /* 
 generate data items with a fixed value p 
@@ -136,22 +136,30 @@ void _CudaSetDataFixedCond(XTensor* tensor, XTensor* condition, T value)
     int devIDBackup;
     ProtectCudaDev(tensor->devID, devIDBackup);
 
-    if (tensor->dataType == X_INT)
+    if (tensor->dataType == X_INT){
         KernelSetDataFixedCond <<< blocks, threads >>> ((int*)tensor->data, (int*)condition->data,
                                                        (int)value, tensor->unitNum);
-    else if (tensor->dataType == X_FLOAT)
+    }
+    else if (tensor->dataType == X_FLOAT){
         KernelSetDataFixedCond <<< blocks, threads >>> ((float*)tensor->data, (float*)condition->data,
                                                        (float)value, tensor->unitNum);
-
-    else if (tensor->dataType == X_DOUBLE)
+    }
+    else if (tensor->dataType == X_DOUBLE){
         KernelSetDataFixedCond <<< blocks, threads >>> ((double*)tensor->data, (double*)condition->data,
                                                        (double)value, tensor->unitNum);
-    //else if (tensor->dataType == X_FLOAT16)
-    //    KernelSetDataFixedCond <<< blocks, threads >>> ((__half*)tensor->data, (__half*)condition->data,
-    //                                                   (__half)value, tensor->unitNum);
-    else
+    }
+    else if (tensor->dataType == X_FLOAT16){
+        if (condition->dataType == X_INT){
+            KernelSetDataFixedCond <<< blocks, threads >>> ((__half*)tensor->data, (int*)condition->data,
+                                                           (__half)value, tensor->unitNum);
+        }
+        else{
+            ShowNTErrors("TODO! Unsupported datatype!")
+        }
+    }
+    else{
         ShowNTErrors("TODO! Unsupported datatype!")
-
+    }
     BacktoCudaDev(tensor->devID, devIDBackup);
 }
 template void _CudaSetDataFixedCond<int>(XTensor*, XTensor*, int);

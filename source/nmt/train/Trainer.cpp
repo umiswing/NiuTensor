@@ -35,7 +35,7 @@ Trainer::Trainer()
     config = NULL;
     adamBeta1T = 0.0F;
     adamBeta2T = 0.0F;
-    bestValidLoss = 1e9F;
+    bestValidLoss = 2e4F;
 }
 
 /* de-constructor */

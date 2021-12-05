@@ -101,10 +101,9 @@ void Predictor::Create(NMTModel* model, XTensor* top, const XTensor* input,
         dims[i] = input->dimSize[i];
     dims[input->order - 1] = beamSize;
 
-    InitTensor(&state->probPath, input->order, dims, X_FLOAT, input->devID);
+    
     InitTensor(&state->endMark, input->order, dims, X_INT, input->devID);
 
-    state->probPath.SetZeroAll();
     state->nstep = 0.0F;
     state->endMark.SetZeroAll();
 
@@ -157,15 +156,10 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     /* word indices of positions up to next state */
     XTensor inputDec;
 
-    /* the first token */
-    XTensor first;
-
-    InitTensor2D(&first, batchSize, 1, X_INT, inputEnc.devID);
-    first.SetDataFixed(startSymbol);
-
     /* add a new word into the input sequence of the decoder side */
     if (isStart) {
-        inputDec = Identity(first);
+        InitTensor2D(&inputDec, batchSize, 1, X_INT, inputEnc.devID);
+        inputDec.SetDataFixed(startSymbol);
     }
     else {
         /* only pass one step to the decoder */
