@@ -59,12 +59,6 @@ public:
     /* indicates whether the state is completed */
     bool isCompleted;
 
-    /* probability of every prediction (last state of the path) */
-    float prob;
-
-    /* probability of every path */
-    float probPath;
-
     /* model score of every path. A model score = path probability + some other stuff */
     float modelScore;
 

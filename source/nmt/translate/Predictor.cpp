@@ -64,8 +64,6 @@ void StateBundle::MakeStates(int num)
         states[i].isEnd = false;
         states[i].isStart = false;
         states[i].isCompleted = false;
-        states[i].prob = 0;
-        states[i].probPath = 0;
         states[i].modelScore = 0;
         states[i].nstep = 0;
         states[i].last = NULL;

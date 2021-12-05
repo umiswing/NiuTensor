@@ -377,16 +377,13 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
 
     order = probPath.order;
 
-    prob.Reshape(prob.unitNum, 1);
     probPath.Reshape(probPath.unitNum, 1);
     indexCPU.Reshape(indexCPU.dimSize[0], indexCPU.dimSize[indexCPU.order - 1]);
-
     indexCPU.FlushToDevice(prob.devID);
-    prob = Gather(prob, indexCPU);
-    probPath = Gather(probPath, indexCPU);
 
-    prob.Reshape(order, dimsTopK);
+    probPath = Gather(probPath, indexCPU);
     probPath.Reshape(order, dimsTopK);
+    prob.DestroyData();
 }
 
 /*
@@ -411,8 +408,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     XTensor& endMark = beam->endMark;
     XTensor id;
     XTensor modelScore;
-    XTensor prob;
-    XTensor probPath;
     XTensor prediction;
     XTensor endMarkCPU;
     XTensor reorderStateCPU;
@@ -425,19 +420,11 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
 
     if (probRef.dataType == X_FLOAT) {
         InitTensorOnCPU(&modelScore, &modelScoreRef);
-        InitTensorOnCPU(&prob, &probRef);
-        InitTensorOnCPU(&probPath, &probPathRef);
         CopyValues(modelScoreRef, modelScore);
-        CopyValues(probRef, prob);
-        CopyValues(probPathRef, probPath);
     }
     else {
         modelScore = ConvertDataType(modelScoreRef, X_FLOAT);
-        prob = ConvertDataType(probRef, X_FLOAT);
-        probPath = ConvertDataType(probPathRef, X_FLOAT);
         modelScore.SetDevice(-1);
-        prob.SetDevice(-1);
-        probPath.SetDevice(-1);
     }
 
     /* we copy the data to CPU because the frequent access to GPU is slow
@@ -490,8 +477,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
 
             /* scores */
             state.modelScore = modelScore.Get(k);
-            state.prob = prob.Get(k);
-            state.probPath = probPath.Get(k);
 
             /* prediction */
             state.prediction = prediction.GetInt(k);
