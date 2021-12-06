@@ -60,7 +60,7 @@ public:
     void KeepAlive(XTensor& aliveIdx);
 
     /* reorder alive states */
-    void Reorder(XTensor& reorder, XTensor& index);
+    void Reorder(XTensor& reorder);
 };
 
 /* multi-head attention */

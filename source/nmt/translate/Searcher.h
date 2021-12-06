@@ -88,6 +88,10 @@ public:
     double encoderCost = 0.0;
     double decoderCost = 0.0;
     double beamSearchCost = 0.0;
+    double scoringCost = 0.0;
+    double generatingCost = 0.0;
+    double expandingCost = 0.0;
+    double collectingCost = 0.0;
 
     /* constructor */
     BeamSearch();

@@ -70,9 +70,19 @@ int main(int argc, const char** argv)
         BeamSearch* searcher = (BeamSearch*)(translator.seacher);
         LOG("Duration of encoding: %f", searcher->encoderCost);
         LOG("Duration of decoding: %f", searcher->decoderCost);
+        LOG("Duration of decoder selfAttnCost: %f", model.decoder->selfAttnCost);
+        LOG("Duration of decoder endeAttnCost: %f", model.decoder->endeAttnCost);
+        LOG("Duration of decoder lnCost: %f", model.decoder->lnCost);
+        LOG("Duration of decoder ffnCost: %f", model.decoder->ffnCost);
+        LOG("Duration of decoder embCost: %f", model.decoder->embCost);
+
         LOG("Duration of output: %f", searcher->outputCost);
         LOG("Duration of caching: %f", searcher->cachingCost);
         LOG("Duration of beam search: %f", searcher->beamSearchCost);
+        LOG("Duration of scoring: %f", searcher->scoringCost);
+        LOG("Duration of generating: %f", searcher->generatingCost);
+        LOG("Duration of expanding: %f", searcher->expandingCost);
+        LOG("Duration of collecting: %f", searcher->collectingCost);
     }
 
     else {
@@ -82,7 +92,18 @@ int main(int argc, const char** argv)
         fprintf(stderr, "Or run this program with \"-input\" for translation!\n");
     }
 
-    LOG("Duration of main: %f", (std::clock() - mainStart) / (double)CLOCKS_PER_SEC);
+    /*XTensor emb, idx;
+    InitTensor2D(&emb, 30000, 512, X_FLOAT, 0);
+    InitTensor2D(&idx, 512, 1, X_INT, 0);
+    int data[512];
+    for (int i = 0; i < 512; i++)
+        data[i] = rand() % 30000;
+    idx.SetData(data, 512);
+    XTensor x;
+    for (int i = 0; i < 100000; i++)
+        x = Gather(emb, idx);
+
+    LOG("Duration of main: %f", (std::clock() - mainStart) / (double)CLOCKS_PER_SEC);*/
 
     return 0;
 }

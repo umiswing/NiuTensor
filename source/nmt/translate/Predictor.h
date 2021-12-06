@@ -158,7 +158,7 @@ public:
     /* predict the next state */
     void Predict(StateBundle* next, XTensor& aliveIndices, XTensor& encoding,
         XTensor& inputEnc, XTensor& paddingEnc, int rawBatchSize,
-        bool isStart, XTensor& reorderState, XTensor& index, bool needReorder, int nstep);
+        bool isStart, XTensor& reorderState, bool needReorder, int nstep);
 
     /* generate paths up to the states of the current step */
     XTensor GeneratePaths(StateBundle* state);

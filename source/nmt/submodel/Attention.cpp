@@ -447,11 +447,11 @@ void Cache::KeepAlive(XTensor& aliveIdx)
 }
 
 /* reorder alive states */
-void Cache::Reorder(XTensor& reorder, XTensor& index)
+void Cache::Reorder(XTensor& reorder)
 {
     if (!miss) {
-        key = CopyIndexed(key, 0, reorder, index, 1);
-        value = CopyIndexed(value, 0, reorder, index, 1);
+        key = AutoGather(key, reorder);
+        value = AutoGather(value, reorder);
     }
 }
 
