@@ -253,33 +253,29 @@ compute the model score for each hypotheses
 void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
 {
     XTensor& score = beam->modelScore;
-    XTensor& prob = beam->prob;
     XTensor& probPath = beam->probPath;
     XTensor& probPathPrev = prev->probPath;
     XTensor mask;
 
-    int order = prob.order;
-    int outputSize = prob.dimSize[prob.order - 1];
+    int order = probPath.order;
+    int outputSize = probPath.dimSize[probPath.order - 1];
     int dims[MAX_TENSOR_DIM_NUM];
     for (int i = 0; i < order; i++)
-        dims[i] = prob.dimSize[i];
+        dims[i] = probPath.dimSize[i];
 
-    if (prob.dataType == X_FLOAT16)
-        prob = ConvertDataType(prob, X_FLOAT);
+    if (probPath.dataType == X_FLOAT16)
+        probPath = ConvertDataType(probPath, X_FLOAT);
 
     if (prev->isStart) {
-        InitTensor1D(&probPathPrev, prob.GetDim(0), prob.dataType, prob.devID);
+        InitTensor1D(&probPathPrev, probPath.GetDim(0), probPath.dataType, probPath.devID);
         probPathPrev.SetZeroAll();
     }
 
-    InitTensor(&probPath, &prob);
-
     probPathPrev.Reshape(probPathPrev.unitNum);
-    prob.Reshape(prob.unitNum / outputSize, outputSize);
-    probPath.Reshape(prob.unitNum / outputSize, outputSize);
+    probPath.Reshape(probPath.unitNum / outputSize, outputSize);
 
     /* the log-scale probability of the entire sequence */
-    SumDim(prob, probPathPrev, probPath, 0);
+    SumDim(probPath, probPathPrev, probPath, 0);
 
     beam->nstep = prev->nstep + 1.0F;
 
@@ -305,7 +301,6 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
        be involved in further sorting and beam search. */
     SumDim(score, mask, score, 0);
 
-    prob.DestroyData();
     score.Reshape(order, dims);
     probPath.Reshape(order, dims);
 }
@@ -414,7 +409,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     State* states = beam->states;
     XTensor& idRef = beam->preID;
     XTensor& modelScoreRef = beam->modelScore;
-    XTensor& probRef = beam->prob;
     XTensor& probPathRef = beam->probPath;
     XTensor& predictionRef = beam->prediction;
     XTensor& endMark = beam->endMark;
@@ -430,7 +424,7 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     InitTensor(&endMark, &predictionRef);
     InitTensorOnCPU(&reorderStateCPU, &reorderState);
 
-    if (probRef.dataType == X_FLOAT) {
+    if (beam->probPath.dataType == X_FLOAT) {
         InitTensorOnCPU(&modelScore, &modelScoreRef);
         CopyValues(modelScoreRef, modelScore);
     }
@@ -735,9 +729,8 @@ void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
         reorderState.Reshape(reorderState.unitNum, 1);
         reorderState = AutoGather(reorderState, aliveState);
         reorderState.Reshape(reorderState.unitNum);
-        beam->prob = AutoGather(beam->prob, aliveSent);
-        beam->endMark = AutoGather(beam->endMark, aliveSent);
         beam->probPath = AutoGather(beam->probPath, aliveSent);
+        beam->endMark = AutoGather(beam->endMark, aliveSent);
         beam->modelScore = AutoGather(beam->modelScore, aliveSent);
         beam->prediction = AutoGather(beam->prediction, aliveSent);
     }
@@ -749,7 +742,7 @@ make a mask to prevent duplicated entries in beam expansion for the first positi
 */
 XTensor BeamSearch::MakeFirstMask(StateBundle* beam)
 {
-    XTensor& prob = beam->prob;
+    XTensor& prob = beam->probPath;
     XTensor mask;
 
     int order = prob.order;

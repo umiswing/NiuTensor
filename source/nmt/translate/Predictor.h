@@ -82,9 +82,6 @@ public:
     /* mark that indicates whether each hypotheses is completed */
     XTensor endMark;
 
-    /* probability of every prediction (last state of the path) */
-    XTensor prob;
-
     /* probability of every path */
     XTensor probPath;
 

@@ -187,7 +187,7 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     cachingCost = (std::clock() - cachingStart) / (double)CLOCKS_PER_SEC;
 
     /* prediction probabilities */
-    XTensor& output = next->prob;
+    XTensor& output = next->probPath;
     XTensor decoding;
 
     for (int i = 0; i < inputDec.order - 1; i++)
