@@ -138,7 +138,7 @@ XTensor Embedder::Make(XTensor& input, bool isDec, int nstep)
     InitTensor1D(&position, input.GetDim(-1), X_INT, devID);
 
     if (!isDec || isTraining || input.GetDim(-1) > 1) {
-        position.Range(0, position.unitNum, 1);
+        SetAscendingOrder(position, 0);
         ScaleAndShiftMe(position, 1.0F, float(padIdx + 1));
     }
     else {

@@ -125,35 +125,20 @@ void _CudaGather(const XTensor * s, XTensor * t, XTensor * srcIndex)
     int * sIndex = NULL;
     
     if (srcIndex->devID < 0) {
-        int * sIndexData = (int*)srcIndex->data;
-        for (int i = 0; i < indexSize; i++) {
-            int srcIndexValue = sIndexData[i] * stride;
-            CheckNTErrors(srcIndexValue < s->unitNum, "Wrong index!");
-        }
-
-        /*sIndex = mem != NULL ? 
-                  (int*)mem->AllocBuf(mem->devID, sizeof(int) * indexSize) : 
-                  (int*)XMemAlloc(mem->devID, sizeof(int) * indexSize);*/
-        if (mem != NULL) {
-            mem->LockBuf();
-            sIndex = (int*)mem->AllocBuf(mem->devID, sizeof(int) * indexSize);
-        }
-        else {
-            sIndex = (int*)XMemAlloc(mem->devID, sizeof(int) * indexSize);
-        }
-        XMemCopy(sIndex, devID, srcIndex, -1, sizeof(int) * indexSize);
+        ShowNTErrors("The index should be placed at the GPU!");
     }
     else {
-        int * sIndexData = new int[sizeof(int) * indexSize];
-        XMemCopy(sIndexData, -1, srcIndex->data, srcIndex->devID, sizeof(int) * indexSize);
-        for (int i = 0; i < indexSize; i++) {
-            int srcIndexValue = sIndexData[i] * stride;
-            CheckNTErrors(srcIndexValue < s->unitNum, "Wrong index!");
-        }
+        // int * sIndexData = new int[sizeof(int) * indexSize];
+        // XMemCopy(sIndexData, -1, srcIndex->data, srcIndex->devID, sizeof(int) * indexSize);
+        // for (int i = 0; i < indexSize; i++) {
+        //     int srcIndexValue = sIndexData[i] * stride;
+        //     CheckNTErrors(srcIndexValue < s->unitNum, "Wrong index!");
+        // }
+        // delete[] sIndexData;
+        
+        // ToDo huchi: check the index range before calling this function
 
         sIndex = (int *)srcIndex->data;
-
-        delete[] sIndexData;
     }
 
     if (s->dataType == X_FLOAT && t->dataType == X_FLOAT) {
