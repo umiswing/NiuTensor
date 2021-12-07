@@ -145,10 +145,9 @@ XTensor Gather(XTensor &s, XTensor &index)
         else
             dimSize[i] = s.dimSize[i];
     }
-    
-    float dr = (!s.isSparse) ? 1.0F : s.denseRatio;
-    XTensor t(order, dimSize, s.dataType, dr, s.devID, s.mem);
-    t.SetTMPFlag();
+
+    XTensor t;
+    InitTensor(&t, order, dimSize, s.dataType, s.devID);
 
     delete[] dimSize;
 
