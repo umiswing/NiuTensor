@@ -128,6 +128,9 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     std::clock_t encoderStart = std::clock();
 
+    input.SetDevice(model->devID);
+    padding.SetDevice(model->devID);
+
     /* encoder mask */
     model->MakeMTMaskEnc(padding, maskEnc);
 
@@ -850,9 +853,16 @@ search for the most promising states
 void GreedySearch::Search(NMTModel* model, XTensor& input, 
                           XTensor& padding, IntList** outputs)
 {
+    std::clock_t searchStart = std::clock();
+
     XTensor maskEnc;
     XTensor encoding;
     batchSize = input.GetDim(0);
+
+    std::clock_t start = std::clock();
+
+    input.SetDevice(model->devID);
+    padding.SetDevice(model->devID);
 
     /* encoder mask */
     model->MakeMTMaskEnc(padding, maskEnc);
@@ -862,16 +872,22 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         encoding = model->encoder->RunFastPreNorm(input, &maskEnc);
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
+
+    encoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
         
     /* max output-length = scalar * source-length */
     int lengthLimit = int(float(input.GetDim(-1)) * scalarMaxLength) + maxLen;
 
     CheckNTErrors(lengthLimit > 0, "Invalid maximum output length");
 
+    start = std::clock();
+
     /* the first token */
     XTensor inputDec;
     InitTensor2D(&inputDec, batchSize, 1, X_INT, input.devID);
     inputDec.SetDataFixed(startSymbol);
+
+    decoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
 
     /* initialize the finished flags */
     int* finishedFlags = new int[batchSize];
@@ -889,6 +905,8 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
 
     for (int l = 0; l < lengthLimit; l++) {
 
+        start = std::clock();
+
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
 
@@ -898,15 +916,29 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         else
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
 
+        decoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
+
+        start = std::clock();
+
         /* generate the output probabilities */
         prob = model->outputLayer->Make(decoding, false);
+
+        outputCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
+
+        start = std::clock();
 
         /* get the most promising predictions */
         prob.Reshape(prob.dimSize[0], prob.dimSize[prob.order - 1]);
         TopK(prob, bestScore, inputDec, -1, 1);
 
+        topKCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
+
+        start = std::clock();
+
         /* save the predictions */
         CopyValues(inputDec, indexCPU);
+
+        copyCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
 
         for (int i = 0; i < batchSize; i++) {
             if (IsEnd(indexCPU.GetInt(i)))
@@ -925,6 +957,8 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     }
 
     delete[] finishedFlags;
+
+    greedySearchCost += (std::clock() - searchStart) / (double)CLOCKS_PER_SEC;
 }
 
 } /* end of the nmt namespace */

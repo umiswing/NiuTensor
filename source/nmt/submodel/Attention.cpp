@@ -162,8 +162,8 @@ XTensor Attention::Make(XTensor& k, XTensor& q, XTensor& v,
                 k2 = Concatenate(cache->key, k2, 1);
                 v2 = Concatenate(cache->value, v2, 1);
             }
-            cache->key = k2;
-            cache->value = v2;
+            cache->key = std::move(k2);
+            cache->value = std::move(v2);
             cache->miss = false;
 
             if (useRPR)

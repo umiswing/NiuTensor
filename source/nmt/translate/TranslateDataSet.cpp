@@ -155,7 +155,9 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
         *totalLength += src->Size();
 
         curSrc = maxLen * i;
-        memcpy(&(batchValues[curSrc]), src->items, sizeof(int) * src->Size());
+        for (int i = 0; i < src->Size(); i++) {
+            batchValues[curSrc + i] = src->Get(i);
+        }
         curSrc += src->Size();
 
         while (curSrc < maxLen * (i + 1))
@@ -166,8 +168,8 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     XTensor* batchEnc = (XTensor*)(inputs->Get(0));
     XTensor* paddingEnc = (XTensor*)(inputs->Get(1));
-    InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT, config->common.devID);
-    InitTensor2D(paddingEnc, realBatchSize, maxLen, config->common.useFP16 ? X_FLOAT : X_FLOAT, config->common.devID);
+    InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT, -1);
+    InitTensor2D(paddingEnc, realBatchSize, maxLen, X_FLOAT, -1);
     batchEnc->SetData(batchValues, batchEnc->unitNum);
     paddingEnc->SetData(paddingValues, paddingEnc->unitNum);
 

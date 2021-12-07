@@ -165,6 +165,13 @@ private:
     float scalarMaxLength;
 
 public:
+    /* cost of each part in a greedy search */
+    double outputCost = 0.0;
+    double encoderCost = 0.0;
+    double decoderCost = 0.0;
+    double topKCost = 0.0;
+    double copyCost = 0.0;
+    double greedySearchCost = 0.0;
 
     /* constructor */
     GreedySearch();
