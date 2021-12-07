@@ -54,8 +54,8 @@ void _MatrixMul2DParallel(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
     int aColNum = am;
     int bColNum = bm;
 
-    if (beta == 0)
-        c->SetZeroAll();
+    /*if (beta == 0)
+        c->SetZeroAll();*/
 
     /* a * b */
     if (transposedA == X_NOTRANS && transposedB == X_NOTRANS) {

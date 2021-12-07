@@ -102,8 +102,8 @@ void _MatrixMul2D(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
         {
             CheckNTErrors((beta == 0 || beta == 1.0), "beta must be 0 or 1.");
 
-            if (beta == 0)
-                c->SetZeroAll();
+            /*if (beta == 0)
+                c->SetZeroAll();*/
             int num = *((int*)b->data);
             char * p = (char*)b->data + sizeof(int); // pointer to the first tuple
 

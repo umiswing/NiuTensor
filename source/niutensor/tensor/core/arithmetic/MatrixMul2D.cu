@@ -151,8 +151,8 @@ void _CudaMatrixMul2D(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
 
         cublasHandle_t * handle = a->mem == NULL ? GDevs.GetCudaHandle(a->devID) : a->mem->GetCublasHandle();
 
-        if (beta == 0)
-            c->SetZeroAll();
+        /*if (beta == 0)
+            c->SetZeroAll();*/
 
         if ((a->dataType == X_FLOAT && b->dataType == X_FLOAT && c->dataType == X_FLOAT) ||
             (a->dataType == X_FLOAT16 && b->dataType == X_FLOAT16 && c->dataType == X_FLOAT16)) {
@@ -184,8 +184,9 @@ void _CudaMatrixMul2D(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
 
             void * bData = (void*)((char*)b->data + sizeof(int));
 
-            if (beta == 0)
-                c->SetZeroAll();
+            if (beta == 0) {
+                //c->SetZeroAll();
+            }
             else if (beta != 1.0F) {
                 ShowNTErrors("TODO!");
             }

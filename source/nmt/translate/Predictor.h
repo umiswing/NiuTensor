@@ -160,9 +160,6 @@ public:
         XTensor& inputEnc, XTensor& paddingEnc, int rawBatchSize,
         bool isStart, XTensor& reorderState, bool needReorder, int nstep);
 
-    /* generate paths up to the states of the current step */
-    XTensor GeneratePaths(StateBundle* state);
-
     /* get the predictions of the previous step */
     XTensor GetLastPrediction(StateBundle* state, int devID);
 };

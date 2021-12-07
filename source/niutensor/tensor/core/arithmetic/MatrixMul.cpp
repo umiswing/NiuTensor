@@ -160,8 +160,8 @@ void _MatrixMul(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
         
         int devIDBackup;
 
-        if (beta == 0)
-            c->SetZeroAll();
+        /*if (beta == 0)
+            c->SetZeroAll();*/
 
         ProtectCudaDev(a->devID, devIDBackup);
 

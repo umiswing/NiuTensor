@@ -220,47 +220,6 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
 }
 
 /*
-generate paths up to the states of the current step
->> state - state bundle of the current step
-*/
-XTensor Predictor::GeneratePaths(StateBundle* state)
-{
-    CheckNTErrors(state->stateNum >= 0, "Illegal state!");
-
-    int distance = -1;
-
-    for (int i = 0; i < state->stateNum; i++) {
-        State* cur = state->states + i;
-        int nsteps = 0;
-
-        while (cur != NULL) {
-            nsteps++;
-            cur = cur->last;
-        }
-
-        if (nsteps > distance)
-            distance = nsteps;
-    }
-
-    XTensor path;
-    InitTensor2D(&path, state->stateNum, distance, X_INT);
-    path.SetZeroAll();
-
-    for (int i = 0; i < state->stateNum; i++) {
-        State* cur = state->states + i;
-        int nsteps = 0;
-
-        while (cur != NULL) {
-            nsteps++;
-            path.Set2DInt(cur->prediction, i, distance - nsteps);
-            cur = cur->last;
-        }
-    }
-
-    return path;
-}
-
-/*
 get the predictions of the previous step
 >> state - state bundle of the current step
 >> devID - the device id for the predictions

@@ -118,8 +118,8 @@ void _MatrixMulBatchedGPU(const XTensor * a, MATRIX_TRANS_TYPE transposedA,
         blockNum *= a->dimSize[i];
     }
 
-    if (beta == 0)
-        c->SetZeroAll();
+    /*if (beta == 0)
+        c->SetZeroAll();*/
 
     int devIDBackup = 0;
     ProtectCudaDev(a->devID, devIDBackup);

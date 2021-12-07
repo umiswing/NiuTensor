@@ -114,8 +114,6 @@ void _IndexToOnehot(const XTensor * index, XTensor * onehot,
     for (int i = 0; i < index->order; i++)
         CheckNTErrors(index->GetDim(i) == onehot->GetDim(i), "Illegal tensor order!");
 
-    //onehot->SetZeroAll();
-
     float confidence = 1 - labelSmoothingP;
     float lowconfidence = labelSmoothingP / size;
 
