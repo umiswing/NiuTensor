@@ -55,29 +55,51 @@ void CudaCPUToGPUFlush(TensorList * mList, int devID, XMem * GPUMem)
         size += reqiredSize;
     }
 
-    char * data = new char[size];
+    char* data = NULL;
     char * GPUData = GPUMem != NULL ? (char*)GPUMem->Alloc(GPUMem->devID, size):
                                       (char*)XMemAlloc(devID, size);
     int pSize = 0;
 
     /* place the data in a memory block */
-    for (int i = 0; i < mList->count; i++) {
-        XTensor * m = (XTensor*)mList->GetItem(i);
+    if (mList->count > 1) {
+        data = new char[size];
+        for (int i = 0; i < mList->count; i++) {
+            XTensor* m = (XTensor*)mList->GetItem(i);
 
-        if (m->isSparse)
-            pSize = sizeof(int) + (sizeof(int) + m->unitSize) * m->unitNumNonZero;
-        else
-            pSize = m->unitSize * m->unitNum;
+            if (m->isSparse)
+                pSize = sizeof(int) + (sizeof(int) + m->unitSize) * m->unitNumNonZero;
+            else
+                pSize = m->unitSize * m->unitNum;
 
-        reqiredSize = pSize;
+            reqiredSize = pSize;
 
-        memcpy(data + p, m->data, pSize);
+            memcpy(data + p, m->data, pSize);
+
+            if (m->dataHost != NULL)
+                delete[](char*)m->dataHost;
+
+            if (m->mem == NULL)
+                delete[](char*)m->data;
+            else
+                m->mem->Release(m->data, m->GetDataSizeInChar(), m->signature);
+
+            m->dataHost = NULL;
+            m->data = GPUData + p;
+            m->devID = GPUMem != NULL ? GPUMem->devID : devID;
+            m->mem = GPUMem;
+
+            p += reqiredSize;
+        }
+    }
+    else {
+        XTensor* m = (XTensor*)mList->GetItem(0);
+        data = (char*)(m->data);
 
         if (m->dataHost != NULL)
             delete[](char*)m->dataHost;
 
-        if(m->mem == NULL)
-            delete[] (char*)m->data;
+        if (m->mem == NULL)
+            delete[](char*)m->data;
         else
             m->mem->Release(m->data, m->GetDataSizeInChar(), m->signature);
 
@@ -85,14 +107,14 @@ void CudaCPUToGPUFlush(TensorList * mList, int devID, XMem * GPUMem)
         m->data = GPUData + p;
         m->devID = GPUMem != NULL ? GPUMem->devID : devID;
         m->mem = GPUMem;
-
-        p += reqiredSize;
     }
 
     /* copy from CPU memory to GPU memory */
     cudaMemcpy(GPUData, data, size, cudaMemcpyHostToDevice);
-
-    delete[] data;
+    
+    if (mList->count > 1) {
+        delete[] data;
+    }
 #endif
 }
 

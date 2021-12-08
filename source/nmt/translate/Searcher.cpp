@@ -255,7 +255,6 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
     XTensor& score = beam->modelScore;
     XTensor& probPath = beam->probPath;
     XTensor& probPathPrev = prev->probPath;
-    XTensor mask;
 
     int order = probPath.order;
     int outputSize = probPath.dimSize[probPath.order - 1];
@@ -289,17 +288,19 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
         SumDim(score, firstMask, score, 0);
     }
 
-    InitTensor(&mask,
-        prev->endMark.order, prev->endMark.dimSize, score.dataType,
-        prev->endMark.devID);
-    mask.SetZeroAll();
-    _SetDataFixedCond(&mask, &prev->endMark, -2e4F);
+    if (maskCache.unitNum != prev->endMark.unitNum) {
+        InitTensor(&maskCache,
+            prev->endMark.order, prev->endMark.dimSize, score.dataType,
+            prev->endMark.devID);
+        maskCache.SetZeroAll();
+    }
+    _SetDataFixedCond(&maskCache, &prev->endMark, -2e4F);
 
-    mask.Reshape(mask.unitNum);
+    maskCache.Reshape(maskCache.unitNum);
 
     /* mask the completed hypotheses so that they cannot
        be involved in further sorting and beam search. */
-    SumDim(score, mask, score, 0);
+    SumDim(score, maskCache, score, 0);
 
     score.Reshape(order, dims);
     probPath.Reshape(order, dims);
@@ -932,6 +933,12 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         CopyValues(inputDec, indexCPU);
 
         copyCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
+
+        /*static XTensor finishedMark;
+        if (finishedMark.unitNum != inputDec.unitNum) {
+            InitTensor(&finishedMark, &inputDec);
+            finishedMark.SetDataFixed(endSymbols[0]);
+        }*/
 
         for (int i = 0; i < batchSize; i++) {
             if (IsEnd(indexCPU.GetInt(i)))

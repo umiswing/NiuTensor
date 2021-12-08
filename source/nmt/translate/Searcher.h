@@ -78,6 +78,9 @@ private:
     /* whether we need to reorder the states */
     bool needReorder;
 
+    /* the cached mask for score */
+    XTensor maskCache;
+
 public:
     /* predictor */
     Predictor predictor;
