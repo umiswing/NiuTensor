@@ -226,6 +226,7 @@ get the predictions of the previous step
 */
 XTensor Predictor::GetLastPrediction(StateBundle* state, int devID)
 {
+    /* ToDo (huchi): reuse the data instead of reshaping it */
     int dims[] = { state->prediction.unitNum, 1 };
     return Reshape(state->prediction, 2, dims, /*inplace=*/false);
 }
