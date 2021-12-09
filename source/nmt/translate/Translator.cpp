@@ -97,10 +97,6 @@ the results will be saved in the output buffer
 void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList& indices)
 {
     int batchSize = batchEnc.GetDim(0);
-    for (int i = 0; i < model->decoder->nlayer; ++i) {
-        model->decoder->selfAttCache[i].miss = true;
-        model->decoder->enDeAttCache[i].miss = true;
-    }
 
     IntList** outputs = new IntList * [batchSize];
     for (int i = 0; i < batchSize; i++)
@@ -115,6 +111,16 @@ void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList&
     if (config->translation.beamSize > 1) {
         XTensor score;
         ((BeamSearch*)seacher)->Search(model, batchEnc, paddingEnc, outputs, score);
+    }
+
+    /* reset the cache in decoder layers */
+    for (int i = 0; i < model->decoder->nlayer; ++i) {
+        model->decoder->selfAttCache[i].miss = true;
+        model->decoder->enDeAttCache[i].miss = true;
+        model->decoder->selfAttCache[i].key.DestroyData();
+        model->decoder->selfAttCache[i].value.DestroyData();
+        model->decoder->enDeAttCache[i].key.DestroyData();
+        model->decoder->enDeAttCache[i].value.DestroyData();
     }
 
     /* save the outputs to the buffer */
