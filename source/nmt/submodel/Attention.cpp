@@ -289,16 +289,14 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     /* generate the relative key from the RPEmbK (L_q, L_kv, H/K) */
     relativeKey = Gather(RPEmbK, embMatrix);
 
-    if (qheads.dataType == X_FLOAT16) {
-        qheads = ConvertDataType(qheads, X_FLOAT);
-        kheads = ConvertDataType(kheads, X_FLOAT);
-        relativeKey = ConvertDataType(relativeKey, X_FLOAT);
-    }
-
     float scaling = (float)sqrt(embDim / nhead);
     qheads = ScaleAndShift(qheads, 1.0F / scaling, 0.0F, true);
 
     dot = RPDotProduct(qheads, kheads, relativeKey, true);
+
+    if (dot.dataType == X_FLOAT16) {
+        dot = ConvertDataType(dot, X_FLOAT);
+    }
 
     if (mask)
         dot = Sum(dot, *mask, /*inplace=*/isTraining);
@@ -306,17 +304,14 @@ XTensor Attention::MakeRPRAttention(XTensor& k, XTensor& q, XTensor& v,
     /* softmax */
     scalar = Softmax(dot, -1);
 
+    if (dataType != scalar.dataType)
+        scalar = ConvertDataType(scalar, dataType);
+
     if (isTraining && dropoutP > 0)
         scalar = Dropout(scalar, dropoutP);
 
-    if (vheads.dataType != scalar.dataType)
-        vheads = ConvertDataType(vheads, scalar.dataType);
-
     /* generate the relative attention output (K, B, L_q, H/K) */
     att = BMMul(scalar, vheads);
-
-    if (dataType != att.dataType)
-        att = ConvertDataType(att, dataType);
 
     /* concatenate the heads */
     return MulAndShift(Merge(att, att.order - 1, -1, /*inplace=*/isTraining), weightO, biasO);
