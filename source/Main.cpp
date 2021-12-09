@@ -66,36 +66,6 @@ int main(int argc, const char** argv)
         Translator translator;
         translator.Init(config, model);
         translator.Translate();
-
-        if (config.translation.beamSize > 1) {
-            BeamSearch* searcher = (BeamSearch*)(translator.seacher);
-            LOG("Duration of beam search: %f", searcher->beamSearchCost);
-
-            LOG("Duration of encoding: %.3f", searcher->encoderCost / searcher->beamSearchCost);
-            LOG("Duration of decoding: %.3f", searcher->decoderCost / searcher->beamSearchCost);
-            LOG("Duration of decoder selfAttnCost: %.3f", model.decoder->selfAttnCost / searcher->beamSearchCost);
-            LOG("Duration of decoder endeAttnCost: %.3f", model.decoder->endeAttnCost / searcher->beamSearchCost);
-            LOG("Duration of decoder lnCost: %.3f", model.decoder->lnCost / searcher->beamSearchCost);
-            LOG("Duration of decoder ffnCost: %.3f", model.decoder->ffnCost / searcher->beamSearchCost);
-            LOG("Duration of decoder embCost: %.3f", model.decoder->embCost / searcher->beamSearchCost);
-
-            LOG("Duration of output: %.3f", searcher->outputCost / searcher->beamSearchCost);
-            LOG("Duration of caching: %.3f", searcher->cachingCost / searcher->beamSearchCost);
-            
-            LOG("Duration of scoring: %.3f", searcher->scoringCost / searcher->beamSearchCost);
-            LOG("Duration of generating: %.3f", searcher->generatingCost / searcher->beamSearchCost);
-            LOG("Duration of expanding: %.3f", searcher->expandingCost / searcher->beamSearchCost);
-            LOG("Duration of collecting: %.3f", searcher->collectingCost / searcher->beamSearchCost);
-        }
-        else {
-            GreedySearch* searcher = (GreedySearch*)(translator.seacher);
-            LOG("Duration of greedySearchCost: %f", searcher->greedySearchCost);
-            LOG("Duration of encoding: %.2f", searcher->encoderCost / searcher->greedySearchCost);
-            LOG("Duration of decoding: %.2f", searcher->decoderCost / searcher->greedySearchCost);
-            LOG("Duration of outputCost: %.2f", searcher->outputCost / searcher->greedySearchCost);
-            LOG("Duration of topKCost: %.2f", searcher->topKCost / searcher->greedySearchCost);
-            LOG("Duration of copyCost: %.2f", searcher->copyCost / searcher->greedySearchCost);
-        }
     }
 
     else {

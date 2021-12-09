@@ -85,17 +85,6 @@ public:
     /* predictor */
     Predictor predictor;
 
-    /* cost of each part in a beam search */
-    double cachingCost = 0.0;
-    double outputCost = 0.0;
-    double encoderCost = 0.0;
-    double decoderCost = 0.0;
-    double beamSearchCost = 0.0;
-    double scoringCost = 0.0;
-    double generatingCost = 0.0;
-    double expandingCost = 0.0;
-    double collectingCost = 0.0;
-
     /* constructor */
     BeamSearch();
 
@@ -168,13 +157,6 @@ private:
     float scalarMaxLength;
 
 public:
-    /* cost of each part in a greedy search */
-    double outputCost = 0.0;
-    double encoderCost = 0.0;
-    double decoderCost = 0.0;
-    double topKCost = 0.0;
-    double copyCost = 0.0;
-    double greedySearchCost = 0.0;
 
     /* constructor */
     GreedySearch();

@@ -132,10 +132,6 @@ private:
     int endSymbol;
 
 public:
-    /* cost of each part in predicting */
-    double decoderCost = 0.0;
-    double cachingCost = 0.0;
-    double outputCost = 0.0;
 
     /* constructor */
     Predictor();

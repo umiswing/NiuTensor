@@ -113,7 +113,6 @@ search for the most promising states
 void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding, 
                         IntList** outputs, XTensor& score)
 {
-    std::clock_t beamSearchStart = std::clock();
     Predictor predictor;
     XTensor maskEnc;
     XTensor encoding;
@@ -126,8 +125,6 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     Prepare(input.GetDim(0), beamSize);
 
-    std::clock_t encoderStart = std::clock();
-
     input.SetDevice(model->devID);
     padding.SetDevice(model->devID);
 
@@ -139,8 +136,6 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         encoding = model->encoder->RunFastPreNorm(input, &maskEnc);
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
-
-    encoderCost += (std::clock() - encoderStart) / (double)CLOCKS_PER_SEC;
 
     encodingBeam = Unsqueeze(encoding, encoding.order - 2, beamSize);
     inputBeam = Unsqueeze(input, input.order - 1, beamSize);
@@ -186,37 +181,17 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         predictor.Predict(next, aliveState, encodingBeam, inputBeam,
             paddingBeam, batchSize * beamSize, l == 0, reorderState, needReorder, l);
 
-        cachingCost += predictor.cachingCost;
-        decoderCost += predictor.decoderCost;
-        outputCost += predictor.outputCost;
-
-        std::clock_t scoringStart = std::clock();
-
         /* compute the model score (given the prediction probability) */
         Score(cur, next);
-
-        scoringCost += (std::clock() - scoringStart) / (double)CLOCKS_PER_SEC;
-
-        std::clock_t generatingStart = std::clock();
 
         /* beam pruning */
         Generate(cur, next);
 
-        generatingCost += (std::clock() - generatingStart) / (double)CLOCKS_PER_SEC;
-
-        std::clock_t expandingStart = std::clock();
-
         /* expand the search graph */
         Expand(cur, next, reorderState);
 
-        expandingCost += (std::clock() - expandingStart) / (double)CLOCKS_PER_SEC;
-
-        std::clock_t collectingStart = std::clock();
-
         /* push complete hypotheses into the heap */
         Collect(next);
-
-        collectingCost += (std::clock() - collectingStart) / (double)CLOCKS_PER_SEC;
 
         /* stop searching when all hypotheses are completed */
         if (IsAllCompleted(next)) {
@@ -226,13 +201,11 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         /* remove finished sentences */
         //RemoveFinishedStates(next, encodingBeam, inputBeam, paddingBeam, aliveState, reorderState);
 
-        std::clock_t cachingStart = std::clock();
         if (needReorder) {
             inputBeam = AutoGather(inputBeam, reorderState);
             paddingBeam = AutoGather(paddingBeam, reorderState);
             encodingBeam = AutoGather(encodingBeam, reorderState);
         }
-        cachingCost += (std::clock() - cachingStart) / (double)CLOCKS_PER_SEC;
     }
 
     /* fill the heap with incomplete hypotheses if necessary */
@@ -241,8 +214,6 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
     Dump(outputs, &score);
 
     delete[] states;
-
-    beamSearchCost += (std::clock() - beamSearchStart) / (double)CLOCKS_PER_SEC;
 }
 
 /*
@@ -278,14 +249,15 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
 
     beam->nstep = prev->nstep + 1.0F;
 
-    score = probPath;
-
     if (prev->isStart) {
         XTensor firstMask = MakeFirstMask(beam);
         firstMask.Reshape(firstMask.unitNum);
 
         /* mask the hypotheses in the beam except the first one */
-        SumDim(score, firstMask, score, 0);
+        SumDim(probPath, firstMask, score, 0);
+
+        /* remove unused data to save memory */
+        probPath.DestroyData();
     }
 
     if (maskCache.unitNum != prev->endMark.unitNum) {
@@ -300,10 +272,17 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
 
     /* mask the completed hypotheses so that they cannot
        be involved in further sorting and beam search. */
-    SumDim(score, maskCache, score, 0);
+    if (prev->isStart) {
+        SumDim(score, maskCache, score, 0);
+    }
+    else {
+        SumDim(probPath, maskCache, score, 0);
+
+        /* remove unused data to save memory */
+        probPath.DestroyData();
+    }
 
     score.Reshape(order, dims);
-    probPath.Reshape(order, dims);
 }
 
 /*
@@ -313,12 +292,9 @@ generate tokens for the next state via beam pruning
 */
 void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
 {
-    int dims[MAX_TENSOR_DIM_NUM];
     int dimsBeam[MAX_TENSOR_DIM_NUM];
     int dimsTopK[MAX_TENSOR_DIM_NUM];
 
-    XTensor scoreTopK;
-    XTensor indexCPU;
     XTensor& score = beam->modelScore;
     XTensor& index = beam->prediction;
     XTensor& preID = beam->preID;
@@ -327,41 +303,31 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
     int order = score.order;
 
     for (int i = 0; i < order; i++) {
-        dims[i] = score.dimSize[i];
         dimsBeam[i] = score.dimSize[i];
         dimsTopK[i] = score.dimSize[i];
     }
 
-    CheckNTErrors(order >= 3, "The tensor must be of order 2 or larger.");
-    CheckNTErrors(dimsBeam[order - 3] % beamSize == 0, "Wrong dimension size!");
-
     int sizeVocab = score.dimSize[score.order - 1];
-    int stride = score.dimSize[score.order - 1];
 
     dimsBeam[order - 3] /= beamSize;
     dimsBeam[order - 1] *= beamSize;
     dimsTopK[order - 3] = dimsBeam[order - 3];
     dimsTopK[order - 1] = beamSize;
 
-    InitTensor(&scoreTopK, order, dimsTopK, score.dataType, score.devID);
+    InitTensor(&probPath, order, dimsTopK, score.dataType, score.devID);
     InitTensor(&index, order, dimsTopK, X_INT, score.devID);
-    InitTensor(&preID, order, dimsTopK, X_INT, -1);
-    InitTensor(&indexCPU, order, dimsTopK, X_INT, -1);
 
     score.Reshape(order, dimsBeam);
 
     /* keep the most promising candidates in the beam */
-    TopK(score, scoreTopK, index, -1, beamSize, true);
-
-    CopyValues(index, indexCPU);
-    CopyValues(index, preID);
+    TopK(score, probPath, index, -1, beamSize, true);
 
     /* "preID" represents the id (or the offset) of the previous state used to make the current
        hypotheses. Note that we reshape the "score" tensor into a matrix where each
        row means a previous state. The column number is size-of-beam \times vocab-size. We,
        therefore, divide entries of the top-k index by vocab-size to compute the id of the
        previous state for each hypotheses in the top-k list. */
-    DescaleMe(preID, sizeVocab);
+    preID = Descale(index, sizeVocab);
 
     /* Then, we do something similar to "preID". For the top-k predictions, we need
        to know their indices in the vocabulary. We compute the offset of each prediction
@@ -370,28 +336,7 @@ void BeamSearch::Generate(StateBundle* prev, StateBundle* beam)
 
     /* the GNMT-like length penalty */
     float lp = LengthPenalizer::GNMT(beam->nstep, alpha);
-    score = scoreTopK / lp;
-
-    for (int i = 0; i < indexCPU.unitNum; i += beamSize) {
-        for (int j = 0; j < beamSize; j++) {
-            indexCPU.SetInt(i * stride + indexCPU.GetInt(i + j), i + j);
-        }
-    }
-
-    /* sequence probability of top-k candidates */
-    for (int i = 0; i < probPath.order; i++) {
-        dims[i] = probPath.dimSize[i];
-        dimsTopK[i] = scoreTopK.dimSize[i];
-    }
-
-    order = probPath.order;
-
-    probPath.Reshape(probPath.unitNum, 1);
-    indexCPU.Reshape(indexCPU.dimSize[0], indexCPU.dimSize[indexCPU.order - 1]);
-    indexCPU.FlushToDevice(probPath.devID);
-
-    probPath = Gather(probPath, indexCPU);
-    probPath.Reshape(order, dimsTopK);
+    score = probPath / lp;
 }
 
 /*
@@ -410,7 +355,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     State* states = beam->states;
     XTensor& idRef = beam->preID;
     XTensor& modelScoreRef = beam->modelScore;
-    XTensor& probPathRef = beam->probPath;
     XTensor& predictionRef = beam->prediction;
     XTensor& endMark = beam->endMark;
     XTensor id;
@@ -435,7 +379,7 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     }
 
     /* we copy the data to CPU because the frequent access to GPU is slow
-       and we can speed-up the process by doing the job on CPU. */
+       and we can speed up the process by doing the job on CPU. */
     CopyValues(idRef, id);
     CopyValues(predictionRef, prediction);
 
@@ -479,8 +423,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
                 state.isCompleted = last->isCompleted;
                 CheckNTErrors(offset < prev->stateNum, "Wrong state index!");
             }
-            /*if(aliveStatePids.size() < batchSize)
-                state.pid = aliveStatePids[i/beamSize];*/
 
             /* scores */
             state.modelScore = modelScore.Get(k);
@@ -567,7 +509,7 @@ void BeamSearch::FillHeap(StateBundle* beam)
                 fullHypos[state.pid].Push(HeapNode<float>(&state, state.modelScore));
             }
             else {
-                auto node = fullHypos[state.pid].Top();
+                HeapNode<float> node = fullHypos[state.pid].Top();
                 float score = node.value;
                 if (score < state.modelScore)
                     fullHypos[state.pid].Push(HeapNode<float>(&state, state.modelScore));
@@ -585,7 +527,7 @@ void BeamSearch::Dump(IntList** output, XTensor* score)
 {
     int dims[3] = { batchSize, 1 };
 
-    InitTensor(score, 2, dims, X_FLOAT);
+    InitTensor(score, 2, dims, X_FLOAT, -1);
     score->SetZeroAll();
 
     /* heap for an input sentence in the batch */
@@ -847,13 +789,9 @@ search for the most promising states
 void GreedySearch::Search(NMTModel* model, XTensor& input, 
                           XTensor& padding, IntList** outputs)
 {
-    std::clock_t searchStart = std::clock();
-
     XTensor maskEnc;
     XTensor encoding;
     batchSize = input.GetDim(0);
-
-    std::clock_t start = std::clock();
 
     input.SetDevice(model->devID);
     padding.SetDevice(model->devID);
@@ -866,22 +804,16 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         encoding = model->encoder->RunFastPreNorm(input, &maskEnc);
     else
         encoding = model->encoder->RunFastPostNorm(input, &maskEnc);
-
-    encoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
         
     /* max output-length = scalar * source-length */
     int lengthLimit = int(float(input.GetDim(-1)) * scalarMaxLength) + maxLen;
 
     CheckNTErrors(lengthLimit > 0, "Invalid maximum output length");
 
-    start = std::clock();
-
     /* the first token */
     XTensor inputDec;
     InitTensor2D(&inputDec, batchSize, 1, X_INT, input.devID);
     inputDec.SetDataFixed(startSymbol);
-
-    decoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
 
     /* initialize the finished flags */
     int* finishedFlags = new int[batchSize];
@@ -899,8 +831,6 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
 
     for (int l = 0; l < lengthLimit; l++) {
 
-        start = std::clock();
-
         /* decoder mask */
         maskEncDec = model->MakeMTMaskDecInference(padding);
 
@@ -910,29 +840,15 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
         else
             decoding = model->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, l);
 
-        decoderCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
-
         /* generate the output probabilities */
         prob = model->outputLayer->Make(decoding, false);
-
-        outputCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
 
         /* get the most promising predictions */
         prob.Reshape(prob.dimSize[0], prob.dimSize[prob.order - 1]);
         TopK(prob, bestScore, inputDec, -1, 1);
 
-        topKCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
-
         /* save the predictions */
         CopyValues(inputDec, indexCPU);
-
-        copyCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
 
         /*static XTensor finishedMark;
         if (finishedMark.unitNum != inputDec.unitNum) {
@@ -957,8 +873,6 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     }
 
     delete[] finishedFlags;
-
-    greedySearchCost += (std::clock() - searchStart) / (double)CLOCKS_PER_SEC;
 }
 
 } /* end of the nmt namespace */

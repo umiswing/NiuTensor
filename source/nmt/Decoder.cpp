@@ -383,12 +383,8 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
     if (useHistory)
         history->ClearHistory();
 
-    std::clock_t embStart = std::clock();
-
     XTensor x;
     x = embedder->Make(inputDec, true, nstep);
-
-    embCost += (std::clock() - embStart) / (double)CLOCKS_PER_SEC;
 
     /* dropout */
     if (isTraining && dropoutP > 0)
@@ -409,14 +405,8 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         XTensor selfAttnAfter;
         XTensor endeAttnAfter;
 
-        std::clock_t start = std::clock();
-
         /* self attention */
         att = selfAtts[i].Make(x, x, x, NULL, &selfAttCache[i], SELF_ATT);
-
-        selfAttnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
 
         /* residual connection */
         res = Sum(att, x, /*inplace=*/false);
@@ -424,17 +414,9 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         /* layer normalization with post-norm for self-attention */
         selfAttnAfter = LN(res, selfAttLayerNorms[i], preLN, false, true);
 
-        lnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
-
         /* encoder-decoder attention */
         ende = enDeAtts[i].Make(outputEnc, selfAttnAfter, outputEnc, maskEncDec,
                                 &enDeAttCache[i], EN_DE_ATT);
-
-        endeAttnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
 
         /* residual connection */
         res = Sum(ende, selfAttnAfter, /*inplace=*/false);
@@ -442,24 +424,14 @@ XTensor AttDecoder::RunFastPostNorm(XTensor& inputDec, XTensor& outputEnc, XTens
         /* layer normalization with post-norm for encoder-decoder attention */
         endeAttnAfter = LN(res, enDeAttLayerNorms[i], preLN, false, true);
 
-        lnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
-
         /* ffn */
         ffn = ffns[i].Make(endeAttnAfter);
-
-        ffnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
-
-        start = std::clock();
 
         /* residual connection */
         res = Sum(ffn, endeAttnAfter, /*inplace=*/false);
 
         /* layer normalization with post-norm for ffn */
         x = LN(res, ffnLayerNorms[i], preLN, false, true);
-
-        lnCost += (std::clock() - start) / (double)CLOCKS_PER_SEC;
 
         if (useHistory)
             history->Add(x);

@@ -164,8 +164,6 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
         inputDec = GetLastPrediction(s, inputEnc.devID);
     }
 
-    std::clock_t cachingStart = std::clock();
-
     /* keep alive states for the decoder */
     if (aliveState.dimSize[0] < batchSize) {
         /* alive inputs */
@@ -184,8 +182,6 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
         }
     }
 
-    cachingCost = (std::clock() - cachingStart) / (double)CLOCKS_PER_SEC;
-
     /* prediction probabilities */
     XTensor& output = next->probPath;
     XTensor decoding;
@@ -199,24 +195,16 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
     /* decoder mask */
     maskEncDec = m->MakeMTMaskDecInference(paddingEnc);
 
-    std::clock_t decoderStart = std::clock();
-
     /* make the decoding network */
     if (m->config->model.decPreLN)
         decoding = m->decoder->RunFastPreNorm(inputDec, encoding, &maskEncDec, nstep);
     else
         decoding = m->decoder->RunFastPostNorm(inputDec, encoding, &maskEncDec, nstep);
 
-    decoderCost = (std::clock() - decoderStart) / (double)CLOCKS_PER_SEC;
-
     CheckNTErrors(decoding.order >= 2, "The tensor must be of order 2 or larger!");
-
-    std::clock_t outputStart = std::clock();
 
     /* generate the output probabilities */
     output = m->outputLayer->Make(decoding, true);
-
-    outputCost = (std::clock() - outputStart) / (double)CLOCKS_PER_SEC;
 }
 
 /*

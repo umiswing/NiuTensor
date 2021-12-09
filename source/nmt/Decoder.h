@@ -102,12 +102,6 @@ public:
     bool useHistory;
 
 public:
-    /* cost of each part in decoder's computation */
-    double selfAttnCost = 0.0;
-    double endeAttnCost = 0.0;
-    double lnCost = 0.0;
-    double ffnCost = 0.0;
-    double embCost = 0.0;
 
     /* set the training flag */
     void SetTrainingFlag(bool myIsTraining);
