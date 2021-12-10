@@ -447,14 +447,14 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
         }
 
         /* force other beams with lower scores to be finished */
-        for (int j = 0; j < beamSize; j++) {
+        /*for (int j = 0; j < beamSize; j++) {
             int k = i + j;
             State& state = states[k];
             if (state.modelScore < bestScore) {
                 state.isEnd = true;
                 state.isCompleted = true;
             }
-        }
+        }*/
     }
 
     /* copy the ending mark from CPU to the target device */

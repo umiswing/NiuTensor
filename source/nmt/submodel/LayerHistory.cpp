@@ -134,20 +134,25 @@ XTensor LayerHistory::Pop()
     dimSize[0] = int(list.Size());
     dimSize[1] /= dimSize[0];
 
-    XTensor reshapedStack;
-    reshapedStack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/isTraining);
+    if (isTraining) {
+        XTensor reshapedStack;
+        reshapedStack = Reshape(stack, stack.order + 1, dimSize, /*inplace=*/isTraining);
 
-    XTensor multiplication;
-    multiplication = MultiplyDim(reshapedStack, weights[list.Size() - 1], 0);
+        XTensor multiplication;
+        multiplication = MultiplyDim(reshapedStack, weights[list.Size() - 1], 0);
 
-    XTensor res;
-    res = ReduceSum(multiplication, 0);
+        XTensor res;
+        res = ReduceSum(multiplication, 0);
 
-    /* delete unused data to save memory */
-    if (isTraining)
+        /* delete unused data to save memory */
         multiplication.DestroyData();
 
-    return res;
+        return res;
+    }
+    else {
+        stack.Reshape(stack.order + 1, dimSize);
+        return ReduceSum(MultiplyDim(stack, weights[list.Size() - 1], 0), 0);
+    }
 }
 
 /* clear the history */
@@ -171,10 +176,15 @@ History::History()
 /* append a layer to the history */
 void History::Add(XTensor& layer)
 {
-    list[count] = layer;
+    if (layer.enableGrad && X_ENABLE_GRAD) {
+        list[count] = layer;
 
-    /* delete unused data to save memory */
-    layer.DestroyData();
+        /* delete unused data to save memory */
+        layer.DestroyData();
+    }
+    else {
+        list[count] = std::move(layer);
+    }
 
     count++;
 }
