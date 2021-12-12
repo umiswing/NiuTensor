@@ -79,9 +79,6 @@ public:
     /* id of the previous state that generates the current one  */
     XTensor preID;
 
-    /* mark that indicates whether each hypotheses is completed */
-    XTensor endMark;
-
     /* probability of every path */
     XTensor probPath;
 
@@ -149,9 +146,9 @@ public:
     void Read(NMTModel* model, StateBundle* state);
 
     /* predict the next state */
-    void Predict(StateBundle* next, XTensor& aliveIndices, XTensor& encoding,
-        XTensor& inputEnc, XTensor& paddingEnc, int rawBatchSize,
-        bool isStart, XTensor& reorderState, bool needReorder, int nstep);
+    void Predict(StateBundle* next, XTensor& encoding,
+                 XTensor& inputEnc, XTensor& paddingEnc, XTensor& reorderState,
+                 bool needReorder, int nstep);
 
     /* get the predictions of the previous step */
     XTensor GetLastPrediction(StateBundle* state, int devID);

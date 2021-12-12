@@ -92,14 +92,6 @@ void BeamSearch::Prepare(int myBatchSize, int myBeamSize)
 
     for (int i = 0; i < batchSize; i++)
         fullHypos[i].Init(beamSize);
-
-    /* prepare for the indices of alive states */
-    aliveStatePids.Clear();
-    aliveSentList.Clear();
-    for (int i = 0; i < batchSize; i++) {
-        aliveStatePids.Add(i);
-        aliveSentList.Add(i);
-    }
 }
 
 /*
@@ -161,10 +153,7 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
     first->isStart = true;
 
-    XTensor aliveState;
-    InitTensor1D(&aliveState, batchSize * beamSize, X_INT, input.devID);
-    SetAscendingOrder(aliveState, 0);
-
+    XTensor aliveStates;
     XTensor reorderState;
     InitTensor1D(&reorderState, batchSize * beamSize, X_INT, input.devID);
 
@@ -178,8 +167,8 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
         predictor.Read(model, cur);
 
         /* predict the next state */
-        predictor.Predict(next, aliveState, encodingBeam, inputBeam,
-            paddingBeam, batchSize * beamSize, l == 0, reorderState, needReorder, l);
+        predictor.Predict(next, encodingBeam, inputBeam,
+                          paddingBeam, reorderState, needReorder, l);
 
         /* compute the model score (given the prediction probability) */
         Score(cur, next);
@@ -195,16 +184,25 @@ void BeamSearch::Search(NMTModel* model, XTensor& input, XTensor& padding,
 
         /* stop searching when all hypotheses are completed */
         if (IsAllCompleted(next)) {
+            l = lengthLimit;
             break;
         }
 
-        /* remove finished sentences */
-        //RemoveFinishedStates(next, encodingBeam, inputBeam, paddingBeam, aliveState, reorderState);
+        XTensor aliveStates;
+        aliveStates = GetAliveStates(next);
 
         if (needReorder) {
+
+            /* remove finished states */
+            if (aliveStates.unitNum > 0 && aliveStates.unitNum < 0.5 * reorderState.unitNum) {
+                /*reorderState = AutoGather(reorderState, aliveStates);
+                next->probPath.Reshape(next->probPath.unitNum);
+                next->probPath = AutoGather(next->probPath, aliveStates);*/
+            }
             inputBeam = AutoGather(inputBeam, reorderState);
             paddingBeam = AutoGather(paddingBeam, reorderState);
             encodingBeam = AutoGather(encodingBeam, reorderState);
+            
         }
     }
 
@@ -245,7 +243,7 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
     probPath.Reshape(probPath.unitNum / outputSize, outputSize);
 
     /* the log-scale probability of the entire sequence */
-    SumDim(probPath, probPathPrev, probPath, 0);
+    SumDim(probPath, probPathPrev, score, 0);
 
     beam->nstep = prev->nstep + 1.0F;
 
@@ -254,32 +252,7 @@ void BeamSearch::Score(StateBundle* prev, StateBundle* beam)
         firstMask.Reshape(firstMask.unitNum);
 
         /* mask the hypotheses in the beam except the first one */
-        SumDim(probPath, firstMask, score, 0);
-
-        /* remove unused data to save memory */
-        probPath.DestroyData();
-    }
-
-    if (maskCache.unitNum != prev->endMark.unitNum) {
-        InitTensor(&maskCache,
-            prev->endMark.order, prev->endMark.dimSize, score.dataType,
-            prev->endMark.devID);
-        maskCache.SetZeroAll();
-    }
-    _SetDataFixedCond(&maskCache, &prev->endMark, -2e4F);
-
-    maskCache.Reshape(maskCache.unitNum);
-
-    /* mask the completed hypotheses so that they cannot
-       be involved in further sorting and beam search. */
-    if (prev->isStart) {
-        SumDim(score, maskCache, score, 0);
-    }
-    else {
-        SumDim(probPath, maskCache, score, 0);
-
-        /* remove unused data to save memory */
-        probPath.DestroyData();
+        SumDim(score, firstMask, score, 0);
     }
 
     score.Reshape(order, dims);
@@ -347,26 +320,19 @@ expand the search graph
 */
 void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderState)
 {
-    CheckNTErrors(beam->prediction.unitNum == beam->preID.unitNum, 
-                  "A problem occurs in the beam!");
-
     beam->MakeStates(beam->prediction.unitNum);
 
     State* states = beam->states;
     XTensor& idRef = beam->preID;
     XTensor& modelScoreRef = beam->modelScore;
     XTensor& predictionRef = beam->prediction;
-    XTensor& endMark = beam->endMark;
     XTensor id;
     XTensor modelScore;
     XTensor prediction;
-    XTensor endMarkCPU;
     XTensor reorderStateCPU;
 
     InitTensorOnCPU(&id, &idRef);
     InitTensorOnCPU(&prediction, &predictionRef);
-    InitTensorOnCPU(&endMarkCPU, &predictionRef);
-    InitTensor(&endMark, &predictionRef);
     InitTensorOnCPU(&reorderStateCPU, &reorderState);
 
     if (beam->probPath.dataType == X_FLOAT) {
@@ -392,22 +358,17 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
     bool reorder = false;
     for (int i = 0; i < beam->stateNum; i += beamSize) {
         
-        int bestBeamID = -1;
-        float bestScore = -1e9F;
-        
         for (int j = 0; j < beamSize; j++) {
             int k = i + j;
             State& state = states[k];
 
             int offset = id.GetInt(k);
             int pid = i / beamSize;
-            reorderStateCPU.SetInt(i + offset, i + j);
+            reorderStateCPU.SetInt(i + offset, k);
             if (offset != j)
                 reorder = true;
 
             State* last = prev->states + pid * beamSize + offset;
-
-            CheckNTErrors(offset >= 0, "Wrong state index!");
 
             /* pointer to the previous state */
             if (prev->isStart) {
@@ -421,7 +382,6 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
                 state.pid = state.last->pid;
                 state.nstep = last->nstep + 1;
                 state.isCompleted = last->isCompleted;
-                CheckNTErrors(offset < prev->stateNum, "Wrong state index!");
             }
 
             /* scores */
@@ -430,35 +390,36 @@ void BeamSearch::Expand(StateBundle* prev, StateBundle* beam, XTensor& reorderSt
             /* prediction */
             state.prediction = prediction.GetInt(k);
 
-            CheckNTErrors(state.prediction >= 0, "Illegal prediction!");
-
             /* check if it is the end of the sequence */
             state.isEnd = IsEnd(state.prediction);
             state.isCompleted = (state.isCompleted || state.isEnd);
-
-            /* set the ending mark */
-            endMarkCPU.SetInt(state.isEnd, k);
-
-            /* find the beam with the highest score */
-            if (state.isCompleted && state.modelScore > bestScore) {
-                bestBeamID = j;
-                bestScore = state.modelScore;
-            }
         }
-
-        /* force other beams with lower scores to be finished */
-        /*for (int j = 0; j < beamSize; j++) {
-            int k = i + j;
-            State& state = states[k];
-            if (state.modelScore < bestScore) {
-                state.isEnd = true;
-                state.isCompleted = true;
-            }
-        }*/
     }
 
-    /* copy the ending mark from CPU to the target device */
-    CopyValues(endMarkCPU, endMark);
+    //for (int i = 0; i < beam->stateNum; i += beamSize) {
+    //    int bestID = -1;
+    //    float bestScore = -9999.0F;
+    //    for (int j = 0; j < beamSize; j++) {
+    //        int k = i + j;
+    //        State& state = states[k];
+
+    //        /* find the beam that is finished and has the highest score */
+    //        if (state.modelScore > bestScore) {
+    //            if(state.isCompleted)
+    //                bestID = j;
+    //            bestScore = state.modelScore;
+    //        }
+    //    }
+
+    //    /* force other beams that have lower scores to be finished */
+    //    if (bestID != -1) {
+    //        for (int j = 0; j < beamSize; j++) {
+    //            int k = i + j;
+    //            State& state = states[k];
+    //            state.isCompleted = true;
+    //        }
+    //    }
+    //}
     
     needReorder = reorder;
     if(needReorder)
@@ -619,64 +580,45 @@ bool BeamSearch::IsAllCompleted(StateBundle* beam)
 }
 
 /*
-update the beam by removing finished hypotheses
+collect alive beam states
 >> beam - the beam that keeps the searching states
->> aliveEncoding - new input embeddings for the encoder, (B, L, E)
->> aliveInput - new input tokens of the encoder, (B, L)
->> alivePadding - new paddings for the inputs, (B, L)
-<< aliveIdx - the indices of alive states
+<< aliveStates - the indices of unfinished states
 */
-void BeamSearch::RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
-                                      XTensor& aliveInput, XTensor& alivePadding, 
-                                      XTensor& aliveState, XTensor& reorderState)
+XTensor BeamSearch::GetAliveStates(StateBundle* beam)
 {
+    XTensor aliveStates;
     State* states = beam->states;
 
-    /* get the indices of uncompleted sentences and states */
-    aliveSentList.Clear();
-    IntList aliveStateList;
+    /* get the indices of alive beam states */
     int count = 0;
-
-    /* the number of completed sentences */
+    int* aliveStateList = new int[beam->stateNum];
     for (int i = 0; i < beam->stateNum; i += beamSize) {
-        int endState = 0;
+        
+        bool isHypoAllFinished = true;
+        
         for (int j = 0; j < beamSize; j++) {
-            if (states[i + j].isCompleted) {
-                endState++;
-            }
+            if (!states[i + j].isCompleted)
+                isHypoAllFinished = false;
         }
-        bool isSentCompleted = (endState == beamSize);
 
-        int sent = i / beamSize;
-        if (!isSentCompleted) {
-            aliveSentList.Add(sent);
+        if (!isHypoAllFinished) {
             for (int j = 0; j < beamSize; j++) {
-                aliveStateList.Add(i + j);
+                aliveStateList[count++] = i + j;
             }
         }
-        else {
-            aliveStatePids.Remove(sent - count);
-            count++;
-        }
     }
 
-    InitTensor1D(&aliveState, int(aliveStateList.Size()), X_INT, aliveEncoding.devID);
-    aliveState.SetData(aliveStateList.items, int(aliveStateList.Size()));
-
-    XTensor aliveSent;
-    InitTensor1D(&aliveSent, int(aliveSentList.Size()), X_INT, aliveEncoding.devID);
-    aliveSent.SetData(aliveSentList.items, int(aliveSentList.Size()));
-
-    if (aliveStateList.Size() < aliveEncoding.dimSize[0] && aliveStateList.Size() > 0) {
-        needReorder = true;
-        reorderState.Reshape(reorderState.unitNum, 1);
-        reorderState = AutoGather(reorderState, aliveState);
-        reorderState.Reshape(reorderState.unitNum);
-        beam->probPath = AutoGather(beam->probPath, aliveSent);
-        beam->endMark = AutoGather(beam->endMark, aliveSent);
-        beam->modelScore = AutoGather(beam->modelScore, aliveSent);
-        beam->prediction = AutoGather(beam->prediction, aliveSent);
+    if (count == beam->stateNum) {
+        delete[] aliveStateList;
+        return aliveStates;
     }
+
+    needReorder = true;
+    InitTensor1D(&aliveStates, count, X_INT, beam->prediction.devID);
+    aliveStates.SetData(aliveStateList, count);
+
+    delete[] aliveStateList;
+    return aliveStates;
 }
 
 /*
@@ -829,10 +771,10 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
     InitTensorOnCPU(&indexCPU, &inputDec);
     InitTensor2D(&bestScore, batchSize, 1, encoding.dataType, encoding.devID);
 
-    for (int l = 0; l < lengthLimit; l++) {
+    /* decoder mask */
+    maskEncDec = model->MakeMTMaskDecInference(padding);
 
-        /* decoder mask */
-        maskEncDec = model->MakeMTMaskDecInference(padding);
+    for (int l = 0; l < lengthLimit; l++) {
 
         /* make the decoding network */
         if (model->config->model.decPreLN)
@@ -849,12 +791,6 @@ void GreedySearch::Search(NMTModel* model, XTensor& input,
 
         /* save the predictions */
         CopyValues(inputDec, indexCPU);
-
-        /*static XTensor finishedMark;
-        if (finishedMark.unitNum != inputDec.unitNum) {
-            InitTensor(&finishedMark, &inputDec);
-            finishedMark.SetDataFixed(endSymbols[0]);
-        }*/
 
         for (int i = 0; i < batchSize; i++) {
             if (IsEnd(indexCPU.GetInt(i)))

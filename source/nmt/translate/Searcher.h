@@ -69,17 +69,8 @@ private:
     /* indicate whether the early stop strategy is used */
     bool isEarlyStop;
 
-    /* pids for alive states */
-    IntList aliveStatePids;
-
-    /* alive sentences */
-    IntList aliveSentList;
-
     /* whether we need to reorder the states */
     bool needReorder;
-
-    /* the cached mask for score */
-    XTensor maskCache;
 
 public:
     /* predictor */
@@ -124,9 +115,8 @@ public:
     /* check whether all hypotheses are completed */
     bool IsAllCompleted(StateBundle* beam);
 
-    /* update the beam by pruning finished states */
-    void RemoveFinishedStates(StateBundle* beam, XTensor& aliveEncoding,
-        XTensor& aliveInput, XTensor& alivePadding, XTensor& aliveIdx, XTensor& reorderState);
+    /* collect the unfinished states */
+    XTensor GetAliveStates(StateBundle* beam);
 
     /* set end symbols for search */
     void SetEnd(const int* tokens, const int tokenNum);

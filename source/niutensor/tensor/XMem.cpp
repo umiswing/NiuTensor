@@ -1633,7 +1633,7 @@ void XMemManager::GetBufferSize(MTYPE freeMem, MTYPE * myBufSize)
                 if (freeMem >= MILLION * 1024ULL) {
                     *myBufSize = MILLION * 512ULL;
                     if (freeMem >= MILLION * 2048ULL)
-                        *myBufSize = MILLION * 512ULL;
+                        *myBufSize = MILLION * 1024ULL;
                 }
             }
         }

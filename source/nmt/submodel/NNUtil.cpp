@@ -33,13 +33,19 @@ a wrapper for the gather function
 */
 XTensor AutoGather(XTensor& src, XTensor& index)
 {
-    CheckNTErrors(src.devID == index.devID, "the source and index should be on the same device");
-
-    if (src.order == 2)
+    if (src.order == 1) {
+        index.SetDevice(src.devID);
+        src.Reshape(src.unitNum, 1);
+        src = Gather(src, index);
+        src.Reshape(src.unitNum);
+        return src;
+    }
+    else if (src.order == 2) {
+        CheckNTErrors(src.devID == index.devID, "The source and index should be on the same device");
         return Gather(src, index);
-    else {
-        CheckNTErrors(src.order == 3, "the source must be 3d");
-
+    }
+    else if (src.order == 3) {
+        CheckNTErrors(src.devID == index.devID, "The source and index should be on the same device");
         int order = src.order;
         int dimSize[MAX_TENSOR_DIM_NUM];
         for (int i = 0; i < src.order; i++) {
@@ -56,6 +62,9 @@ XTensor AutoGather(XTensor& src, XTensor& index)
 
         res.Reshape(order, dimSize);
         return res;
+    }
+    else {
+        ShowNTErrors("Unsupported shape!");
     }
 }
 

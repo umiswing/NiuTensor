@@ -99,12 +99,7 @@ void Predictor::Create(NMTModel* model, XTensor* top, const XTensor* input,
         dims[i] = input->dimSize[i];
     dims[input->order - 1] = beamSize;
 
-    
-    InitTensor(&state->endMark, input->order, dims, X_INT, input->devID);
-
     state->nstep = 0.0F;
-    state->endMark.SetZeroAll();
-
     state->stateNum = 0;
 }
 
@@ -134,29 +129,25 @@ void Predictor::Read(NMTModel* model, StateBundle* state)
 /*
 predict the next state
 >> next - next states
->> aliveIndices - indices of alive states, (B)
->> absoluteIdx - the absolute indices of alive states, (B)
 >> encoding - encoder output, (B, L, E)
 >> inputEnc - input of the encoder, (B, L)
 >> paddingEnc - padding of the encoder, (B, L)
->> rawBatchSize - the raw batch size (in case of some states are pruned)
->> isStart - whether it is the start state or not
 >> reorderState - the new order of states
->> needReorder - whether we need reordering the states
+>> needReorder - whether we need to the states
 >> nstep - current time step of the target sequence
 */
-void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encoding,
-                        XTensor& inputEnc, XTensor& paddingEnc, int batchSize, bool isStart,
-                        XTensor& reorderState, bool needReorder, int nstep)
+void Predictor::Predict(StateBundle* next, XTensor& encoding,
+                        XTensor& inputEnc, XTensor& paddingEnc, XTensor& reorderState, 
+                        bool needReorder, int nstep)
 {
     int dims[MAX_TENSOR_DIM_NUM];
 
     /* word indices of positions up to next state */
     XTensor inputDec;
 
-    /* add a new word into the input sequence of the decoder side */
-    if (isStart) {
-        InitTensor2D(&inputDec, batchSize, 1, X_INT, inputEnc.devID);
+    /* the input of first step is <SOS> */
+    if (nstep == 0) {
+        InitTensor2D(&inputDec, encoding.GetDim(0), 1, X_INT, inputEnc.devID);
         inputDec.SetDataFixed(startSymbol);
     }
     else {
@@ -164,21 +155,16 @@ void Predictor::Predict(StateBundle* next, XTensor& aliveState, XTensor& encodin
         inputDec = GetLastPrediction(s, inputEnc.devID);
     }
 
-    /* keep alive states for the decoder */
-    if (aliveState.dimSize[0] < batchSize) {
-        /* alive inputs */
-        inputDec = AutoGather(inputDec, aliveState);
-
-        /* alive cache */
-        for (int i = 0; i < m->decoder->nlayer; i++) {
-            m->decoder->selfAttCache[i].KeepAlive(aliveState);
-            m->decoder->enDeAttCache[i].KeepAlive(aliveState);
-        }
-    }
-
     if (needReorder) {
+        bool removeFinishedCache = reorderState.GetDim(0) < inputDec.GetDim(0);
+        if (removeFinishedCache) {
+            inputDec = AutoGather(inputDec, reorderState);
+        }
         for (int i = 0; i < m->decoder->nlayer; i++) {
             m->decoder->selfAttCache[i].Reorder(reorderState);
+            if (removeFinishedCache) {
+                m->decoder->enDeAttCache[i].Reorder(reorderState);
+            }
         }
     }
 
