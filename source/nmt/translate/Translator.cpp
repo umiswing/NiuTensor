@@ -77,8 +77,8 @@ void Translator::Init(NMTConfig& myConfig, NMTModel& myModel)
     }
 }
 
-/* sort the outputs by the indices (in ascending order) */
-void Translator::SortOutputs()
+/* reorder the outputs by the indices */
+void Translator::ReorderOutputs()
 {
     sort(outputBuf->items, outputBuf->items + outputBuf->count,
         [](void* a, void* b) {
@@ -117,10 +117,6 @@ void Translator::TranslateBatch(XTensor& batchEnc, XTensor& paddingEnc, IntList&
     for (int i = 0; i < model->decoder->nlayer; ++i) {
         model->decoder->selfAttCache[i].miss = true;
         model->decoder->enDeAttCache[i].miss = true;
-        model->decoder->selfAttCache[i].key.DestroyData();
-        model->decoder->selfAttCache[i].value.DestroyData();
-        model->decoder->enDeAttCache[i].key.DestroyData();
-        model->decoder->enDeAttCache[i].value.DestroyData();
     }
 
     /* save the outputs to the buffer */
@@ -152,6 +148,7 @@ bool Translator::Translate()
     info.Add(&wordCount);
     info.Add(&indices);
 
+    /* the loop of translation process */
     while (!batchLoader.IsEmpty()) {
         batchLoader.GetBatchSimple(&inputs, &info);
         TranslateBatch(batchEnc, paddingEnc, indices);
@@ -167,7 +164,9 @@ bool Translator::Translate()
         sample->index = batchLoader.emptyLines[i];
         outputBuf->Add(sample);
     }
-    SortOutputs();
+
+    /* reorder the outputs by their original indices */
+    ReorderOutputs();
 
     /* dump the translation results */
     if (strcmp(config->translation.outputFN, "") != 0)
@@ -175,6 +174,7 @@ bool Translator::Translate()
     else
         DumpResToStdout();
 
+    /* release the buffer */
     for (int i = 0; i < outputBuf->Size(); i++) {
         Sample* s = (Sample*)(outputBuf->GetItem(i));
         delete s;
@@ -194,7 +194,7 @@ void Translator::DumpResToFile(const char* ofn)
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {
                 int id = sample->tgtSeq->Get(j);
-                f << batchLoader.tgtVocab.id2token[id] << " ";
+                f << batchLoader.tgtVocab.id2token.at(id) << " ";
             }
         }
         f << "\n";
@@ -211,7 +211,7 @@ void Translator::DumpResToStdout()
         if (sample->tgtSeq != NULL) {
             for (int j = 0; j < sample->tgtSeq->Size(); j++) {
                 int id = sample->tgtSeq->Get(j);
-                cout << batchLoader.tgtVocab.id2token[id] <<  " ";
+                cout << batchLoader.tgtVocab.id2token.at(id) <<  " ";
             }
         }
         cout << "\n";

@@ -30,17 +30,18 @@ using namespace nts;
 namespace nmt {
 
 /* transfrom a line to a sequence */
-Sample* TranslateDataset::LoadSample(string line)
+Sample* TranslateDataset::LoadSample(const string& line)
 {
     const string delimiter = " ";
 
-    /* load tokens and transform them to ids */
+    /* split a line to tokens by spaces */
     vector<string> srcTokens = SplitString(line, delimiter,
                                            config->model.maxSrcLen - 1);
 
     IntList* srcSeq = new IntList(int(srcTokens.size()));
     Sample* sample = new Sample(srcSeq);
 
+    /* transform tokens to ids */
     for (const string& token : srcTokens) {
         if (srcVocab.token2id.find(token) == srcVocab.token2id.end())
             srcSeq->Add(srcVocab.unkID);
@@ -48,7 +49,7 @@ Sample* TranslateDataset::LoadSample(string line)
             srcSeq->Add(srcVocab.token2id.at(token));
     }
 
-    /* the sequence should ends with EOS */
+    /* the sequence should end with EOS */
     if(srcSeq->Get(-1) != srcVocab.eosID)
         srcSeq->Add(srcVocab.eosID);
     
@@ -91,7 +92,9 @@ bool TranslateDataset::LoadBatchToBuf()
         appendEmptyLine = true;
     }
 
+    /* sort the input sequences by length */
     SortBySrcLengthDescending();
+
     XPRINT1(0, stderr, "[INFO] loaded %d sentences\n", appendEmptyLine ? id - 1 : id);
 
     return true;
@@ -166,6 +169,7 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     bufIdx += realBatchSize;
 
+    /* store the data on the CPU */
     XTensor* batchEnc = (XTensor*)(inputs->Get(0));
     XTensor* paddingEnc = (XTensor*)(inputs->Get(1));
     InitTensor2D(batchEnc, realBatchSize, maxLen, X_INT, -1);

@@ -64,7 +64,7 @@ public:
     Sample* LoadSample() override;
 
     /* transfrom a line to a sequence */
-    Sample* LoadSample(string line);
+    Sample* LoadSample(const string& line);
 
     /* load the samples into tensors from the buffer */
     bool GetBatchSimple(XList* inputs, XList* info) override;

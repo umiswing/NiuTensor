@@ -75,10 +75,10 @@ void OutputLayer::InitModel(NMTConfig& config)
 }
 
 /*
-make the network
->> input - the input tensor, (batch, srcLen, hiddenDim)
->> normalized - whether ignore the log-softmax
-<< output - the output tensor, (batch, tgtLen, hiddenDim)
+project the output from the embedding space (E) to the vocabulary space (V)
+>> input - the input tensor, the shape is (B, L, E)
+>> normalized - whether ignore the log-softmax operation
+<< output - the output tensor, the shape is (B, L, V)
 */
 XTensor OutputLayer::Make(XTensor& input, bool normalized)
 {

@@ -66,8 +66,8 @@ public:
     /* the translation function */
     bool Translate();
 
-    /* sort the outputs by the indices (in ascending order) */
-    void SortOutputs();
+    /* reorder the outputs by the indices */
+    void ReorderOutputs();
 
     /* dump the translations to a file */
     void DumpResToFile(const char* ofn);
