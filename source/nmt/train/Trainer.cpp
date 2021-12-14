@@ -360,6 +360,7 @@ void Trainer::MakeCheckpoint(const char* label, int id)
 
     /* update the best checkpoint */
     if (validLoss < bestValidLoss) {
+        bestValidLoss = validLoss;
         sprintf(fn, "%s.checkpoint.best", config->common.modelFN);
         model->DumpToFile(fn);
     }
