@@ -13,13 +13,13 @@ from struct import unpack
 
 parser = argparse.ArgumentParser(
     description='A model ensemble tool for NiuTrans.NMT')
-parser.add_argument('-input', help='Model file pattern, e.g., \'model.bin.*\'',
+parser.add_argument('-i', help='Model file pattern, e.g., \'model.bin.*\'',
                     type=str, default='model.bin.*')
-parser.add_argument('-output', help='The ensembled model, e.g., model.ensemble',
+parser.add_argument('-o', help='The ensembled model, e.g., model.ensemble',
                     type=str, default='model.ensemble')
 args = parser.parse_args()
 
-model_files = glob(args.input)
+model_files = glob(args.i)
 
 meta_info = None
 parameters = []
@@ -35,7 +35,7 @@ for file in model_files:
 
 parameters = np.mean(np.array(parameters), axis=0)
 
-with open(args.output, "wb") as f:
+with open(args.o, "wb") as f:
     f.write(meta_info)
     values = pack("f" * len(parameters), *parameters)
     f.write(values)

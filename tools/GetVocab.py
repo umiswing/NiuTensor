@@ -1,6 +1,6 @@
 '''
 Convert a BPE vocabulary to a NiuTrans.NMT vocabulary
-Usage: python3 GetVocab.py -src [bpe_vocab] -tgt [niutrans_nmt_vocab]
+Usage: python3 GetVocab.py -i [bpe_vocab] -o [niutrans_nmt_vocab]
 '''
 
 import sys
@@ -9,9 +9,9 @@ import argparse
 parser = argparse.ArgumentParser(
     description='Convert a BPE vocabulary to a NiuTrans.NMT vocabulary')
 parser.add_argument(
-    '-raw', help='Path of the BPE vocabulary', type=str, default='')
+    '-i', help='Path of the BPE vocabulary', type=str, default='')
 parser.add_argument(
-    '-new', help='Path of the NiuTrans.NMT vocabulary to be saved', type=str, default='')
+    '-o', help='Path of the NiuTrans.NMT vocabulary to be saved', type=str, default='')
 args = parser.parse_args()
 
 # User defined words
@@ -20,8 +20,8 @@ SOS = 2
 EOS = 2
 UNK = 3
 
-with open(args.raw, "r", encoding="utf8") as fi:
-    with open(args.new, "w", encoding="utf8") as fo:
+with open(args.i, "r", encoding="utf8") as fi:
+    with open(args.o, "w", encoding="utf8") as fo:
 
         all_lines = fi.readlines()
         vocab_size = len(all_lines) + UNK + 1
