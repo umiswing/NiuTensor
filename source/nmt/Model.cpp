@@ -533,6 +533,8 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->selfAtts[i].RPEmbK);
             list.Add(&decoder->selfAtts[i].weightO);
             list.Add(&decoder->selfAtts[i].biasO);
+            list.Add(&decoder->selfAttLayerNorms[i].weight);
+            list.Add(&decoder->selfAttLayerNorms[i].bias);
             
             if (!config->model.decoderOnly) {
                 list.Add(&decoder->enDeAtts[i].weightQ);
@@ -543,6 +545,8 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->enDeAtts[i].biasV);
                 list.Add(&decoder->enDeAtts[i].weightO);
                 list.Add(&decoder->enDeAtts[i].biasO);
+                list.Add(&decoder->enDeAttLayerNorms[i].weight);
+                list.Add(&decoder->enDeAttLayerNorms[i].bias);
             }
             if (decoder->ffns != NULL) {
                 list.Add(&decoder->ffns[i].w1);
@@ -550,10 +554,6 @@ void NMTModel::GetParams(TensorList& list)
                 list.Add(&decoder->ffns[i].w2);
                 list.Add(&decoder->ffns[i].b2);
             }
-            list.Add(&decoder->selfAttLayerNorms[i].weight);
-            list.Add(&decoder->selfAttLayerNorms[i].bias);
-            list.Add(&decoder->enDeAttLayerNorms[i].weight);
-            list.Add(&decoder->enDeAttLayerNorms[i].bias);
             list.Add(&decoder->ffnLayerNorms[i].weight);
             list.Add(&decoder->ffnLayerNorms[i].bias);
         }

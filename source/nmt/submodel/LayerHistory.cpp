@@ -151,7 +151,19 @@ XTensor LayerHistory::Pop()
     }
     else {
         stack.Reshape(stack.order + 1, dimSize);
-        return ReduceSum(MultiplyDim(stack, weights[list.Size() - 1], 0), 0);
+        XTensor multiply;
+        multiply = MultiplyDim(stack, weights[list.Size() - 1], 0);
+        stack.DestroyData();
+        if (multiply.dataType == X_FLOAT16) {
+            multiply = ConvertDataType(multiply, X_FLOAT);
+        }
+        XTensor res;
+        res = ReduceSum(multiply, 0);
+        multiply.DestroyData();
+        if (res.dataType != stack.dataType) {
+            res = ConvertDataType(res, stack.dataType);
+        }
+        return res;
     }
 }
 

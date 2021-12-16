@@ -211,12 +211,17 @@ void KernelReduceSum(__half * input, __half * output,
     DTYPE power2 = __half2float(power);
 
     if(power2 != (DTYPE)1.0){
-        if(power2 == (DTYPE)2.0)
+        if(power2 == (DTYPE)2.0){
             value = __hmul(value, value);
-        else if(power2 == (DTYPE)0.5)
+        }
+        else if(power2 == (DTYPE)0.5){
             value = hsqrt(value);
-        else if (power2 == (DTYPE)-1.0)
-            value = __habs(value);
+        }
+        else if (power2 == (DTYPE)-1.0){
+            if(value < __half(0)){
+                value = __hneg(value);
+            }
+        }
     }
 
     if(isExp && isValid)
@@ -427,8 +432,12 @@ void KernelReduceSumFast(__half * input, __half * output,
             value2 = hsqrt(value2);
         }
         else if (powerf == (DTYPE)-1.0) {
-            value = __habs(value);
-            value2 = __habs(value2);
+            if(value < __half(0)){
+                value = __hneg(value);
+            }
+            if(value2 < __half(0)){
+                value2 = __hneg(value2);
+            }
         }
     }
 
