@@ -141,13 +141,13 @@ Step 1: Prepare the training data.
 ```bash
 # Convert the BPE vocabulary
 python3 tools/GetVocab.py \
-  -raw $bpeVocab \
-  -new $niutransVocab
+  -i $bpeVocab \
+  -o $niutransVocab
 ```
 
 Description:
-* `raw` - Path of the BPE vocabulary.
-* `new` - Path of the NiuTrans.NMT vocabulary to be saved.
+* `i` - Path of the BPE vocabulary.
+* `o` - Path of the NiuTrans.NMT vocabulary to be saved.
 
 ```bash
 # Binarize the training data
@@ -263,15 +263,15 @@ NiuTrans.NMT supports inference with FP16 and INT8, you can convert the model to
 
 ```bash
 python3 tools/FormatConverter.py \
-  -input $inputModel \
-  -output $outputModel \ 
+  -i $inputModel \
+  -o $outputModel \ 
   -format $targetFormat
 ```
 
 Description:
 
-* `input` - Path of the raw model file.
-* `output` - Path of the new model file.
+* `i` - Path of the raw model file.
+* `o` - Path of the new model file.
 * `format` - Target storage format, FP16 (Default) or FP32.
 
 ## Converting Models from Fairseq
@@ -296,18 +296,18 @@ python3 tools/ModelConverter.py -i $fairseqCheckpoint -o $niutransModel
 ```
 Description:
 
-* `raw` - Path of the fairseq checkpoint, [refer to this for more details](https://fairseq.readthedocs.io/en/latest/).
-* `new` - Path to save the converted model parameters. All parameters are stored in a binary format.
+* `i` - Path of the fairseq checkpoint, [refer to this for more details](https://fairseq.readthedocs.io/en/latest/).
+* `o` - Path to save the converted model parameters. All parameters are stored in a binary format.
 * `fp16 (optional)` - Save the parameters with 16-bit data type. Default: disabled.
 
 Step 2: Convert the vocabulary:
 ```bash
-python3 tools/VocabConverter.py -raw $fairseqVocabPath -new $niutransVocabPath
+python3 tools/VocabConverter.py -i $fairseqVocabPath -o $niutransVocabPath
 ```
 Description:
 
-* `raw` - Path of the fairseq vocabulary, [refer to this for more details](https://fairseq.readthedocs.io/en/latest/).
-* `new` - Path to save the converted vocabulary. Its first line is the vocabulary size, followed by a word and its index in each following line.
+* `i` - Path of the fairseq vocabulary, [refer to this for more details](https://fairseq.readthedocs.io/en/latest/).
+* `o` - Path to save the converted vocabulary. Its first line is the vocabulary size, followed by a word and its index in each following line.
 
 *You may need to convert both the source language vocabulary and the target language vocabulary if they are not shared.*
 

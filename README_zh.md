@@ -133,13 +133,13 @@ make -j && cd ..
 ```bash
 # Convert the BPE vocabulary
 python3 tools/GetVocab.py \
-  -raw $bpeVocab \
-  -new $niutransVocab
+  -i $bpeVocab \
+  -o $niutransVocab
 ```
 
 参数说明:
-* `raw` - Path of the BPE vocabulary.
-* `new` - Path of the NiuTrans.NMT vocabulary to be saved.
+* `i` - Path of the BPE vocabulary.
+* `o` - Path of the NiuTrans.NMT vocabulary to be saved.
 
 ```bash
 # Binarize the training data
@@ -250,15 +250,15 @@ NiuTrans.NMT支持FP16和INT8低精度推断, 您可以通过下面的命令将�
 
 ```bash
 python3 tools/FormatConverter.py \
-  -input $inputModel \
-  -output $outputModel \ 
+  -i $inputModel \
+  -o $outputModel \ 
   -format $targetFormat
 ```
 
 参数说明:
 
-* `input` - 原始模型路径。
-* `output` - 目标模型路径。
+* `i` - 原始模型路径。
+* `o` - 目标模型路径。
 * `format` - 目标模型格式，默认：FP16。
 
 ## 从Fairseq导出模型
@@ -276,25 +276,25 @@ python3 tools/FormatConverter.py \
 步骤1: 从Fairseq中导出模型权重：
 
 ```bash
-python3 tools/ModelConverter.py -raw $fairseqCheckpoint -new $niutransModel
+python3 tools/ModelConverter.py -i $fairseqCheckpoint -o $niutransModel
 ```
 
 参数说明:
 
-* `raw` - Fairseq模型路径。
-* `new` - 目标模型路径。
+* `i` - Fairseq模型路径。
+* `o` - 目标模型路径。
 * `fp16 (optional)` - 是否储存为FP16格式，默认：否。
 
 步骤2: 从Fairseq中导出词汇表:
 
 ```bash
-python3 tools/VocabConverter.py -raw $fairseqVocabPath -new $newVocabPath
+python3 tools/VocabConverter.py -i $fairseqVocabPath -o $newVocabPath
 ```
 
 参数说明:
 
-* `raw` - Fairseq词汇表路径。
-* `new` - 目标词汇表路径。
+* `i` - Fairseq词汇表路径。
+* `o` - 目标词汇表路径。
 
 ## 预训练模型
 
