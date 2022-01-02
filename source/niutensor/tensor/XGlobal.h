@@ -101,7 +101,7 @@ namespace nts {
     } \
 } \
 
-inline void ShowLastErrors(const char *file, int line) 
+inline void ShowLastError(const char *file, int line) 
 { 
     #ifdef USE_CUDA
     auto code = cudaDeviceSynchronize(); 
@@ -110,7 +110,7 @@ inline void ShowLastErrors(const char *file, int line)
         throw; 
     } 
     #else
-    XPRINT(1, stderr, "WARNING! This function only works when using CUDA! ")
+    fprintf(stderr, "WARNING! Function \'ShowLastError\' only works when using CUDA! ");
     #endif
 }
 
