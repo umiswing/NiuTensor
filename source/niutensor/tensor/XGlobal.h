@@ -103,12 +103,15 @@ namespace nts {
 
 inline void ShowLastErrors(const char *file, int line) 
 { 
+    #ifdef USE_CUDA
     auto code = cudaDeviceSynchronize(); 
     if(code != cudaSuccess){ 
         fprintf(stderr, "[ERROR] (%s line %d): %s\n", file, line, cudaGetErrorString(code)); 
         throw; 
     } 
-    
+    #else
+    XPRINT(1, stderr, "WARNING! This function only works when using CUDA! ")
+    #endif
 }
 
 #define MAX_FILE_NAME_LENGTH 1024 * 2
