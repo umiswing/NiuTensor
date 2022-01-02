@@ -132,7 +132,6 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
 
     /* make sure the batch size is valid */
     realBatchSize = MIN(int(buf->Size()) - bufIdx, realBatchSize);
-    realBatchSize = MAX(2 * (realBatchSize / 2), realBatchSize % 2);
 
     CheckNTErrors(maxLen != 0, "Invalid length");
 
