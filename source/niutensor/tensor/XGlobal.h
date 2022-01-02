@@ -101,6 +101,16 @@ namespace nts {
     } \
 } \
 
+inline void ShowLastErrors(const char *file, int line) 
+{ 
+    auto code = cudaDeviceSynchronize(); 
+    if(code != cudaSuccess){ 
+        fprintf(stderr, "[ERROR] (%s line %d): %s\n", file, line, cudaGetErrorString(code)); 
+        throw; 
+    } 
+    
+}
+
 #define MAX_FILE_NAME_LENGTH 1024 * 2
 #define MAX_LINE_LENGTH 1024 * 1024
 #define MAX_SENTENCE_LEN 512
