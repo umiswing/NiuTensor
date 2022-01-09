@@ -57,7 +57,7 @@ typedef long long int      MTYPEINT;
 typedef long long          INT_64;
 
 //#define CUDA_PITCH 256
-#define CUDA_PITCH 1
+#define CUDA_PITCH 16
 #define CUDA_HOST_MALLOC 1
 #define MY_PITCH CUDA_PITCH
 #define BUF_PITCH 256

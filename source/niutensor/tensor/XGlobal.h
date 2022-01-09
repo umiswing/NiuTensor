@@ -101,6 +101,19 @@ namespace nts {
     } \
 } \
 
+inline void ShowLastError(const char *file, int line) 
+{ 
+    #ifdef USE_CUDA
+    auto code = cudaDeviceSynchronize(); 
+    if(code != cudaSuccess){ 
+        fprintf(stderr, "[ERROR] (%s line %d): %s\n", file, line, cudaGetErrorString(code)); 
+        throw; 
+    } 
+    #else
+    fprintf(stderr, "WARNING! Function \'ShowLastError\' only works when using CUDA! ");
+    #endif
+}
+
 #define MAX_FILE_NAME_LENGTH 1024 * 2
 #define MAX_LINE_LENGTH 1024 * 1024
 #define MAX_SENTENCE_LEN 512
