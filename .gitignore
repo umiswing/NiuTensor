@@ -11,3 +11,4 @@ tools/iwslt14.tokenized.de-en/*
 data/
 .idea/
 wmt14/
+.vscode/*
