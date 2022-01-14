@@ -12,3 +12,4 @@ data/
 .idea/
 wmt14/
 .vscode/
+*.data
