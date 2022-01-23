@@ -71,8 +71,6 @@ train the model
 */
 void Trainer::Run()
 {
-    double startT = GetClockSec();
-
     step = 0;
     int epoch = 0;
     int nSkipped = 0;
@@ -100,6 +98,8 @@ void Trainer::Run()
     /* initialize the dataloader */
     trainBatchLoader.Init(*config, true);
     validBatchLoader.Init(*config, false);
+
+    double startT = GetClockSec();
 
     /* loop of training epochs */
     for (epoch = 1; epoch <= config->training.nepoch; epoch++) {
