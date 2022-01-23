@@ -14,3 +14,5 @@ wmt14/
 .vscode/
 *.data
 /ignore/*
+train.sh 
+*.out
