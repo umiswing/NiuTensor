@@ -13,3 +13,4 @@ data/
 wmt14/
 .vscode/
 *.data
+/ignore/*
