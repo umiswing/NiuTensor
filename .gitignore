@@ -16,3 +16,5 @@ wmt14/
 /ignore/*
 train.sh 
 *.out
+/model*
+/NiuTrans.NMT

@@ -1,1 +1,1 @@
-mpirun -np 2 ./bin/NiuTrans.NMT -dev 3 1 -train /home/libei/iwslt14.tokenized.de-en/train.data -valid /home/libei/iwslt14.tokenized.de-en/valid.data -weightdecay 0.0001 -maxsrc 1024 -maxtgt 1024 -encprenorm 1 -decprenorm 1
+mpirun -np 2 ./NiuTrans.NMT -dev 0 1 -train /home/libei/iwslt14.tokenized.de-en/train.data -valid /home/libei/iwslt14.tokenized.de-en/valid.data -weightdecay 0.0001 -maxsrc 1024 -maxtgt 1024 -encprenorm 1 -decprenorm 1
