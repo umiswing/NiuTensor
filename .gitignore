@@ -18,3 +18,5 @@ train.sh
 *.out
 /model*
 /NiuTrans.NMT
+*.txt
+*.bin
