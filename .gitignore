@@ -11,4 +11,12 @@ tools/iwslt14.tokenized.de-en/*
 data/
 .idea/
 wmt14/
-.vscode/*
+.vscode/
+*.data
+/ignore/*
+train.sh 
+*.out
+/model*
+/NiuTrans.NMT
+*.txt
+*.bin
