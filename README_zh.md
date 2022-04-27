@@ -218,7 +218,7 @@ bin/NiuTrans.NMT \
  -model $modelPath \
  -wbatch $wordBatchSize \
  -sbatch $sentenceBatchSize \
- -beamsize $beamSize \
+ -beam $beamSize \
  -srcvocab $srcVocab \
  -tgtvocab $tgtVocab \
  -output $outputFile
@@ -229,7 +229,7 @@ bin/NiuTrans.NMT \
 * `model` - 模型存储路径。
 * `sbatch` - batch中的句子数。
 * `dev` - 设备ID，大于0为GPU设备，-1为CPU设备。
-* `beamsize` - 束大小，若为1则执行贪心搜索。
+* `beam` - 束大小，若为1则执行贪心搜索。
 * `input` - 输入文件路径，格式：每行一条句子，单词用空格分开。
 * `output` - 输出文件路径，格式：每行一条句子，单词用空格分开。
 * `srcvocab` - 源语词汇表路径，格式：首行为词汇表大小和起始符号，其余行是单词和对应的索引（数字）。

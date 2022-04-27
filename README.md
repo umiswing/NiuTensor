@@ -229,7 +229,7 @@ bin/NiuTrans.NMT \
  -model $modelPath \
  -wbatch $wordBatchSize \
  -sbatch $sentenceBatchSize \
- -beamsize $beamSize \
+ -beam $beamSize \
  -srcvocab $srcVocab \
  -tgtvocab $tgtVocab \
  -output $outputFile
@@ -242,7 +242,7 @@ Description:
 * `model` - Path of the model.
 * `sbatch` - Sentence batch size. Default: 32.
 * `dev` - Device id (-1 for CPUs, and >= 0 for GPUs). Default: 0.
-* `beamsize` - Size of the beam. 1 for the greedy search.
+* `beam` - Size of the beam. 1 for the greedy search.
 * `input` - Path of the input file. One sentence per line with tokens separated by spaces.
 * `output` - Path of the output file to be saved. The same format as the input file.
 * `srcvocab` - Path of the source language vocabulary. Its first line is the vocabulary size, followed by a word and its index in each following line.
