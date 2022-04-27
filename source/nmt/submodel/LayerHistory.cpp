@@ -38,6 +38,7 @@ void LayerHistory::SetTrainingFlag(bool myIsTraining)
 /* constructor */
 LayerHistory::LayerHistory()
 {
+    preLN = false;
     d = -1;
     devID = -1;
     count = -1;
@@ -66,12 +67,13 @@ void LayerHistory::InitModel(NMTConfig& config, bool isEnc)
     SetTrainingFlag(config.training.isTraining);
     devID = config.common.devID;
     d = isEnc ? config.model.encEmbDim : config.model.decEmbDim;
+    preLN = isEnc ? config.model.encPreLN : config.model.decPreLN;
     nlayer = isEnc ? config.model.encLayerNum : config.model.decLayerNum;
 
     /*  the triangle weight matrices for all layers
         layer 0: [1, 0, ..., 0]               
-        layer 1: [0.5, 0.5, ..., 0]           
-        layer 2: [0.33, 0.33, 0.33, ..., 0]   */
+        layer 1: [1/2, 1/2, ..., 0]           
+        layer 2: [1/3, 1/3, 1/3, ..., 0]   */
     weights = new XTensor[nlayer + 1];
     for (int i = 0; i < nlayer + 1; i++) {
         InitTensor1D(&(weights[i]), i + 1, X_FLOAT, devID);
@@ -109,7 +111,14 @@ void LayerHistory::Add(XTensor& layer)
         return;
     }
     XTensor normed;
-    normed = layerNorms[count - 2].Run(layer);
+    if (preLN) {
+        /* normalize the layer */
+        normed = layerNorms[count - 2].Run(layer);
+    }
+    else {
+        normed = layer;
+    }
+    
     history->Add(normed);
 }
 
@@ -147,6 +156,9 @@ XTensor LayerHistory::Pop()
         /* delete unused data to save memory */
         multiplication.DestroyData();
 
+        if (!preLN && count > 1) {
+            res = layerNorms[count - 2].Run(res);
+        }
         return res;
     }
     else {
@@ -162,6 +174,9 @@ XTensor LayerHistory::Pop()
         multiply.DestroyData();
         if (res.dataType != stack.dataType) {
             res = ConvertDataType(res, stack.dataType);
+        }
+        if (!preLN && count > 1) {
+            res = layerNorms[count - 2].Run(res);
         }
         return res;
     }

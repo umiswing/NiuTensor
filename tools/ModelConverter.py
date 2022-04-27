@@ -42,6 +42,7 @@ def get_model_params(model, configs, prefix=None):
 
     with open(info_file, 'w') as f:
         for k, v, in model.items():
+            print(k, v.shape)
             v = v.to(torch.float32)
             if 'encoder.embed_tokens.weight' in k:
                 encoder_embedding = v
@@ -54,7 +55,7 @@ def get_model_params(model, configs, prefix=None):
                     embedding_name_interval.append(
                         ('no_trans', k, v.shape, cur_pos, v.numel()))
                     cur_pos += v.numel()
-            elif 'decoder.output_projection.weight' in k:
+            elif 'decoder.embed_out' in k or 'decoder.output_projection.weight' in k:
                 decoder_output_weight = v
                 if not configs.share_decoder_input_output_embed:
                     embedding_name_interval.append(
@@ -109,7 +110,6 @@ def get_model_params(model, configs, prefix=None):
             flattened_params.append(decoder_output_weight)
 
     name_interval.extend(embedding_name_interval)
-
     return flattened_params, name_interval
 
 

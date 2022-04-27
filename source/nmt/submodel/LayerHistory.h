@@ -74,6 +74,9 @@ public:
     /* the triangle weight matrices for dlcl */
     XTensor* weights;
 
+    /* use pre-LN or not */
+    bool preLN;
+
     /* hidden size */
     int d;
 

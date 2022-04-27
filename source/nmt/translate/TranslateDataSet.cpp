@@ -84,13 +84,13 @@ bool TranslateDataset::LoadBatchToBuf()
 
     /* hacky code to solve the issue with fp16 */
     appendEmptyLine = false;
-    if (id > 0 && id % 2 != 0) {
-        line = "EMPTY";
-        Sample* sequence = LoadSample(line);
-        sequence->index = id++;
-        buf->Add(sequence);
-        appendEmptyLine = true;
-    }
+    // if (id > 0 && id % 2 != 0) {
+    //     line = "EMPTY";
+    //     Sample* sequence = LoadSample(line);
+    //     sequence->index = id++;
+    //     buf->Add(sequence);
+    //     appendEmptyLine = true;
+    // }
 
     /* sort the input sequences by length */
     SortBySrcLengthDescending();
