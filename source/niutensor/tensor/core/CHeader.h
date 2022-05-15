@@ -53,6 +53,7 @@
 #include "math/Normalize.h"
 #include "math/ScaleAndShift.h"
 #include "math/Unary.h"
+#include "math/Welford.h"
 
 #include "movement/CopyBlocks.h"
 #include "movement/CopyBlocksInGrid.h"
