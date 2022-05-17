@@ -29,6 +29,9 @@ using namespace nts;
 /* the nmt namespace */
 namespace nmt {
 
+#define pow2Num 4096
+unsigned int pow2[pow2Num];
+
 /* transfrom a line to a sequence */
 Sample* TranslateDataset::LoadSample(const string& line)
 {
@@ -100,11 +103,56 @@ bool TranslateDataset::LoadBatchToBuf()
     return true;
 }
 
+void initPower2() {
+  pow2[0] = 1;
+  pow2[1] = 2;
+  size_t i;
+  for (i = 2; i < 4; ++i)
+    pow2[i] = 4;
+  for (; i < 8; ++i)
+    pow2[i] = 8;
+  for (; i < 16; ++i)
+    pow2[i] = 16;
+  for (; i < 32; ++i)
+    pow2[i] = 32;
+  for (; i < 64; ++i)
+    pow2[i] = 64;
+  for (; i < 128; ++i)
+    pow2[i] = 128;
+  for (; i < 256; ++i)
+    pow2[i] = 256;
+  for (; i < 512; ++i)
+    pow2[i] = 512;
+  for (; i < 1024; ++i)
+    pow2[i] = 1024;
+  for (; i < 2048; ++i)
+    pow2[i] = 2048;
+  for (; i < 4096; ++i)
+    pow2[i] = 4096;
+}
 /* constructor */
 TranslateDataset::TranslateDataset()
 {
     ifp = NULL;
     appendEmptyLine = false;
+
+    initPower2();
+}
+
+bool isShapeFit(const int n, const int m, const int devID) {
+#ifdef USE_CUDA
+  if (!GDevs.GPUs[devID].isInitialized)
+    GDevs.GPUs[devID].Init(devID);
+  int bXSize = pow2[n-1];
+  int bYSize = GDevs.GPUs[devID].GPUMaxThreadNumPerBlock / bXSize;
+
+  int gXSize = int(ceil(float(n) / bXSize));
+  int gYSize = int(ceil(float(m) / bYSize));
+
+  return gXSize <= GDevs.GPUs[devID].GPUMaxGridSize[0] &&
+         gYSize <= GDevs.GPUs[devID].GPUMaxGridSize[1];
+#endif
+  return true;
 }
 
 /*
@@ -123,9 +171,14 @@ bool TranslateDataset::GetBatchSimple(XList* inputs, XList* info)
     int maxLen = int(longestsample->srcSeq->Size());
 
     /* we choose the max-token strategy to maximize the throughput */
-    while (realBatchSize * maxLen * config->translation.beamSize < config->common.wBatchSize
-           && realBatchSize < config->common.sBatchSize) {
+    while (realBatchSize * maxLen * config->translation.beamSize <
+               config->common.wBatchSize &&
+           realBatchSize < config->common.sBatchSize) {
+      if (isShapeFit((realBatchSize + 1) * config->translation.beamSize,
+                     config->translation.maxLen * config->model.decEmbDim, config->common.devID))
         realBatchSize++;
+      else
+        break;
     }
 
     realBatchSize = MIN(realBatchSize, config->common.sBatchSize);

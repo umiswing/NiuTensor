@@ -94,9 +94,21 @@ inline void writeXTensor(XTensor const &X, std::string const FileName) {
 
 inline void writeDimSize(XTensor const &X, std::string const &FileName) {
   CheckNTErrors(X.isInit, "writeDimSize():Tensor is not initialized!");
-  std::ofstream Out(FileName,std::ios_base::app);
+  std::ofstream Out(FileName, std::ios_base::app);
   for (auto i = 0; i < X.order; ++i)
-    Out << X.dimSize[i] << '\n';
+    Out << X.dimSize[i] << ',';
+  Out << '\n';
+  Out.close();
+  return;
+}
+
+template <typename T>
+inline void writeArray(T *A, int Num, std::string const &FileName) {
+  CheckNTErrors(A != nullptr, "writeArray():a is a nullptr!")
+      std::ofstream Out(FileName, std::ios_base::app);
+  for (auto i = 0; i < Num; ++i)
+    Out << A[i] << ',';
+  Out << '\n';
   Out.close();
   return;
 }
